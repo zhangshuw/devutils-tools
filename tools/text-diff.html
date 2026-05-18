@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文本差异对比 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线文本差异对比工具，逐行比较两段文本的不同之处，高亮显示增删改">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"文本差异对比","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .diff-container{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:768px){.diff-container{grid-template-columns:1fr}}
+    .diff-panel textarea{width:100%;min-height:300px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:0.85rem;line-height:1.6;padding:12px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-primary);resize:vertical}
+    .diff-panel textarea:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-subtle)}
+    .diff-output{background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:0.85rem;line-height:1.6;overflow-x:auto;max-height:500px;overflow-y:auto}
+    .diff-line{padding:2px 8px;border-left:3px solid transparent}
+    .diff-add{background:rgba(34,197,94,0.12);border-left-color:#22c55e;color:#22c55e}
+    .diff-del{background:rgba(239,68,68,0.12);border-left-color:#ef4444;color:#ef4444;text-decoration:line-through}
+    .diff-same{color:var(--color-text-muted)}
+    .stats-bar{display:flex;gap:16px;margin:12px 0;font-size:0.85rem}
+    .stats-bar span{padding:4px 12px;border-radius:var(--radius-full);font-weight:600}
+    .stat-add{background:rgba(34,197,94,0.15);color:#22c55e}
+    .stat-del{background:rgba(239,68,68,0.15);color:#ef4444}
+    .stat-same{background:rgba(156,160,171,0.15);color:#9ca0ab}
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>文本差异对比</span></nav>
+    <h1>文本差异对比</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">逐行比较两段文本的不同之处，高亮显示增删改</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <div class="diff-container">
+          <div class="diff-panel">
+            <div class="panel-header"><span class="panel-title">原始文本</span></div>
+            <textarea id="textA" placeholder="粘贴原始文本..."></textarea>
+          </div>
+          <div class="diff-panel">
+            <div class="panel-header"><span class="panel-title">修改后文本</span></div>
+            <textarea id="textB" placeholder="粘贴修改后的文本..."></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin:16px 0">
+          <button class="btn btn-primary" id="compareBtn">对比差异</button>
+          <button class="btn" id="swapBtn">交换</button>
+          <button class="btn" id="clearBtn">清空</button>
+        </div>
+        <div class="stats-bar" id="statsBar" style="display:none">
+          <span class="stat-add" id="statAdd"></span>
+          <span class="stat-del" id="statDel"></span>
+          <span class="stat-same" id="statSame"></span>
+        </div>
+        <div class="diff-output" id="diffOutput" style="display:none"></div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    function computeDiff(a, b) {
+      const linesA = a.split('\n');
+      const linesB = b.split('\n');
+      // LCS-based diff
+      const m = linesA.length, n = linesB.length;
+      // 构建DP表（限制内存，超过5000行用简单对比）
+      if (m * n > 25000000) return simpleDiff(linesA, linesB);
+      const dp = Array.from({length: m + 1}, () => new Uint16Array(n + 1));
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          dp[i][j] = linesA[i-1] === linesB[j-1]
+            ? dp[i-1][j-1] + 1
+            : Math.max(dp[i-1][j], dp[i][j-1]);
+        }
+      }
+      // 回溯生成diff
+      const result = [];
+      let i = m, j = n;
+      while (i > 0 || j > 0) {
+        if (i > 0 && j > 0 && linesA[i-1] === linesB[j-1]) {
+          result.unshift({type: 'same', text: linesA[i-1]});
+          i--; j--;
+        } else if (j > 0 && (i === 0 || dp[i][j-1] >= dp[i-1][j])) {
+          result.unshift({type: 'add', text: linesB[j-1]});
+          j--;
+        } else {
+          result.unshift({type: 'del', text: linesA[i-1]});
+          i--;
+        }
+      }
+      return result;
+    }
+
+    function simpleDiff(linesA, linesB) {
+      // 大文本简单逐行对比
+      const max = Math.max(linesA.length, linesB.length);
+      const result = [];
+      for (let i = 0; i < max; i++) {
+        const a = i < linesA.length ? linesA[i] : null;
+        const b = i < linesB.length ? linesB[i] : null;
+        if (a !== null && b !== null && a === b) {
+          result.push({type: 'same', text: a});
+        } else {
+          if (a !== null) result.push({type: 'del', text: a});
+          if (b !== null) result.push({type: 'add', text: b});
+        }
+      }
+      return result;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    document.getElementById('compareBtn').addEventListener('click', () => {
+      const a = document.getElementById('textA').value;
+      const b = document.getElementById('textB').value;
+      if (!a && !b) { showToast('请输入文本', true); return; }
+      const diff = computeDiff(a, b);
+      const addCount = diff.filter(d => d.type === 'add').length;
+      const delCount = diff.filter(d => d.type === 'del').length;
+      const sameCount = diff.filter(d => d.type === 'same').length;
+      document.getElementById('statAdd').textContent = `+${addCount} 行新增`;
+      document.getElementById('statDel').textContent = `-${delCount} 行删除`;
+      document.getElementById('statSame').textContent = `${sameCount} 行相同`;
+      document.getElementById('statsBar').style.display = 'flex';
+      const html = diff.map(d => {
+        const cls = d.type === 'add' ? 'diff-add' : d.type === 'del' ? 'diff-del' : 'diff-same';
+        const prefix = d.type === 'add' ? '+' : d.type === 'del' ? '-' : ' ';
+        return `<div class="diff-line ${cls}">${prefix} ${escapeHtml(d.text)}</div>`;
+      }).join('');
+      document.getElementById('diffOutput').innerHTML = html;
+      document.getElementById('diffOutput').style.display = 'block';
+      showToast(`对比完成：${addCount}新增 ${delCount}删除`);
+    });
+
+    document.getElementById('swapBtn').addEventListener('click', () => {
+      const a = document.getElementById('textA');
+      const b = document.getElementById('textB');
+      [a.value, b.value] = [b.value, a.value];
+      showToast('已交换');
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.getElementById('textA').value = '';
+      document.getElementById('textB').value = '';
+      document.getElementById('diffOutput').style.display = 'none';
+      document.getElementById('statsBar').style.display = 'none';
+      showToast('已清空');
+    });
+  </script>
+</body>
+</html>

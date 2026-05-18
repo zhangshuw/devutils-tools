@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown预览 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线Markdown预览工具，实时渲染Markdown为HTML，支持GFM语法和代码高亮">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Markdown预览","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .md-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;min-height:500px}
+    @media(max-width:768px){.md-layout{grid-template-columns:1fr}}
+    #mdInput{width:100%;min-height:500px;font-family:"JetBrains Mono","Fira Code","Consolas",monospace;font-size:0.85rem;line-height:1.6;padding:12px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-primary);resize:vertical}
+    #mdInput:focus{outline:none;border-color:var(--color-accent);box-shadow:0 0 0 3px var(--color-accent-subtle)}
+    #mdPreview{background:#fff;color:#24292f;padding:24px;border-radius:var(--radius-md);border:1px solid var(--color-border);overflow-y:auto;max-height:600px;font-size:15px;line-height:1.7}
+    #mdPreview h1{font-size:2em;border-bottom:1px solid #d0d7de;padding-bottom:.3em;margin:24px 0 16px}
+    #mdPreview h2{font-size:1.5em;border-bottom:1px solid #d0d7de;padding-bottom:.3em;margin:24px 0 12px}
+    #mdPreview h3{font-size:1.25em;margin:20px 0 8px}
+    #mdPreview code{background:#eff1f3;padding:2px 6px;border-radius:4px;font-size:85%;font-family:"JetBrains Mono",monospace}
+    #mdPreview pre{background:#161b22;color:#e6edf3;padding:16px;border-radius:8px;overflow-x:auto;margin:12px 0}
+    #mdPreview pre code{background:none;color:inherit;padding:0}
+    #mdPreview blockquote{border-left:4px solid #d0d7de;padding:4px 16px;color:#656d76;margin:12px 0}
+    #mdPreview table{border-collapse:collapse;width:100%;margin:12px 0}
+    #mdPreview th,#mdPreview td{border:1px solid #d0d7de;padding:8px 12px}
+    #mdPreview th{background:#f6f8fa}
+    #mdPreview img{max-width:100%}
+    #mdPreview a{color:#0969da}
+    #mdPreview ul,#mdPreview ol{padding-left:2em;margin:8px 0}
+    #mdPreview hr{border:none;border-top:1px solid #d0d7de;margin:24px 0}
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>Markdown预览</span></nav>
+    <h1>Markdown 预览</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">实时渲染 Markdown 为 HTML，支持 GFM 语法</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <button class="btn btn-sm" id="exampleBtn">加载示例</button>
+          <button class="btn btn-sm" id="copyHtmlBtn">复制HTML</button>
+          <button class="btn btn-sm" id="clearMdBtn">清空</button>
+        </div>
+        <div class="md-layout">
+          <div>
+            <div class="panel-header" style="margin-bottom:4px"><span class="panel-title">Markdown</span></div>
+            <textarea id="mdInput" placeholder="输入 Markdown 内容..."></textarea>
+          </div>
+          <div>
+            <div class="panel-header" style="margin-bottom:4px"><span class="panel-title">预览</span></div>
+            <div id="mdPreview"></div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <script src="https://cdn.jsdelivr.net/npm/marked@14.1.2/marked.min.js"></script>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    const input = document.getElementById('mdInput');
+    const preview = document.getElementById('mdPreview');
+    let timer;
+
+    function render() {
+      if (typeof marked !== 'undefined') {
+        preview.innerHTML = marked.parse(input.value || '');
+      } else {
+        preview.textContent = input.value;
+      }
+    }
+
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(render, 200);
+    });
+
+    document.getElementById('exampleBtn').addEventListener('click', () => {
+      input.value = `# Markdown 预览示例
+
+## 基本语法
+
+这是一段普通文本，包含**粗体**、*斜体*、~~删除线~~和\`行内代码\`。
+
+### 列表
+
+- 第一项
+- 第二项
+  - 嵌套项
+- 第三项
+
+1. 有序列表
+2. 第二项
+3. 第三项
+
+### 代码块
+
+\`\`\`javascript
+function hello(name) {
+  console.log(\`Hello, \${name}!\`);
+}
+
+hello('DevUtils');
+\`\`\`
+
+### 表格
+
+| 工具 | 功能 | 状态 |
+|------|------|------|
+| JSON格式化 | 格式化JSON | ✅ |
+| Base64 | 编解码 | ✅ |
+| 正则测试 | 测试正则 | ✅ |
+
+### 引用
+
+> 这是一段引用文本
+> 可以多行
+
+### 链接与图片
+
+[DevUtils工具站](https://zhangshuw.github.io/devutils-tools/)
+
+---
+
+*以上为Markdown基本语法演示*`;
+      render();
+    });
+
+    document.getElementById('copyHtmlBtn').addEventListener('click', () => {
+      copyToClipboard(preview.innerHTML);
+    });
+
+    document.getElementById('clearMdBtn').addEventListener('click', () => {
+      input.value = '';
+      preview.innerHTML = '';
+    });
+
+    // 初始渲染
+    render();
+  </script>
+</body>
+</html>

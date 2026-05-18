@@ -12,6 +12,8 @@ const TOOLS = [
   { id: "timestamp-converter", name: "时间戳转换", desc: "时间戳与日期时间互转", icon: "🕐", cat: "generate" },
   { id: "css-gradient", name: "CSS 渐变生成器", desc: "可视化编辑 CSS 渐变效果", icon: "🌈", cat: "generate" },
   { id: "qrcode-generator", name: "二维码生成器", desc: "生成可下载的二维码", icon: "📷", cat: "generate" },
+  { id: "text-diff", name: "文本差异对比", desc: "逐行比较文本增删改", icon: "📊", cat: "encoding" },
+  { id: "markdown-preview", name: "Markdown 预览", desc: "实时渲染Markdown为HTML", icon: "📝", cat: "encoding" },
 ];
 
 function renderCards(filter = "") {
