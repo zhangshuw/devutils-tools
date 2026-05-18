@@ -3,13 +3,13 @@ export function renderHeader() {
   return `
     <header class="site-header">
       <div class="container">
-        <a href="/web-tools/" class="site-logo">⚡ <span>Dev</span>Utils</a>
+        <a href="/devutils-tools/" class="site-logo">⚡ <span>Dev</span>Utils</a>
         <nav>
           <ul class="nav-links" id="navLinks">
-            <li><a href="/web-tools/">全部工具</a></li>
-            <li><a href="/web-tools/#encoding">编码转换</a></li>
-            <li><a href="/web-tools/#generate">生成器</a></li>
-            <li><a href="/web-tools/#security">安全工具</a></li>
+            <li><a href="/devutils-tools/">全部工具</a></li>
+            <li><a href="/devutils-tools/#encoding">编码转换</a></li>
+            <li><a href="/devutils-tools/#generate">生成器</a></li>
+            <li><a href="/devutils-tools/#security">安全工具</a></li>
           </ul>
         </nav>
         <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="菜单">☰</button>
@@ -46,7 +46,7 @@ export function renderAdSlot(id, format = "horizontal") {
 export function renderBreadcrumb(current) {
   return `
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="/web-tools/">首页</a>
+      <a href="/devutils-tools/">首页</a>
       <span class="breadcrumb-sep">/</span>
       <span>${current}</span>
     </nav>
