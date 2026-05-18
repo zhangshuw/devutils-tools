@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>颜色转换器 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线颜色格式转换工具，支持HEX、RGB、HSL、CMYK互转，带实时预览。">
+  <link rel="canonical" href="https://devutils.cn/tools/color-converter.html">
+  <!-- OG tags -->
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"颜色转换器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>颜色转换器</span></nav>
+    <h1>颜色转换器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">HEX / RGB / HSL / CMYK 颜色格式互转，实时预览。</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <div class="panel">
+          <!-- 输入区 -->
+          <div class="panel-header">
+            <span class="panel-title">选择颜色</span>
+          </div>
+          <div style="display:flex;gap:var(--space-md);align-items:center;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:var(--space-sm)">
+              <span style="font-size:var(--text-sm);color:var(--color-text-secondary)">HEX</span>
+              <input type="text" class="input" id="hexInput" value="#6366f1" style="width:120px;font-family:monospace" maxlength="7">
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-sm)">
+              <span style="font-size:var(--text-sm);color:var(--color-text-secondary)">拾色器</span>
+              <input type="color" id="colorPicker" value="#6366f1" style="width:48px;height:40px;padding:2px;cursor:pointer;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg-elevated)">
+            </label>
+          </div>
+          <!-- 颜色预览 -->
+          <div style="margin-top:var(--space-lg)">
+            <div id="colorPreview" style="width:100%;height:80px;border-radius:var(--radius-lg);border:1px solid var(--color-border);background:#6366f1"></div>
+          </div>
+          <!-- 各格式输出 -->
+          <div style="margin-top:var(--space-lg);display:flex;flex-direction:column;gap:var(--space-md)">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-sm) var(--space-md);background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md)">
+              <span style="font-size:var(--text-sm);color:var(--color-text-secondary);min-width:50px">HEX</span>
+              <code id="hexValue" style="font-family:monospace;font-size:var(--text-sm)">#6366f1</code>
+              <button class="btn btn-sm btn-ghost" data-copy="hex">复制</button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-sm) var(--space-md);background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md)">
+              <span style="font-size:var(--text-sm);color:var(--color-text-secondary);min-width:50px">RGB</span>
+              <code id="rgbValue" style="font-family:monospace;font-size:var(--text-sm)">rgb(99, 102, 241)</code>
+              <button class="btn btn-sm btn-ghost" data-copy="rgb">复制</button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-sm) var(--space-md);background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md)">
+              <span style="font-size:var(--text-sm);color:var(--color-text-secondary);min-width:50px">HSL</span>
+              <code id="hslValue" style="font-family:monospace;font-size:var(--text-sm)">hsl(239, 84%, 67%)</code>
+              <button class="btn btn-sm btn-ghost" data-copy="hsl">复制</button>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-sm) var(--space-md);background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md)">
+              <span style="font-size:var(--text-sm);color:var(--color-text-secondary);min-width:50px">CMYK</span>
+              <code id="cmykValue" style="font-family:monospace;font-size:var(--text-sm)">cmyk(59%, 58%, 0%, 5%)</code>
+              <button class="btn btn-sm btn-ghost" data-copy="cmyk">复制</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    // HEX转RGB
+    function hexToRgb(hex) {
+      hex = hex.replace("#", "");
+      if (hex.length === 3) hex = hex.split("").map(c => c + c).join("");
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return { r, g, b };
+    }
+
+    // RGB转HSL
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+      }
+      return {
+        h: Math.round(h * 360),
+        s: Math.round(s * 100),
+        l: Math.round(l * 100)
+      };
+    }
+
+    // RGB转CMYK
+    function rgbToCmyk(r, g, b) {
+      if (r === 0 && g === 0 && b === 0) return { c: 0, m: 0, y: 0, k: 100 };
+      const rr = r / 255, gg = g / 255, bb = b / 255;
+      const k = 1 - Math.max(rr, gg, bb);
+      const c = (1 - rr - k) / (1 - k);
+      const m = (1 - gg - k) / (1 - k);
+      const y = (1 - bb - k) / (1 - k);
+      return {
+        c: Math.round(c * 100),
+        m: Math.round(m * 100),
+        y: Math.round(y * 100),
+        k: Math.round(k * 100)
+      };
+    }
+
+    // 存储各格式值
+    const values = { hex: "", rgb: "", hsl: "", cmyk: "" };
+
+    // 从HEX更新所有值
+    function updateFromHex(hex) {
+      const rgb = hexToRgb(hex);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      const cmyk = rgbToCmyk(rgb.r, rgb.g, rgb.b);
+
+      values.hex = hex;
+      values.rgb = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      values.hsl = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+      values.cmyk = `cmyk(${cmyk.c}%, ${cmyk.m}%, ${cmyk.y}%, ${cmyk.k}%)`;
+
+      document.getElementById("hexValue").textContent = values.hex;
+      document.getElementById("rgbValue").textContent = values.rgb;
+      document.getElementById("hslValue").textContent = values.hsl;
+      document.getElementById("cmykValue").textContent = values.cmyk;
+      document.getElementById("colorPreview").style.background = hex;
+    }
+
+    const hexInput = document.getElementById("hexInput");
+    const colorPicker = document.getElementById("colorPicker");
+
+    // HEX输入框变更
+    hexInput.addEventListener("input", () => {
+      let val = hexInput.value.trim();
+      // 自动补#
+      if (val && !val.startsWith("#")) val = "#" + val;
+      // 验证格式
+      if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+        colorPicker.value = val;
+        updateFromHex(val);
+      } else if (/^#[0-9a-fA-F]{3}$/.test(val)) {
+        // 展开3位简写
+        const expanded = "#" + val[1] + val[1] + val[2] + val[2] + val[3] + val[3];
+        colorPicker.value = expanded;
+        updateFromHex(expanded);
+      }
+    });
+
+    // 拾色器变更
+    colorPicker.addEventListener("input", () => {
+      hexInput.value = colorPicker.value;
+      updateFromHex(colorPicker.value);
+    });
+
+    // 复制按钮
+    document.querySelectorAll("[data-copy]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.copy;
+        if (values[key]) copyToClipboard(values[key]);
+      });
+    });
+
+    // 初始化
+    updateFromHex("#6366f1");
+  </script>
+</body>
+</html>

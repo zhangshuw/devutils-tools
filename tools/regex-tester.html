@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>正则测试器 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线正则表达式测试工具，实时匹配高亮，常用正则速查，支持g/i/m/s/u标志位">
+  <link rel="canonical" href="https://devutils.cn/tools/regex-tester.html">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"正则测试器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .regex-input-group { display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap; }
+    .regex-input { flex:1; min-width:200px; font-family:monospace; font-size:1rem; padding:var(--space-sm) var(--space-md); border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text); }
+    .regex-input:focus { outline:none; border-color:var(--color-primary); }
+    .flags-group { display:flex; gap:var(--space-xs); }
+    .flags-group label { display:flex; align-items:center; gap:4px; padding:var(--space-xs) var(--space-sm); border:1px solid var(--color-border); border-radius:var(--radius-sm); cursor:pointer; font-family:monospace; font-size:0.9rem; user-select:none; }
+    .flags-group label:has(input:checked) { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+    .flags-group input { display:none; }
+    .test-textarea { width:100%; min-height:120px; font-family:monospace; font-size:0.95rem; padding:var(--space-sm) var(--space-md); border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text); resize:vertical; }
+    .test-textarea:focus { outline:none; border-color:var(--color-primary); }
+    .highlight-box { border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:var(--space-md); background:var(--color-bg); white-space:pre-wrap; word-break:break-all; line-height:1.8; min-height:60px; font-family:monospace; font-size:0.95rem; }
+    .highlight-box mark { background:rgba(255,200,0,0.4); border-bottom:2px solid var(--color-primary); padding:0 2px; border-radius:2px; }
+    .match-list { list-style:none; padding:0; margin:var(--space-md) 0 0; }
+    .match-list li { padding:var(--space-xs) var(--space-sm); border-bottom:1px solid var(--color-border); font-family:monospace; font-size:0.9rem; display:flex; gap:var(--space-md); }
+    .match-list li:last-child { border-bottom:none; }
+    .match-index { color:var(--color-text-secondary); min-width:60px; }
+    .match-value { color:var(--color-primary); font-weight:600; }
+    .match-groups { color:var(--color-text-secondary); font-size:0.85rem; }
+    .error-msg { color:var(--color-error); font-size:0.9rem; padding:var(--space-sm); background:rgba(220,38,38,0.08); border-radius:var(--radius-sm); }
+    .section-title { font-size:1rem; font-weight:600; margin:var(--space-lg) 0 var(--space-sm); color:var(--color-text); }
+    .cheatsheet-toggle { cursor:pointer; display:flex; align-items:center; gap:var(--space-xs); color:var(--color-primary); font-size:0.95rem; font-weight:500; user-select:none; }
+    .cheatsheet-toggle::before { content:"▶"; font-size:0.7rem; transition:transform 0.2s; }
+    .cheatsheet-toggle.open::before { transform:rotate(90deg); }
+    .cheatsheet-content { display:none; margin-top:var(--space-sm); }
+    .cheatsheet-content.open { display:block; }
+    .cheatsheet-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+    .cheatsheet-table th, .cheatsheet-table td { padding:var(--space-xs) var(--space-sm); border:1px solid var(--color-border); text-align:left; }
+    .cheatsheet-table th { background:var(--color-bg-alt); font-weight:600; }
+    .cheatsheet-table code { background:var(--color-bg-alt); padding:2px 6px; border-radius:3px; font-size:0.85rem; cursor:pointer; }
+    .cheatsheet-table code:hover { background:var(--color-primary); color:#fff; }
+    .result-area { margin-top:var(--space-lg); }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>正则测试器</span></nav>
+    <h1>正则测试器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">在线测试正则表达式，实时匹配高亮显示结果</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <!-- 正则表达式输入 -->
+        <div class="regex-input-group">
+          <input type="text" class="regex-input" id="regexInput" placeholder="输入正则表达式，如 \d+" spellcheck="false">
+          <div class="flags-group">
+            <label><input type="checkbox" id="flagG" value="g" checked>g</label>
+            <label><input type="checkbox" id="flagI" value="i">i</label>
+            <label><input type="checkbox" id="flagM" value="m">m</label>
+            <label><input type="checkbox" id="flagS" value="s">s</label>
+            <label><input type="checkbox" id="flagU" value="u">u</label>
+          </div>
+        </div>
+
+        <!-- 测试文本 -->
+        <div class="section-title">测试文本</div>
+        <textarea class="test-textarea" id="testText" placeholder="在此输入需要测试的文本..."></textarea>
+
+        <!-- 结果区域 -->
+        <div class="result-area" id="resultArea">
+          <div id="errorMsg" class="error-msg" style="display:none"></div>
+
+          <div class="section-title">匹配高亮</div>
+          <div class="highlight-box" id="highlightBox">
+            <span style="color:var(--color-text-secondary)">匹配结果将在此高亮显示</span>
+          </div>
+
+          <div class="section-title">匹配列表 <span id="matchCount" style="color:var(--color-text-secondary);font-weight:400"></span></div>
+          <ul class="match-list" id="matchList"></ul>
+        </div>
+
+        <!-- 常用正则速查表 -->
+        <div class="section-title" style="margin-top:var(--space-xl)">
+          <span class="cheatsheet-toggle" id="cheatsheetToggle">常用正则速查表</span>
+        </div>
+        <div class="cheatsheet-content" id="cheatsheetContent">
+          <table class="cheatsheet-table">
+            <thead><tr><th>名称</th><th>正则表达式</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td>邮箱</td><td><code data-regex="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$">^[a-zA-Z0-9._%+-]+@...$</code><td>常见邮箱格式</td></tr>
+              <tr><td>手机号</td><td><code data-regex="^1[3-9]\d{9}$">^1[3-9]\d{9}$</code><td>中国大陆手机号</td></tr>
+              <tr><td>URL</td><td><code data-regex="https?://[^\s]+">https?://[^\s]+</code><td>HTTP/HTTPS链接</td></tr>
+              <tr><td>IP地址</td><td><code data-regex="\d{1,3}(\.\d{1,3}){3}">\d{1,3}(\.\d{1,3}){3}</code><td>IPv4地址</td></tr>
+              <tr><td>身份证号</td><td><code data-regex="^\d{17}[\dXx]$">^\d{17}[\dXx]$</code><td>18位身份证</td></tr>
+              <tr><td>中文</td><td><code data-regex="[一-龥]+">[一-龥]+</code><td>中文字符</td></tr>
+              <tr><td>日期</td><td><code data-regex="\d{4}[-/]\d{2}[-/]\d{2}">\d{4}[-/]\d{2}[-/]\d{2}</code><td>YYYY-MM-DD格式</td></tr>
+              <tr><td>HTML标签</td><td><code data-regex="&lt;[^&gt;]+&gt;">&lt;[^&gt;]+&gt;</code><td>匹配HTML标签</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    const regexInput = document.getElementById("regexInput");
+    const testText = document.getElementById("testText");
+    const highlightBox = document.getElementById("highlightBox");
+    const matchList = document.getElementById("matchList");
+    const matchCount = document.getElementById("matchCount");
+    const errorMsg = document.getElementById("errorMsg");
+    const cheatsheetToggle = document.getElementById("cheatsheetToggle");
+    const cheatsheetContent = document.getElementById("cheatsheetContent");
+
+    // 标志位复选框
+    const flagCheckboxes = [
+      document.getElementById("flagG"),
+      document.getElementById("flagI"),
+      document.getElementById("flagM"),
+      document.getElementById("flagS"),
+      document.getElementById("flagU"),
+    ];
+
+    // 获取当前标志字符串
+    function getFlags() {
+      return flagCheckboxes
+        .filter(cb => cb.checked)
+        .map(cb => cb.value)
+        .join("");
+    }
+
+    // 转义HTML特殊字符
+    function escapeHtml(str) {
+      const div = document.createElement("div");
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // 执行正则测试
+    function testRegex() {
+      const pattern = regexInput.value;
+      const text = testText.value;
+      const flags = getFlags();
+
+      // 隐藏错误信息
+      errorMsg.style.display = "none";
+
+      if (!pattern) {
+        highlightBox.innerHTML = '<span style="color:var(--color-text-secondary)">匹配结果将在此高亮显示</span>';
+        matchList.innerHTML = "";
+        matchCount.textContent = "";
+        return;
+      }
+
+      if (!text) {
+        highlightBox.innerHTML = '<span style="color:var(--color-text-secondary)">请输入测试文本</span>';
+        matchList.innerHTML = "";
+        matchCount.textContent = "";
+        return;
+      }
+
+      let regex;
+      try {
+        regex = new RegExp(pattern, flags);
+      } catch (e) {
+        errorMsg.textContent = "正则表达式语法错误：" + e.message;
+        errorMsg.style.display = "block";
+        highlightBox.innerHTML = '<span style="color:var(--color-text-secondary)">正则表达式无效</span>';
+        matchList.innerHTML = "";
+        matchCount.textContent = "";
+        return;
+      }
+
+      // 收集所有匹配
+      const matches = [];
+      if (flags.includes("g")) {
+        let m;
+        while ((m = regex.exec(text)) !== null) {
+          matches.push({ index: m.index, value: m[0], groups: m.slice(1) });
+          // 防止零宽匹配死循环
+          if (m[0].length === 0) regex.lastIndex++;
+        }
+      } else {
+        const m = regex.exec(text);
+        if (m) matches.push({ index: m.index, value: m[0], groups: m.slice(1) });
+      }
+
+      // 更新匹配计数
+      matchCount.textContent = `(${matches.length} 个匹配)`;
+
+      // 高亮显示
+      if (matches.length === 0) {
+        highlightBox.innerHTML = escapeHtml(text) + '<br><span style="color:var(--color-text-secondary)">无匹配</span>';
+        matchList.innerHTML = "";
+        return;
+      }
+
+      // 构建高亮HTML：按位置逆序插入mark标签
+      const sorted = [...matches].sort((a, b) => b.index - a.index);
+      let html = escapeHtml(text);
+      // 使用字符偏移在转义后的文本上操作
+      // 重新用原始文本做高亮更可靠
+      let parts = [];
+      let lastIdx = 0;
+      const sortedAsc = [...matches].sort((a, b) => a.index - b.index);
+      for (const match of sortedAsc) {
+        parts.push(escapeHtml(text.slice(lastIdx, match.index)));
+        parts.push("<mark>" + escapeHtml(match.value) + "</mark>");
+        lastIdx = match.index + match.value.length;
+      }
+      parts.push(escapeHtml(text.slice(lastIdx)));
+      highlightBox.innerHTML = parts.join("");
+
+      // 匹配列表
+      matchList.innerHTML = matches.map((m, i) => {
+        const groupInfo = m.groups.length > 0
+          ? `<span class="match-groups">分组: ${m.groups.map((g, gi) => `$${gi + 1}="${escapeHtml(g ?? "undefined")}"`).join(", ")}</span>`
+          : "";
+        return `<li>
+          <span class="match-index">#${i + 1} [${m.index}]</span>
+          <span class="match-value">${escapeHtml(m.value)}</span>
+          ${groupInfo}
+        </li>`;
+      }).join("");
+    }
+
+    // 监听输入变化
+    regexInput.addEventListener("input", testRegex);
+    testText.addEventListener("input", testRegex);
+    flagCheckboxes.forEach(cb => cb.addEventListener("change", testRegex));
+
+    // 速查表折叠
+    cheatsheetToggle.addEventListener("click", () => {
+      cheatsheetToggle.classList.toggle("open");
+      cheatsheetContent.classList.toggle("open");
+    });
+
+    // 速查表点击填入
+    cheatsheetContent.addEventListener("click", (e) => {
+      const code = e.target.closest("code[data-regex]");
+      if (!code) return;
+      regexInput.value = code.dataset.regex;
+      testRegex();
+      showToast("已填入正则表达式");
+    });
+  </script>
+</body>
+</html>

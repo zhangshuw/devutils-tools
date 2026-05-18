@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>哈希生成器 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线生成MD5、SHA-1、SHA-256、SHA-384、SHA-512哈希值，支持文本和文件输入">
+  <link rel="canonical" href="https://devutils.cn/tools/hash-generator.html">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"哈希生成器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .text-input { width:100%; min-height:120px; font-family:monospace; font-size:0.95rem; padding:var(--space-sm) var(--space-md); border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text); resize:vertical; }
+    .text-input:focus { outline:none; border-color:var(--color-primary); }
+    .drop-zone { margin-top:var(--space-md); border:2px dashed var(--color-border); border-radius:var(--radius-md); padding:var(--space-xl); text-align:center; color:var(--color-text-secondary); cursor:pointer; transition:border-color 0.2s, background 0.2s; }
+    .drop-zone:hover, .drop-zone.dragover { border-color:var(--color-primary); background:rgba(59,130,246,0.05); }
+    .drop-zone-icon { font-size:2rem; margin-bottom:var(--space-sm); }
+    .drop-zone-hint { font-size:0.9rem; }
+    .drop-zone input[type="file"] { display:none; }
+    .hash-result-list { margin-top:var(--space-lg); }
+    .hash-item { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm) 0; border-bottom:1px solid var(--color-border); }
+    .hash-item:last-child { border-bottom:none; }
+    .hash-label { font-weight:600; font-size:0.9rem; min-width:80px; color:var(--color-text); }
+    .hash-value { flex:1; font-family:monospace; font-size:0.9rem; word-break:break-all; color:var(--color-text-secondary); padding:var(--space-xs) var(--space-sm); background:var(--color-bg-alt); border-radius:var(--radius-sm); min-height:1.6em; }
+    .copy-btn { flex-shrink:0; }
+    .file-info { margin-top:var(--space-sm); padding:var(--space-sm) var(--space-md); background:var(--color-bg-alt); border-radius:var(--radius-sm); font-size:0.9rem; color:var(--color-text-secondary); display:none; }
+    .file-info.show { display:block; }
+    .section-title { font-size:1rem; font-weight:600; margin:var(--space-lg) 0 var(--space-sm); }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>哈希生成器</span></nav>
+    <h1>哈希生成器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">在线生成 MD5 / SHA-1 / SHA-256 / SHA-384 / SHA-512 哈希值</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <!-- 文本输入 -->
+        <div class="section-title">输入文本</div>
+        <textarea class="text-input" id="textInput" placeholder="在此输入文本，将自动计算哈希值..."></textarea>
+
+        <!-- 文件拖拽区 -->
+        <div class="drop-zone" id="dropZone">
+          <div class="drop-zone-icon">📁</div>
+          <div>拖拽文件到此处，或<span style="color:var(--color-primary);cursor:pointer;text-decoration:underline">点击选择文件</span></div>
+          <div class="drop-zone-hint">支持任意文件类型</div>
+          <input type="file" id="fileInput">
+        </div>
+        <div class="file-info" id="fileInfo"></div>
+
+        <!-- 哈希结果 -->
+        <div class="hash-result-list" id="hashResults">
+          <div class="hash-item">
+            <span class="hash-label">MD5</span>
+            <span class="hash-value" id="hashMD5">-</span>
+            <button class="btn copy-btn" data-target="hashMD5">复制</button>
+          </div>
+          <div class="hash-item">
+            <span class="hash-label">SHA-1</span>
+            <span class="hash-value" id="hashSHA1">-</span>
+            <button class="btn copy-btn" data-target="hashSHA1">复制</button>
+          </div>
+          <div class="hash-item">
+            <span class="hash-label">SHA-256</span>
+            <span class="hash-value" id="hashSHA256">-</span>
+            <button class="btn copy-btn" data-target="hashSHA256">复制</button>
+          </div>
+          <div class="hash-item">
+            <span class="hash-label">SHA-384</span>
+            <span class="hash-value" id="hashSHA384">-</span>
+            <button class="btn copy-btn" data-target="hashSHA384">复制</button>
+          </div>
+          <div class="hash-item">
+            <span class="hash-label">SHA-512</span>
+            <span class="hash-value" id="hashSHA512">-</span>
+            <button class="btn copy-btn" data-target="hashSHA512">复制</button>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <!-- MD5使用spark-md5库 -->
+  <script src="https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js"></script>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    const textInput = document.getElementById("textInput");
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const fileInfo = document.getElementById("fileInfo");
+
+    const hashIds = ["hashMD5", "hashSHA1", "hashSHA256", "hashSHA384", "hashSHA512"];
+
+    // ArrayBuffer转十六进制字符串
+    function bufToHex(buf) {
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    // 使用Web Crypto API计算SHA系列哈希
+    async function computeSHA(algorithm, data) {
+      const buf = await crypto.subtle.digest(algorithm, data);
+      return bufToHex(buf);
+    }
+
+    // 计算文本的哈希值
+    async function computeTextHashes(text) {
+      if (!text) {
+        hashIds.forEach(id => document.getElementById(id).textContent = "-");
+        return;
+      }
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+
+      // MD5使用spark-md5
+      const md5 = SparkMD5.hash(text);
+      document.getElementById("hashMD5").textContent = md5;
+
+      // SHA系列
+      const shaAlgos = [
+        { id: "hashSHA1", algo: "SHA-1" },
+        { id: "hashSHA256", algo: "SHA-256" },
+        { id: "hashSHA384", algo: "SHA-384" },
+        { id: "hashSHA512", algo: "SHA-512" },
+      ];
+      for (const { id, algo } of shaAlgos) {
+        const hash = await computeSHA(algo, data);
+        document.getElementById(id).textContent = hash;
+      }
+    }
+
+    // 计算文件的哈希值
+    async function computeFileHashes(file) {
+      fileInfo.textContent = `文件: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      fileInfo.classList.add("show");
+
+      const buffer = await file.arrayBuffer();
+
+      // MD5使用spark-md5的ArrayBuffer模式
+      const md5 = SparkMD5.ArrayBuffer.hash(buffer);
+      document.getElementById("hashMD5").textContent = md5;
+
+      // SHA系列
+      const shaAlgos = [
+        { id: "hashSHA1", algo: "SHA-1" },
+        { id: "hashSHA256", algo: "SHA-256" },
+        { id: "hashSHA384", algo: "SHA-384" },
+        { id: "hashSHA512", algo: "SHA-512" },
+      ];
+      for (const { id, algo } of shaAlgos) {
+        const hash = await computeSHA(algo, buffer);
+        document.getElementById(id).textContent = hash;
+      }
+    }
+
+    // 文本输入实时计算
+    let debounceTimer = null;
+    textInput.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        fileInfo.classList.remove("show");
+        computeTextHashes(textInput.value);
+      }, 300);
+    });
+
+    // 文件拖拽
+    dropZone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => {
+      if (e.target.files[0]) {
+        textInput.value = "";
+        computeFileHashes(e.target.files[0]);
+      }
+    });
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      if (e.dataTransfer.files[0]) {
+        textInput.value = "";
+        fileInput.files = e.dataTransfer.files;
+        computeFileHashes(e.dataTransfer.files[0]);
+      }
+    });
+
+    // 复制按钮
+    document.getElementById("hashResults").addEventListener("click", (e) => {
+      const btn = e.target.closest(".copy-btn");
+      if (!btn) return;
+      const target = document.getElementById(btn.dataset.target);
+      if (target && target.textContent !== "-") {
+        copyToClipboard(target.textContent);
+      }
+    });
+  </script>
+</body>
+</html>

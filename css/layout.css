@@ -1,0 +1,76 @@
+/* 布局系统 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+}
+
+.page-layout {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .page-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tool-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-lg);
+  min-height: 400px;
+}
+
+@media (max-width: 768px) {
+  .tool-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 卡片网格 */
+.grid-2, .grid-3, .grid-4 {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+@media (max-width: 640px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* 广告位 */
+.ad-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: var(--space-lg) 0;
+  min-height: 90px;
+  background: var(--color-bg-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.ad-slot-sidebar {
+  min-width: 300px;
+  min-height: 250px;
+}
+
+.ad-slot-banner {
+  min-height: 90px;
+}
+
+.ad-slot-inline {
+  min-height: 280px;
+}
+
+.ad-placeholder {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}

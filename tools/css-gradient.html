@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS渐变生成器 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线CSS渐变生成器，支持线性/径向渐变，实时预览，一键复制CSS代码">
+  <link rel="canonical" href="https://devutils.cn/tools/css-gradient.html">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"CSS渐变生成器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .gradient-preview { width:100%; min-height:280px; border-radius:var(--radius-md); border:1px solid var(--color-border); margin-bottom:var(--space-lg); transition:background 0.2s; }
+    .controls-section { margin-bottom:var(--space-lg); }
+    .section-label { font-size:0.95rem; font-weight:600; margin-bottom:var(--space-sm); }
+    .type-toggle { display:flex; gap:var(--space-sm); margin-bottom:var(--space-md); }
+    .type-toggle button { flex:1; }
+    .type-toggle button.active { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+    .direction-section { margin-bottom:var(--space-md); }
+    .direction-presets { display:flex; gap:var(--space-xs); flex-wrap:wrap; margin-top:var(--space-sm); }
+    .direction-presets button { min-width:44px; font-size:0.85rem; padding:var(--space-xs) var(--space-sm); }
+    .direction-presets button.active { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+    .angle-slider-row { display:flex; align-items:center; gap:var(--space-md); margin-top:var(--space-sm); }
+    .angle-slider-row input[type="range"] { flex:1; }
+    .angle-value { font-family:monospace; font-size:0.95rem; min-width:40px; text-align:center; }
+    .color-stops-list { display:flex; flex-direction:column; gap:var(--space-sm); margin-bottom:var(--space-sm); }
+    .color-stop-item { display:flex; align-items:center; gap:var(--space-sm); padding:var(--space-sm); border:1px solid var(--color-border); border-radius:var(--radius-sm); }
+    .color-stop-item input[type="color"] { width:40px; height:32px; border:1px solid var(--color-border); border-radius:var(--radius-sm); cursor:pointer; padding:0; }
+    .color-stop-item input[type="number"] { width:60px; font-family:monospace; font-size:0.9rem; padding:var(--space-xs) var(--space-sm); border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text); text-align:center; }
+    .color-stop-item .color-hex { font-family:monospace; font-size:0.85rem; color:var(--color-text-secondary); min-width:70px; }
+    .remove-stop { margin-left:auto; }
+    .add-stop-btn { margin-top:var(--space-xs); }
+    .code-output { margin-top:var(--space-lg); }
+    .code-block { position:relative; background:var(--color-bg-alt); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:var(--space-md); font-family:monospace; font-size:0.9rem; word-break:break-all; line-height:1.6; }
+    .code-block .copy-btn { position:absolute; top:var(--space-sm); right:var(--space-sm); }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>CSS渐变生成器</span></nav>
+    <h1>CSS渐变生成器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">可视化创建CSS渐变，实时预览，一键复制代码</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <!-- 预览区 -->
+        <div class="gradient-preview" id="gradientPreview"></div>
+
+        <!-- 渐变类型切换 -->
+        <div class="controls-section">
+          <div class="section-label">渐变类型</div>
+          <div class="type-toggle">
+            <button class="btn active" id="btnLinear">线性渐变</button>
+            <button class="btn" id="btnRadial">径向渐变</button>
+          </div>
+        </div>
+
+        <!-- 方向/角度 -->
+        <div class="direction-section" id="directionSection">
+          <div class="section-label">渐变方向</div>
+          <div class="direction-presets" id="dirPresets">
+            <button class="btn active" data-angle="180">↓ 向下</button>
+            <button class="btn" data-angle="0">↑ 向上</button>
+            <button class="btn" data-angle="90">→ 向右</button>
+            <button class="btn" data-angle="270">← 向左</button>
+            <button class="btn" data-angle="135">↘ 右下</button>
+            <button class="btn" data-angle="45">↗ 右上</button>
+            <button class="btn" data-angle="315">↖ 左上</button>
+            <button class="btn" data-angle="225">↙ 左下</button>
+          </div>
+          <div class="angle-slider-row">
+            <label>角度</label>
+            <input type="range" id="angleSlider" min="0" max="360" value="180">
+            <span class="angle-value" id="angleDisplay">180°</span>
+          </div>
+        </div>
+
+        <!-- 色标 -->
+        <div class="controls-section">
+          <div class="section-label">色标</div>
+          <div class="color-stops-list" id="colorStopsList"></div>
+          <button class="btn add-stop-btn" id="addStopBtn">+ 添加色标</button>
+        </div>
+
+        <!-- CSS代码输出 -->
+        <div class="code-output">
+          <div class="section-label">CSS代码</div>
+          <div class="code-block">
+            <code id="cssCode"></code>
+            <button class="btn copy-btn" id="copyCodeBtn">复制</button>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    // 状态
+    let gradientType = "linear"; // linear | radial
+    let angle = 180;
+    let colorStops = [
+      { color: "#3b82f6", position: 0 },
+      { color: "#8b5cf6", position: 50 },
+      { color: "#ec4899", position: 100 },
+    ];
+
+    const preview = document.getElementById("gradientPreview");
+    const cssCodeEl = document.getElementById("cssCode");
+    const angleSlider = document.getElementById("angleSlider");
+    const angleDisplay = document.getElementById("angleDisplay");
+    const colorStopsList = document.getElementById("colorStopsList");
+    const dirPresets = document.getElementById("dirPresets");
+    const directionSection = document.getElementById("directionSection");
+
+    // 生成渐变CSS
+    function buildGradientCSS() {
+      const stops = [...colorStops]
+        .sort((a, b) => a.position - b.position)
+        .map(s => `${s.color} ${s.position}%`)
+        .join(", ");
+
+      if (gradientType === "linear") {
+        return `linear-gradient(${angle}deg, ${stops})`;
+      }
+      return `radial-gradient(circle, ${stops})`;
+    }
+
+    // 更新预览和代码
+    function updatePreview() {
+      const css = buildGradientCSS();
+      preview.style.background = css;
+      cssCodeEl.textContent = `background: ${css};`;
+    }
+
+    // 渲染色标列表
+    function renderColorStops() {
+      colorStopsList.innerHTML = colorStops.map((stop, i) => `
+        <div class="color-stop-item" data-index="${i}">
+          <input type="color" value="${stop.color}" data-field="color">
+          <span class="color-hex">${stop.color}</span>
+          <input type="number" value="${stop.position}" min="0" max="100" data-field="position">
+          <span style="font-size:0.85rem;color:var(--color-text-secondary)">%</span>
+          ${colorStops.length > 2 ? `<button class="btn remove-stop" data-remove="${i}">删除</button>` : ""}
+        </div>
+      `).join("");
+    }
+
+    // 色标列表事件代理
+    colorStopsList.addEventListener("input", (e) => {
+      const item = e.target.closest(".color-stop-item");
+      if (!item) return;
+      const idx = parseInt(item.dataset.index);
+      const field = e.target.dataset.field;
+      if (field === "color") {
+        colorStops[idx].color = e.target.value;
+        item.querySelector(".color-hex").textContent = e.target.value;
+      } else if (field === "position") {
+        colorStops[idx].position = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
+      }
+      updatePreview();
+    });
+
+    colorStopsList.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-remove]");
+      if (!btn) return;
+      colorStops.splice(parseInt(btn.dataset.remove), 1);
+      renderColorStops();
+      updatePreview();
+    });
+
+    // 添加色标
+    document.getElementById("addStopBtn").addEventListener("click", () => {
+      // 在最后两个色标之间插入
+      const last = colorStops[colorStops.length - 1];
+      const prev = colorStops[colorStops.length - 2];
+      const newPos = Math.round((last.position + prev.position) / 2);
+      // 随机颜色
+      const randColor = "#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0");
+      colorStops.push({ color: randColor, position: newPos });
+      // 重新排序
+      colorStops.sort((a, b) => a.position - b.position);
+      renderColorStops();
+      updatePreview();
+    });
+
+    // 渐变类型切换
+    document.getElementById("btnLinear").addEventListener("click", () => {
+      gradientType = "linear";
+      document.getElementById("btnLinear").classList.add("active");
+      document.getElementById("btnRadial").classList.remove("active");
+      directionSection.style.display = "";
+      updatePreview();
+    });
+
+    document.getElementById("btnRadial").addEventListener("click", () => {
+      gradientType = "radial";
+      document.getElementById("btnRadial").classList.add("active");
+      document.getElementById("btnLinear").classList.remove("active");
+      directionSection.style.display = "none";
+      updatePreview();
+    });
+
+    // 角度滑块
+    angleSlider.addEventListener("input", () => {
+      angle = parseInt(angleSlider.value);
+      angleDisplay.textContent = angle + "°";
+      // 取消预设方向的高亮
+      dirPresets.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+      dirPresets.querySelector(`[data-angle="${angle}"]`)?.classList.add("active");
+      updatePreview();
+    });
+
+    // 方向预设按钮
+    dirPresets.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-angle]");
+      if (!btn) return;
+      angle = parseInt(btn.dataset.angle);
+      angleSlider.value = angle;
+      angleDisplay.textContent = angle + "°";
+      dirPresets.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      updatePreview();
+    });
+
+    // 复制代码
+    document.getElementById("copyCodeBtn").addEventListener("click", () => {
+      copyToClipboard(cssCodeEl.textContent);
+    });
+
+    // 初始化
+    renderColorStops();
+    updatePreview();
+  </script>
+</body>
+</html>

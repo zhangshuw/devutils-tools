@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base64编解码 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线Base64编码与解码工具，支持中文等UTF-8字符。">
+  <link rel="canonical" href="https://devutils.cn/tools/base64.html">
+  <!-- OG tags -->
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Base64编解码","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>Base64编解码</span></nav>
+    <h1>Base64编解码</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">在线Base64编码与解码，完整支持中文等UTF-8字符。</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <!-- 标签页 -->
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="encode">编码</button>
+          <button class="tab-btn" data-tab="decode">解码</button>
+        </div>
+        <!-- 编码面板 -->
+        <div class="tab-panel active" id="panel-encode">
+          <div class="tool-layout">
+            <div class="panel">
+              <div class="panel-header">
+                <span class="panel-title">原始文本</span>
+              </div>
+              <textarea class="textarea" id="encodeInput" placeholder="输入要编码的文本..."></textarea>
+            </div>
+            <div class="panel">
+              <div class="panel-header">
+                <span class="panel-title">Base64结果</span>
+                <button class="btn btn-sm" id="copyEncode">复制</button>
+              </div>
+              <textarea class="textarea" id="encodeOutput" readonly placeholder="编码结果..."></textarea>
+            </div>
+          </div>
+        </div>
+        <!-- 解码面板 -->
+        <div class="tab-panel" id="panel-decode">
+          <div class="tool-layout">
+            <div class="panel">
+              <div class="panel-header">
+                <span class="panel-title">Base64文本</span>
+              </div>
+              <textarea class="textarea" id="decodeInput" placeholder="输入要解码的Base64文本..."></textarea>
+            </div>
+            <div class="panel">
+              <div class="panel-header">
+                <span class="panel-title">解码结果</span>
+                <button class="btn btn-sm" id="copyDecode">复制</button>
+              </div>
+              <textarea class="textarea" id="decodeOutput" readonly placeholder="解码结果..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    // 标签页切换
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(`panel-${btn.dataset.tab}`).classList.add("active");
+      });
+    });
+
+    // 编码：UTF-8安全
+    function base64Encode(text) {
+      return btoa(unescape(encodeURIComponent(text)));
+    }
+
+    // 解码：UTF-8安全
+    function base64Decode(text) {
+      try {
+        return decodeURIComponent(escape(atob(text)));
+      } catch {
+        // 降级：直接解码（非UTF-8场景）
+        return atob(text);
+      }
+    }
+
+    // 编码实时转换
+    const encodeInput = document.getElementById("encodeInput");
+    const encodeOutput = document.getElementById("encodeOutput");
+    encodeInput.addEventListener("input", () => {
+      try {
+        encodeOutput.value = encodeInput.value ? base64Encode(encodeInput.value) : "";
+      } catch (e) {
+        encodeOutput.value = "";
+        showToast("编码失败：" + e.message, true);
+      }
+    });
+
+    // 解码实时转换
+    const decodeInput = document.getElementById("decodeInput");
+    const decodeOutput = document.getElementById("decodeOutput");
+    decodeInput.addEventListener("input", () => {
+      try {
+        decodeOutput.value = decodeInput.value ? base64Decode(decodeInput.value.trim()) : "";
+      } catch (e) {
+        decodeOutput.value = "";
+        showToast("解码失败：输入不是有效的Base64", true);
+      }
+    });
+
+    // 复制
+    document.getElementById("copyEncode").addEventListener("click", () => {
+      if (!encodeOutput.value) { showToast("没有可复制的内容", true); return; }
+      copyToClipboard(encodeOutput.value);
+    });
+    document.getElementById("copyDecode").addEventListener("click", () => {
+      if (!decodeOutput.value) { showToast("没有可复制的内容", true); return; }
+      copyToClipboard(decodeOutput.value);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>二维码生成器 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线生成二维码，支持自定义尺寸、容错级别、前景色背景色，可下载PNG">
+  <link rel="canonical" href="https://devutils.cn/tools/qrcode-generator.html">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"二维码生成器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .qr-layout { display:flex; gap:var(--space-xl); flex-wrap:wrap; }
+    .qr-config { flex:1; min-width:280px; }
+    .qr-output { flex:1; min-width:280px; display:flex; flex-direction:column; align-items:center; }
+    .config-group { margin-bottom:var(--space-md); }
+    .config-label { display:block; font-size:0.9rem; font-weight:600; margin-bottom:var(--space-xs); }
+    .text-input { width:100%; min-height:100px; font-size:0.95rem; padding:var(--space-sm) var(--space-md); border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text); resize:vertical; }
+    .text-input:focus { outline:none; border-color:var(--color-primary); }
+    .size-group { display:flex; gap:var(--space-xs); }
+    .size-group button { flex:1; }
+    .size-group button.active { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+    .level-group { display:flex; gap:var(--space-xs); }
+    .level-group button { flex:1; }
+    .level-group button.active { background:var(--color-primary); color:#fff; border-color:var(--color-primary); }
+    .color-row { display:flex; gap:var(--space-md); align-items:center; flex-wrap:wrap; }
+    .color-picker-item { display:flex; align-items:center; gap:var(--space-xs); }
+    .color-picker-item label { font-size:0.85rem; color:var(--color-text-secondary); }
+    .color-picker-item input[type="color"] { width:36px; height:28px; border:1px solid var(--color-border); border-radius:var(--radius-sm); cursor:pointer; padding:0; }
+    .qr-canvas-wrapper { display:inline-block; padding:var(--space-lg); background:#fff; border-radius:var(--radius-md); border:1px solid var(--color-border); margin-bottom:var(--space-md); }
+    .qr-placeholder { width:256px; height:256px; display:flex; align-items:center; justify-content:center; color:var(--color-text-secondary); border:2px dashed var(--color-border); border-radius:var(--radius-md); font-size:0.9rem; }
+    .download-btn { margin-top:var(--space-md); }
+    #qrContainer img { display:block; }
+    #qrContainer canvas { display:block; }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>二维码生成器</span></nav>
+    <h1>二维码生成器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">在线生成二维码，支持自定义尺寸、容错级别和颜色</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <div class="qr-layout">
+          <!-- 配置区 -->
+          <div class="qr-config">
+            <div class="config-group">
+              <label class="config-label">输入内容</label>
+              <textarea class="text-input" id="qrText" placeholder="输入文本或URL，如 https://example.com"></textarea>
+            </div>
+
+            <div class="config-group">
+              <label class="config-label">尺寸</label>
+              <div class="size-group" id="sizeGroup">
+                <button class="btn" data-size="128">128px</button>
+                <button class="btn active" data-size="256">256px</button>
+                <button class="btn" data-size="512">512px</button>
+              </div>
+            </div>
+
+            <div class="config-group">
+              <label class="config-label">容错级别</label>
+              <div class="level-group" id="levelGroup">
+                <button class="btn" data-level="L">L 低</button>
+                <button class="btn active" data-level="M">M 中</button>
+                <button class="btn" data-level="Q">Q 较高</button>
+                <button class="btn" data-level="H">H 高</button>
+              </div>
+            </div>
+
+            <div class="config-group">
+              <label class="config-label">颜色</label>
+              <div class="color-row">
+                <div class="color-picker-item">
+                  <label>前景色</label>
+                  <input type="color" id="fgColor" value="#000000">
+                </div>
+                <div class="color-picker-item">
+                  <label>背景色</label>
+                  <input type="color" id="bgColor" value="#ffffff">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 输出区 -->
+          <div class="qr-output">
+            <div class="qr-canvas-wrapper">
+              <div id="qrContainer">
+                <div class="qr-placeholder">请输入内容生成二维码</div>
+              </div>
+            </div>
+            <button class="btn download-btn" id="downloadBtn" disabled>下载 PNG</button>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <!-- 引入qrcode.js -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <script type="module">
+    import { initLayout, showToast } from "../js/layout.js";
+    initLayout();
+
+    const qrText = document.getElementById("qrText");
+    const qrContainer = document.getElementById("qrContainer");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const fgColor = document.getElementById("fgColor");
+    const bgColor = document.getElementById("bgColor");
+
+    // 当前配置
+    let currentSize = 256;
+    let currentLevel = QRCode.CorrectLevel.M;
+    let qrInstance = null;
+
+    // 容错级别映射
+    const levelMap = {
+      L: QRCode.CorrectLevel.L,
+      M: QRCode.CorrectLevel.M,
+      Q: QRCode.CorrectLevel.Q,
+      H: QRCode.CorrectLevel.H,
+    };
+
+    // 生成二维码
+    function generateQR() {
+      const text = qrText.value.trim();
+      if (!text) {
+        qrContainer.innerHTML = '<div class="qr-placeholder">请输入内容生成二维码</div>';
+        downloadBtn.disabled = true;
+        return;
+      }
+
+      // 清除旧的
+      qrContainer.innerHTML = "";
+
+      try {
+        qrInstance = new QRCode(qrContainer, {
+          text: text,
+          width: currentSize,
+          height: currentSize,
+          colorDark: fgColor.value,
+          colorLight: bgColor.value,
+          correctLevel: currentLevel,
+        });
+        downloadBtn.disabled = false;
+      } catch (e) {
+        qrContainer.innerHTML = '<div class="qr-placeholder">内容过长或无法编码</div>';
+        downloadBtn.disabled = true;
+        showToast("生成失败：" + e.message, true);
+      }
+    }
+
+    // 防抖
+    let debounceTimer = null;
+    function debounceGenerate() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(generateQR, 300);
+    }
+
+    // 文本输入
+    qrText.addEventListener("input", debounceGenerate);
+
+    // 尺寸选择
+    document.getElementById("sizeGroup").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-size]");
+      if (!btn) return;
+      currentSize = parseInt(btn.dataset.size);
+      document.getElementById("sizeGroup").querySelectorAll("button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      generateQR();
+    });
+
+    // 容错级别选择
+    document.getElementById("levelGroup").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-level]");
+      if (!btn) return;
+      currentLevel = levelMap[btn.dataset.level];
+      document.getElementById("levelGroup").querySelectorAll("button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      generateQR();
+    });
+
+    // 颜色变化
+    fgColor.addEventListener("input", debounceGenerate);
+    bgColor.addEventListener("input", debounceGenerate);
+
+    // 下载PNG
+    downloadBtn.addEventListener("click", () => {
+      const canvas = qrContainer.querySelector("canvas");
+      if (!canvas) {
+        // qrcode.js有时用img而不是canvas
+        const img = qrContainer.querySelector("img");
+        if (img) {
+          // 用canvas从img绘制
+          const c = document.createElement("canvas");
+          c.width = currentSize;
+          c.height = currentSize;
+          const ctx = c.getContext("2d");
+          ctx.drawImage(img, 0, 0, currentSize, currentSize);
+          downloadCanvas(c);
+          return;
+        }
+        showToast("未找到二维码图像", true);
+        return;
+      }
+      downloadCanvas(canvas);
+    });
+
+    function downloadCanvas(canvas) {
+      const link = document.createElement("a");
+      link.download = `qrcode_${currentSize}px.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      showToast("已下载二维码");
+    }
+  </script>
+</body>
+</html>

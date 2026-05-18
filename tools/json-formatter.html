@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON格式化工具 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线JSON格式化、压缩、校验工具，支持语法高亮和错误定位。">
+  <link rel="canonical" href="https://devutils.cn/tools/json-formatter.html">
+  <!-- OG tags -->
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"JSON格式化工具","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>JSON格式化工具</span></nav>
+    <h1>JSON格式化工具</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">在线JSON格式化、压缩与校验，支持错误定位。</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <!-- 左右双栏 -->
+        <div class="tool-layout">
+          <!-- 左面板：输入 -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">输入</span>
+              <div class="panel-actions">
+                <button class="btn btn-sm" id="btnExample">示例</button>
+                <button class="btn btn-sm" id="btnClear">清空</button>
+              </div>
+            </div>
+            <textarea class="textarea" id="jsonInput" placeholder="在此粘贴JSON内容..."></textarea>
+            <div style="display:flex;gap:var(--space-sm);margin-top:var(--space-md)">
+              <button class="btn btn-primary" id="btnFormat">格式化</button>
+              <button class="btn" id="btnMinify">压缩</button>
+              <button class="btn" id="btnValidate">校验</button>
+            </div>
+          </div>
+          <!-- 右面板：输出 -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">输出</span>
+              <button class="btn btn-sm" id="btnCopy">复制</button>
+            </div>
+            <div class="code-block" id="jsonOutput" style="min-height:200px"></div>
+          </div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    const inputEl = document.getElementById("jsonInput");
+    const outputEl = document.getElementById("jsonOutput");
+    let outputText = ""; // 保存纯文本用于复制
+
+    // 示例数据
+    document.getElementById("btnExample").addEventListener("click", () => {
+      inputEl.value = JSON.stringify({
+        "name": "DevUtils",
+        "version": "1.0.0",
+        "description": "在线开发者工具箱",
+        "tools": ["JSON格式化", "Base64编解码", "URL编解码"],
+        "config": { "theme": "dark", "lang": "zh-CN" }
+      });
+      showToast("已加载示例数据");
+    });
+
+    // 清空
+    document.getElementById("btnClear").addEventListener("click", () => {
+      inputEl.value = "";
+      outputEl.textContent = "";
+      outputText = "";
+    });
+
+    // 简易语法高亮
+    function highlight(json) {
+      return json.replace(/("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*")\s*:/g,
+        '<span style="color:#22c55e">$1</span>:')
+        .replace(/:(\s*)("(\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*")/g,
+        ':$1<span style="color:#f59e0b">$2</span>')
+        .replace(/:(\s*)(\d+\.?\d*)/g,
+        ':$1<span style="color:#6366f1">$2</span>')
+        .replace(/:(\s*)(true|false)/g,
+        ':$1<span style="color:#6366f1">$2</span>')
+        .replace(/:(\s*)(null)/g,
+        ':$1<span style="color:#6b7080">$2</span>');
+    }
+
+    // 格式化
+    document.getElementById("btnFormat").addEventListener("click", () => {
+      try {
+        const obj = JSON.parse(inputEl.value);
+        outputText = JSON.stringify(obj, null, 2);
+        outputEl.innerHTML = highlight(outputText);
+        showToast("格式化成功");
+      } catch (e) {
+        outputText = "";
+        outputEl.innerHTML = `<span style="color:var(--color-error)">格式化失败：${e.message}</span>`;
+        showToast("JSON格式错误", true);
+      }
+    });
+
+    // 压缩
+    document.getElementById("btnMinify").addEventListener("click", () => {
+      try {
+        const obj = JSON.parse(inputEl.value);
+        outputText = JSON.stringify(obj);
+        outputEl.textContent = outputText;
+        showToast("压缩成功");
+      } catch (e) {
+        outputText = "";
+        outputEl.innerHTML = `<span style="color:var(--color-error)">压缩失败：${e.message}</span>`;
+        showToast("JSON格式错误", true);
+      }
+    });
+
+    // 校验
+    document.getElementById("btnValidate").addEventListener("click", () => {
+      try {
+        JSON.parse(inputEl.value);
+        outputEl.innerHTML = '<span style="color:var(--color-success)">✓ JSON格式正确</span>';
+        outputText = "";
+        showToast("校验通过");
+      } catch (e) {
+        // 提取错误位置
+        const posMatch = e.message.match(/position\s+(\d+)/i);
+        let detail = e.message;
+        if (posMatch) {
+          const pos = parseInt(posMatch[1]);
+          const text = inputEl.value;
+          const line = text.substring(0, pos).split("\n").length;
+          detail += `（第${line}行附近）`;
+        }
+        outputEl.innerHTML = `<span style="color:var(--color-error)">✗ ${detail}</span>`;
+        outputText = "";
+        showToast("校验未通过", true);
+      }
+    });
+
+    // 复制
+    document.getElementById("btnCopy").addEventListener("click", () => {
+      if (!outputText) {
+        showToast("没有可复制的内容", true);
+        return;
+      }
+      copyToClipboard(outputText);
+    });
+  </script>
+</body>
+</html>

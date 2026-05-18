@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UUID生成器 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线UUID/GUID生成器，支持批量生成、大小写切换和花括号格式。">
+  <link rel="canonical" href="https://devutils.cn/tools/uuid-generator.html">
+  <!-- OG tags -->
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"UUID生成器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>UUID生成器</span></nav>
+    <h1>UUID生成器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">批量生成UUID/GUID，支持大小写切换和花括号格式。</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <div class="panel">
+          <!-- 数量选择 -->
+          <div style="margin-bottom:var(--space-md)">
+            <span style="font-size:var(--text-sm);color:var(--color-text-secondary);display:block;margin-bottom:var(--space-sm)">生成数量</span>
+            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap">
+              <button class="btn btn-sm count-btn" data-count="1">1</button>
+              <button class="btn btn-sm count-btn active" data-count="5">5</button>
+              <button class="btn btn-sm count-btn" data-count="10">10</button>
+              <button class="btn btn-sm count-btn" data-count="50">50</button>
+              <button class="btn btn-sm count-btn" data-count="100">100</button>
+            </div>
+          </div>
+          <!-- 选项 -->
+          <div style="display:flex;gap:var(--space-lg);margin-bottom:var(--space-md);flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:var(--space-sm);font-size:var(--text-sm);color:var(--color-text-secondary);cursor:pointer">
+              <input type="checkbox" id="upperCase"> 大写
+            </label>
+            <label style="display:flex;align-items:center;gap:var(--space-sm);font-size:var(--text-sm);color:var(--color-text-secondary);cursor:pointer">
+              <input type="checkbox" id="braces"> 花括号 {uuid}
+            </label>
+          </div>
+          <!-- 生成按钮 -->
+          <button class="btn btn-primary" id="btnGenerate" style="margin-bottom:var(--space-lg)">生成 UUID</button>
+          <!-- 结果区 -->
+          <div class="panel-header" style="margin-bottom:var(--space-sm)">
+            <span class="panel-title">结果</span>
+            <button class="btn btn-sm" id="btnCopyAll">复制全部</button>
+          </div>
+          <div class="code-block" id="uuidOutput" style="min-height:200px"></div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    let count = 5; // 默认数量
+
+    // 数量按钮样式
+    const countBtns = document.querySelectorAll(".count-btn");
+    function setActiveCount(btn) {
+      countBtns.forEach(b => {
+        b.classList.remove("btn-primary");
+        b.classList.add("btn-sm");
+      });
+      btn.classList.add("btn-primary");
+      btn.classList.remove("btn-sm");
+      count = parseInt(btn.dataset.count);
+    }
+    // 初始化默认选中
+    countBtns.forEach(btn => {
+      if (parseInt(btn.dataset.count) === 5) btn.classList.add("btn-primary");
+      btn.addEventListener("click", () => setActiveCount(btn));
+    });
+
+    // 生成UUID
+    function generateUUID() {
+      // 优先使用 crypto.randomUUID()
+      if (crypto && typeof crypto.randomUUID === "function") {
+        return crypto.randomUUID();
+      }
+      // 降级方案：使用 crypto.getRandomValues
+      return (() => {
+        const bytes = new Uint8Array(16);
+        crypto.getRandomValues(bytes);
+        // 设置版本号（4）和变体位
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
+        const hex = Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+        return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+      })();
+    }
+
+    // 格式化UUID
+    function formatUUID(uuid) {
+      const upper = document.getElementById("upperCase").checked;
+      const braces = document.getElementById("braces").checked;
+      let result = upper ? uuid.toUpperCase() : uuid;
+      if (braces) result = `{${result}}`;
+      return result;
+    }
+
+    // 存储原始结果用于复制
+    let uuids = [];
+
+    // 生成
+    document.getElementById("btnGenerate").addEventListener("click", () => {
+      uuids = [];
+      for (let i = 0; i < count; i++) {
+        uuids.push(formatUUID(generateUUID()));
+      }
+      const output = document.getElementById("uuidOutput");
+      output.innerHTML = uuids.map(u =>
+        `<div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0"><span style="font-family:monospace">${u}</span><button class="btn btn-sm btn-ghost" onclick="this.dataset.copy='${u}'" data-uuid="${u}" style="margin-left:8px">复制</button></div>`
+      ).join("");
+
+      // 绑定单行复制
+      output.querySelectorAll("[data-uuid]").forEach(btn => {
+        btn.addEventListener("click", () => copyToClipboard(btn.dataset.uuid));
+      });
+    });
+
+    // 选项变更时重新格式化已有结果
+    document.getElementById("upperCase").addEventListener("change", reformat);
+    document.getElementById("braces").addEventListener("change", reformat);
+
+    function reformat() {
+      if (uuids.length === 0) return;
+      // 从格式化结果还原原始小写无括号uuid
+      uuids = uuids.map(u => {
+        let raw = u.replace(/^\{|\}$/g, "").toLowerCase();
+        return formatUUID(raw);
+      });
+      const output = document.getElementById("uuidOutput");
+      output.innerHTML = uuids.map(u =>
+        `<div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0"><span style="font-family:monospace">${u}</span><button class="btn btn-sm btn-ghost" data-uuid="${u}" style="margin-left:8px">复制</button></div>`
+      ).join("");
+      output.querySelectorAll("[data-uuid]").forEach(btn => {
+        btn.addEventListener("click", () => copyToClipboard(btn.dataset.uuid));
+      });
+    }
+
+    // 复制全部
+    document.getElementById("btnCopyAll").addEventListener("click", () => {
+      if (uuids.length === 0) { showToast("没有可复制的内容", true); return; }
+      copyToClipboard(uuids.join("\n"));
+    });
+  </script>
+</body>
+</html>

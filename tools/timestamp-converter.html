@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>时间戳转换 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线时间戳转换工具，实时显示当前时间戳，支持时间戳与日期互转、多时区显示">
+  <link rel="canonical" href="https://devutils.cn/tools/timestamp-converter.html">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"时间戳转换","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .current-timestamp { display:flex; align-items:baseline; gap:var(--space-md); padding:var(--space-lg); background:var(--color-bg-alt); border-radius:var(--radius-md); margin-bottom:var(--space-lg); flex-wrap:wrap; }
+    .current-timestamp-label { font-size:0.9rem; color:var(--color-text-secondary); }
+    .current-timestamp-value { font-family:monospace; font-size:1.5rem; font-weight:700; color:var(--color-primary); }
+    .current-timestamp-unit { font-size:0.85rem; color:var(--color-text-secondary); }
+    .converter-section { padding:var(--space-lg); border:1px solid var(--color-border); border-radius:var(--radius-md); margin-bottom:var(--space-lg); }
+    .section-label { font-size:1rem; font-weight:600; margin-bottom:var(--space-md); }
+    .input-row { display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap; }
+    .input-row input[type="number"], .input-row input[type="datetime-local"] { flex:1; min-width:200px; font-family:monospace; font-size:1rem; padding:var(--space-sm) var(--space-md); border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text); }
+    .input-row input:focus { outline:none; border-color:var(--color-primary); }
+    .convert-result { margin-top:var(--space-md); padding:var(--space-md); background:var(--color-bg-alt); border-radius:var(--radius-sm); }
+    .convert-result-row { display:flex; justify-content:space-between; padding:var(--space-xs) 0; font-size:0.95rem; }
+    .convert-result-label { color:var(--color-text-secondary); }
+    .convert-result-value { font-family:monospace; font-weight:500; }
+    .timezone-section { margin-top:var(--space-lg); }
+    .timezone-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:var(--space-sm); }
+    .timezone-card { padding:var(--space-md); border:1px solid var(--color-border); border-radius:var(--radius-sm); }
+    .timezone-card-name { font-size:0.85rem; color:var(--color-text-secondary); margin-bottom:var(--space-xs); }
+    .timezone-card-time { font-family:monospace; font-size:1.1rem; font-weight:600; }
+    .timezone-card-date { font-family:monospace; font-size:0.9rem; color:var(--color-text-secondary); }
+    .auto-detect-hint { font-size:0.8rem; color:var(--color-text-secondary); margin-top:var(--space-xs); }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <div id="adHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>时间戳转换</span></nav>
+    <h1>时间戳转换</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">时间戳与日期互相转换，实时显示，支持多时区</p>
+    <div class="page-layout">
+      <div class="tool-content">
+        <!-- 当前时间戳 -->
+        <div class="current-timestamp">
+          <span class="current-timestamp-label">当前时间戳</span>
+          <span class="current-timestamp-value" id="currentTs">-</span>
+          <span class="current-timestamp-unit">秒</span>
+        </div>
+
+        <!-- 时间戳 → 日期 -->
+        <div class="converter-section">
+          <div class="section-label">时间戳 → 日期</div>
+          <div class="input-row">
+            <input type="number" id="tsInput" placeholder="输入时间戳（秒或毫秒）">
+            <button class="btn" id="tsConvertBtn">转换</button>
+          </div>
+          <div class="auto-detect-hint">自动识别秒级（10位）或毫秒级（13位）时间戳</div>
+          <div class="convert-result" id="tsResult" style="display:none">
+            <div class="convert-result-row"><span class="convert-result-label">本地时间</span><span class="convert-result-value" id="tsLocal"></span></div>
+            <div class="convert-result-row"><span class="convert-result-label">UTC时间</span><span class="convert-result-value" id="tsUTC"></span></div>
+            <div class="convert-result-row"><span class="convert-result-label">ISO 8601</span><span class="convert-result-value" id="tsISO"></span></div>
+            <div class="convert-result-row"><span class="convert-result-label">相对时间</span><span class="convert-result-value" id="tsRelative"></span></div>
+          </div>
+        </div>
+
+        <!-- 日期 → 时间戳 -->
+        <div class="converter-section">
+          <div class="section-label">日期 → 时间戳</div>
+          <div class="input-row">
+            <input type="datetime-local" id="dateInput">
+            <button class="btn" id="dateConvertBtn">转换</button>
+          </div>
+          <div class="convert-result" id="dateResult" style="display:none">
+            <div class="convert-result-row"><span class="convert-result-label">秒级时间戳</span><span class="convert-result-value" id="dateTsSec"></span></div>
+            <div class="convert-result-row"><span class="convert-result-label">毫秒级时间戳</span><span class="convert-result-value" id="dateTsMs"></span></div>
+            <div class="convert-result-row"><span class="convert-result-label">UTC时间</span><span class="convert-result-value" id="dateUTC"></span></div>
+          </div>
+        </div>
+
+        <!-- 多时区显示 -->
+        <div class="timezone-section">
+          <div class="section-label">多时区显示</div>
+          <p style="font-size:0.9rem;color:var(--color-text-secondary);margin-bottom:var(--space-md)">基于当前时间或您输入的时间戳</p>
+          <div class="timezone-grid" id="timezoneGrid"></div>
+        </div>
+      </div>
+      <aside>
+        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
+      </aside>
+    </div>
+  </main>
+  <div id="adFooter"></div>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    // 常用时区列表
+    const timezones = [
+      { name: "北京 (CST)", tz: "Asia/Shanghai" },
+      { name: "东京 (JST)", tz: "Asia/Tokyo" },
+      { name: "首尔 (KST)", tz: "Asia/Seoul" },
+      { name: "新加坡 (SGT)", tz: "Asia/Singapore" },
+      { name: "伦敦 (GMT)", tz: "Europe/London" },
+      { name: "巴黎 (CET)", tz: "Europe/Paris" },
+      { name: "莫斯科 (MSK)", tz: "Europe/Moscow" },
+      { name: "纽约 (EST)", tz: "America/New_York" },
+      { name: "洛杉矶 (PST)", tz: "America/Los_Angeles" },
+      { name: "悉尼 (AEST)", tz: "Australia/Sydney" },
+    ];
+
+    const currentTsEl = document.getElementById("currentTs");
+    const tsInput = document.getElementById("tsInput");
+    const tsResult = document.getElementById("tsResult");
+    const dateInput = document.getElementById("dateInput");
+    const dateResult = document.getElementById("dateResult");
+    const timezoneGrid = document.getElementById("timezoneGrid");
+
+    // 当前参考时间（用于时区显示），默认当前时间
+    let refDate = new Date();
+
+    // 格式化日期
+    function formatDate(d) {
+      const pad = n => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
+    // 格式化为ISO
+    function toISO(d) {
+      return d.toISOString();
+    }
+
+    // 计算相对时间
+    function relativeTime(d) {
+      const now = Date.now();
+      const diff = now - d.getTime();
+      const absDiff = Math.abs(diff);
+      const suffix = diff > 0 ? "前" : "后";
+
+      if (absDiff < 60000) return `${Math.floor(absDiff / 1000)} 秒${suffix}`;
+      if (absDiff < 3600000) return `${Math.floor(absDiff / 60000)} 分钟${suffix}`;
+      if (absDiff < 86400000) return `${Math.floor(absDiff / 3600000)} 小时${suffix}`;
+      return `${Math.floor(absDiff / 86400000)} 天${suffix}`;
+    }
+
+    // 实时更新当前时间戳
+    function updateCurrentTs() {
+      currentTsEl.textContent = Math.floor(Date.now() / 1000);
+      // 同时更新时区显示（仅在未手动输入时）
+      if (!tsInput.value) {
+        refDate = new Date();
+        updateTimezones();
+      }
+    }
+    setInterval(updateCurrentTs, 1000);
+    updateCurrentTs();
+
+    // 初始化日期输入为当前时间
+    const now = new Date();
+    const pad = n => String(n).padStart(2, "0");
+    dateInput.value = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+    // 时间戳→日期转换
+    function convertTimestamp() {
+      const raw = tsInput.value.trim();
+      if (!raw) {
+        tsResult.style.display = "none";
+        refDate = new Date();
+        updateTimezones();
+        return;
+      }
+
+      let ts = Number(raw);
+      if (isNaN(ts)) {
+        showToast("请输入有效的数字时间戳", true);
+        return;
+      }
+
+      // 自动识别秒/毫秒：10位以下视为秒，13位以上视为毫秒
+      let isSeconds = false;
+      if (String(Math.abs(ts)).length <= 10) {
+        ts = ts * 1000;
+        isSeconds = true;
+      }
+
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) {
+        showToast("无效的时间戳", true);
+        return;
+      }
+
+      refDate = d;
+      document.getElementById("tsLocal").textContent = formatDate(d);
+      document.getElementById("tsUTC").textContent = formatDate(new Date(d.toUTCString()));
+      document.getElementById("tsISO").textContent = toISO(d);
+      document.getElementById("tsRelative").textContent = relativeTime(d);
+      tsResult.style.display = "block";
+      updateTimezones();
+    }
+
+    // 日期→时间戳转换
+    function convertDate() {
+      const val = dateInput.value;
+      if (!val) return;
+
+      const d = new Date(val);
+      if (isNaN(d.getTime())) {
+        showToast("无效的日期", true);
+        return;
+      }
+
+      refDate = d;
+      document.getElementById("dateTsSec").textContent = Math.floor(d.getTime() / 1000);
+      document.getElementById("dateTsMs").textContent = d.getTime();
+      document.getElementById("dateUTC").textContent = formatDate(new Date(d.toUTCString()));
+      dateResult.style.display = "block";
+      updateTimezones();
+    }
+
+    // 更新时区显示
+    function updateTimezones() {
+      timezoneGrid.innerHTML = timezones.map(({ name, tz }) => {
+        try {
+          const formatter = new Intl.DateTimeFormat("zh-CN", {
+            timeZone: tz,
+            year: "numeric", month: "2-digit", day: "2-digit",
+            hour: "2-digit", minute: "2-digit", second: "2-digit",
+            hour12: false,
+          });
+          const parts = formatter.formatToParts(refDate);
+          const get = type => parts.find(p => p.type === type)?.value ?? "";
+          const timeStr = `${get("hour")}:${get("minute")}:${get("second")}`;
+          const dateStr = `${get("year")}-${get("month")}-${get("day")}`;
+          return `
+            <div class="timezone-card">
+              <div class="timezone-card-name">${name}</div>
+              <div class="timezone-card-time">${timeStr}</div>
+              <div class="timezone-card-date">${dateStr}</div>
+            </div>`;
+        } catch {
+          return `<div class="timezone-card"><div class="timezone-card-name">${name}</div><div class="timezone-card-time">不支持</div></div>`;
+        }
+      }).join("");
+    }
+
+    // 绑定事件
+    document.getElementById("tsConvertBtn").addEventListener("click", convertTimestamp);
+    tsInput.addEventListener("keydown", (e) => { if (e.key === "Enter") convertTimestamp(); });
+
+    document.getElementById("dateConvertBtn").addEventListener("click", convertDate);
+    dateInput.addEventListener("keydown", (e) => { if (e.key === "Enter") convertDate(); });
+
+    // 初始化时区显示
+    updateTimezones();
+  </script>
+</body>
+</html>
