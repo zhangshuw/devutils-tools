@@ -48,13 +48,11 @@
 </head>
 <body>
   <div id="siteHeader"></div>
-  <div id="adHeader"></div>
   <main class="container">
     <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>正则测试器</span></nav>
     <h1>正则测试器</h1>
     <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">在线测试正则表达式，实时匹配高亮显示结果</p>
-    <div class="page-layout">
-      <div class="tool-content">
+    <div>
         <!-- 正则表达式输入 -->
         <div class="regex-input-group">
           <input type="text" class="regex-input" id="regexInput" placeholder="输入正则表达式，如 \d+" spellcheck="false">
@@ -103,13 +101,8 @@
             </tbody>
           </table>
         </div>
-      </div>
-      <aside>
-        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
-      </aside>
     </div>
   </main>
-  <div id="adFooter"></div>
   <div id="siteFooter"></div>
   <script type="module">
     import { initLayout, showToast, copyToClipboard } from "../js/layout.js";

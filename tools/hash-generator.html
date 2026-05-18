@@ -34,13 +34,11 @@
 </head>
 <body>
   <div id="siteHeader"></div>
-  <div id="adHeader"></div>
   <main class="container">
     <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>哈希生成器</span></nav>
     <h1>哈希生成器</h1>
     <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">在线生成 MD5 / SHA-1 / SHA-256 / SHA-384 / SHA-512 哈希值</p>
-    <div class="page-layout">
-      <div class="tool-content">
+    <div>
         <!-- 文本输入 -->
         <div class="section-title">输入文本</div>
         <textarea class="text-input" id="textInput" placeholder="在此输入文本，将自动计算哈希值..."></textarea>
@@ -82,13 +80,8 @@
             <button class="btn copy-btn" data-target="hashSHA512">复制</button>
           </div>
         </div>
-      </div>
-      <aside>
-        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
-      </aside>
     </div>
   </main>
-  <div id="adFooter"></div>
   <div id="siteFooter"></div>
   <!-- MD5使用spark-md5库 -->
   <script src="https://cdn.jsdelivr.net/npm/spark-md5@3.0.2/spark-md5.min.js"></script>

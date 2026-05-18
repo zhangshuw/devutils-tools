@@ -17,13 +17,11 @@
 </head>
 <body>
   <div id="siteHeader"></div>
-  <div id="adHeader"></div>
   <main class="container">
     <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>JSON格式化工具</span></nav>
     <h1>JSON格式化工具</h1>
     <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">在线JSON格式化、压缩与校验，支持错误定位。</p>
-    <div class="page-layout">
-      <div class="tool-content">
+    <div>
         <!-- 左右双栏 -->
         <div class="tool-layout">
           <!-- 左面板：输入 -->
@@ -51,13 +49,8 @@
             <div class="code-block" id="jsonOutput" style="min-height:200px"></div>
           </div>
         </div>
-      </div>
-      <aside>
-        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
-      </aside>
     </div>
   </main>
-  <div id="adFooter"></div>
   <div id="siteFooter"></div>
   <script type="module">
     import { initLayout, showToast, copyToClipboard } from "../js/layout.js";

@@ -34,16 +34,6 @@ export function renderFooter() {
   `;
 }
 
-export function renderAdSlot(id, format = "horizontal") {
-  const cls = format === "sidebar" ? "ad-slot-sidebar" :
-              format === "inline" ? "ad-slot-inline" : "ad-slot-banner";
-  return `
-    <div class="ad-slot ${cls}" id="${id}" data-ad-slot="" data-ad-format="${format}">
-      <span class="ad-placeholder">广告位</span>
-    </div>
-  `;
-}
-
 export function renderBreadcrumb(current) {
   return `
     <nav class="breadcrumb" aria-label="面包屑">

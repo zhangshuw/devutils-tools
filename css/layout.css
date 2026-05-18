@@ -45,32 +45,4 @@
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
 }
 
-/* 广告位 */
-.ad-slot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: var(--space-lg) 0;
-  min-height: 90px;
-  background: var(--color-bg-surface);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-md);
-}
-
-.ad-slot-sidebar {
-  min-width: 300px;
-  min-height: 250px;
-}
-
-.ad-slot-banner {
-  min-height: 90px;
-}
-
-.ad-slot-inline {
-  min-height: 280px;
-}
-
-.ad-placeholder {
-  color: var(--color-text-muted);
-  font-size: var(--text-sm);
-}
+/* 广告位 - 有流量时再启用 */

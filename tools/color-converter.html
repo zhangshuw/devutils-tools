@@ -17,13 +17,11 @@
 </head>
 <body>
   <div id="siteHeader"></div>
-  <div id="adHeader"></div>
   <main class="container">
     <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>颜色转换器</span></nav>
     <h1>颜色转换器</h1>
     <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">HEX / RGB / HSL / CMYK 颜色格式互转，实时预览。</p>
-    <div class="page-layout">
-      <div class="tool-content">
+    <div>
         <div class="panel">
           <!-- 输入区 -->
           <div class="panel-header">
@@ -67,13 +65,8 @@
             </div>
           </div>
         </div>
-      </div>
-      <aside>
-        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
-      </aside>
     </div>
   </main>
-  <div id="adFooter"></div>
   <div id="siteFooter"></div>
   <script type="module">
     import { initLayout, showToast, copyToClipboard } from "../js/layout.js";

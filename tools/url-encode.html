@@ -17,13 +17,11 @@
 </head>
 <body>
   <div id="siteHeader"></div>
-  <div id="adHeader"></div>
   <main class="container">
     <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>URL编解码</span></nav>
     <h1>URL编解码</h1>
     <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">在线URL编码与解码，支持组件编码（encodeURIComponent）和完整URL编码（encodeURI）。</p>
-    <div class="page-layout">
-      <div class="tool-content">
+    <div>
         <!-- 标签页 -->
         <div class="tabs">
           <button class="tab-btn active" data-tab="component">编码组件</button>
@@ -78,13 +76,8 @@
             </div>
           </div>
         </div>
-      </div>
-      <aside>
-        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
-      </aside>
     </div>
   </main>
-  <div id="adFooter"></div>
   <div id="siteFooter"></div>
   <script type="module">
     import { initLayout, showToast, copyToClipboard } from "../js/layout.js";

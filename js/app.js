@@ -1,5 +1,5 @@
 /* 首页逻辑 */
-import { renderHeader, renderFooter, renderAdSlot } from "./layout.js";
+import { renderHeader, renderFooter } from "./layout.js";
 
 const TOOLS = [
   { id: "json-formatter", name: "JSON 格式化", desc: "格式化、压缩、校验 JSON 数据", icon: "{}", cat: "encoding" },
@@ -36,9 +36,6 @@ function init() {
   // 布局
   document.getElementById("siteHeader").innerHTML = renderHeader();
   document.getElementById("siteFooter").innerHTML = renderFooter();
-  document.getElementById("adHeader").innerHTML = renderAdSlot("ad-header-top", "horizontal");
-  document.getElementById("adFooter").innerHTML = renderAdSlot("ad-footer-bottom", "horizontal");
-  document.getElementById("adHomeMid").innerHTML = renderAdSlot("ad-home-middle", "horizontal");
 
   // 渲染卡片
   renderCards();

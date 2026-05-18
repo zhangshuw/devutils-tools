@@ -31,13 +31,11 @@
 </head>
 <body>
   <div id="siteHeader"></div>
-  <div id="adHeader"></div>
   <main class="container">
     <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>文本差异对比</span></nav>
     <h1>文本差异对比</h1>
     <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">逐行比较两段文本的不同之处，高亮显示增删改</p>
-    <div class="page-layout">
-      <div class="tool-content">
+    <div>
         <div class="diff-container">
           <div class="diff-panel">
             <div class="panel-header"><span class="panel-title">原始文本</span></div>
@@ -59,13 +57,8 @@
           <span class="stat-same" id="statSame"></span>
         </div>
         <div class="diff-output" id="diffOutput" style="display:none"></div>
-      </div>
-      <aside>
-        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
-      </aside>
     </div>
   </main>
-  <div id="adFooter"></div>
   <div id="siteFooter"></div>
   <script type="module">
     import { initLayout, showToast, copyToClipboard } from "../js/layout.js";

@@ -38,13 +38,11 @@
 </head>
 <body>
   <div id="siteHeader"></div>
-  <div id="adHeader"></div>
   <main class="container">
     <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>时间戳转换</span></nav>
     <h1>时间戳转换</h1>
     <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">时间戳与日期互相转换，实时显示，支持多时区</p>
-    <div class="page-layout">
-      <div class="tool-content">
+    <div>
         <!-- 当前时间戳 -->
         <div class="current-timestamp">
           <span class="current-timestamp-label">当前时间戳</span>
@@ -88,13 +86,8 @@
           <p style="font-size:0.9rem;color:var(--color-text-secondary);margin-bottom:var(--space-md)">基于当前时间或您输入的时间戳</p>
           <div class="timezone-grid" id="timezoneGrid"></div>
         </div>
-      </div>
-      <aside>
-        <div class="ad-slot ad-slot-sidebar" id="ad-sidebar"><span class="ad-placeholder">广告位</span></div>
-      </aside>
     </div>
   </main>
-  <div id="adFooter"></div>
   <div id="siteFooter"></div>
   <script type="module">
     import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
