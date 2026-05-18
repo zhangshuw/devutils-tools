@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JSON格式化教程 - 在线JSON验证与美化方法 | DevUtils</title>
+  <meta name="description" content="JSON格式化完整教程：什么是JSON、如何验证JSON、JSON美化技巧、常见JSON错误及修复方法。附在线JSON格式化工具。">
+  <link rel="canonical" href="https://zhangshuw.github.io/devutils-tools/json-tutorial.html">
+  <meta property="og:title" content="JSON格式化教程 - 在线验证与美化方法">
+  <meta property="og:description" content="JSON格式化完整教程：验证、美化、常见错误修复方法">
+  <meta property="og:type" content="article">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Article","headline":"JSON格式化教程","description":"JSON格式化完整教程","author":{"@type":"Organization","name":"DevUtils"}}
+  </script>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <style>
+    .article{max-width:760px;margin:0 auto;padding:20px}
+    .article h2{color:var(--color-accent);margin:32px 0 16px;font-size:var(--text-xl)}
+    .article h3{color:var(--color-text-primary);margin:24px 0 12px;font-size:var(--text-lg)}
+    .article p{color:var(--color-text-secondary);line-height:1.8;margin-bottom:16px}
+    .article ul,.article ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:16px;line-height:1.8}
+    .article li{margin:4px 0}
+    .article code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
+    .article pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
+    .article .tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
+    .article .tip p{color:var(--color-text-primary);margin:0}
+    .cta-box{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+    .cta-box h3{color:var(--color-accent);margin-bottom:8px}
+    .cta-box p{color:var(--color-text-secondary);margin-bottom:16px}
+    .toc{background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(---radius-md);padding:16px 24px;margin:20px 0}
+    .toc h3{margin-bottom:8px}
+    .toc ul{list-style:none;padding-left:0}
+    .toc li{padding:4px 0}
+    .toc a{color:var(--color-accent);font-size:var(--text-sm)}
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <div class="article">
+      <nav class="breadcrumb"><a href="./">首页</a><span class="breadcrumb-sep">/</span><a href="tools/json-formatter.html">JSON格式化</a><span class="breadcrumb-sep">/</span><span>教程</span></nav>
+
+      <h1>JSON格式化完整教程：验证、美化与常见错误</h1>
+      <p style="color:var(--color-text-muted);font-size:var(--text-sm)">最后更新：2026年5月 · 阅读时间：8分钟</p>
+
+      <div class="toc">
+        <h3>目录</h3>
+        <ul>
+          <li><a href="#what">什么是JSON？</a></li>
+          <li><a href="#why">为什么需要格式化？</a></li>
+          <li><a href="#how">JSON格式化方法</a></li>
+          <li><a href="#errors">常见JSON错误</a></li>
+          <li><a href="#tools">在线工具推荐</a></li>
+          <li><a href="#faq">常见问题</a></li>
+        </ul>
+      </div>
+
+      <div class="cta-box">
+        <h3>在线JSON格式化工具</h3>
+        <p>直接使用我们的免费工具，一键格式化、压缩、验证JSON</p>
+        <a href="tools/json-formatter.html" class="btn btn-primary" style="text-decoration:none">打开工具</a>
+      </div>
+
+      <h2 id="what">什么是JSON？</h2>
+      <p>JSON（JavaScript Object Notation）是一种轻量级的数据交换格式。它基于JavaScript语法，但独立于编程语言，几乎所有现代语言都支持JSON。</p>
+      <p>JSON有两种结构：</p>
+      <ul>
+        <li><strong>对象</strong>：键值对集合，用 <code>{}</code> 包裹，如 <code>{"name": "张三", "age": 25}</code></li>
+        <li><strong>数组</strong>：有序值列表，用 <code>[]</code> 包裹，如 <code>[1, 2, 3]</code></li>
+      </ul>
+
+      <h2 id="why">为什么需要格式化？</h2>
+      <p>从服务器返回的JSON通常是压缩的（一行），难以阅读：</p>
+      <pre>{"name":"张三","age":25,"address":{"city":"北京","zip":"100000"},"hobbies":["编程","阅读"]}</pre>
+      <p>格式化后清晰易读：</p>
+      <pre>{
+  "name": "张三",
+  "age": 25,
+  "address": {
+    "city": "北京",
+    "zip": "100000"
+  },
+  "hobbies": ["编程", "阅读"]
+}</pre>
+
+      <h2 id="how">JSON格式化方法</h2>
+
+      <h3>1. 在线工具（最快）</h3>
+      <p>使用我们的<a href="tools/json-formatter.html">在线JSON格式化工具</a>，粘贴JSON即可一键格式化。</p>
+
+      <h3>2. 命令行</h3>
+      <pre># 使用 Python
+echo '{"name":"test"}' | python -m json.tool
+
+# 使用 jq
+echo '{"name":"test"}' | jq .
+
+# 使用 Node.js
+echo '{"name":"test"}' | node -e "console.log(JSON.stringify(JSON.parse(require('fs').readFileSync(0)),null,2))"</pre>
+
+      <h3>3. 编辑器插件</h3>
+      <ul>
+        <li><strong>VS Code</strong>：内置JSON格式化（Shift+Alt+F）</li>
+        <li><strong>Sublime Text</strong>：安装"Pretty JSON"插件</li>
+        <li><strong>Vim</strong>：使用 <code>:%!python -m json.tool</code></li>
+      </ul>
+
+      <h2 id="errors">常见JSON错误及修复</h2>
+
+      <h3>1. 尾部逗号</h3>
+      <pre>// ❌ 错误：最后一个元素后有逗号
+{"name": "张三",}
+
+// ✅ 正确：去掉尾部逗号
+{"name": "张三"}</pre>
+
+      <h3>2. 单引号字符串</h3>
+      <pre>// ❌ 错误：JSON只用双引号
+{'name': '张三'}
+
+// ✅ 正确：使用双引号
+{"name": "张三"}</pre>
+
+      <h3>3. 注释</h3>
+      <pre>// ❌ 错误：JSON不支持注释
+{"name": "张三" /* 用户名 */}
+
+// ✅ 正确：移除注释
+{"name": "张三"}</pre>
+
+      <h3>4. 未引用的键</h3>
+      <pre>// ❌ 错误：键必须用双引号
+{name: "张三"}
+
+// ✅ 正确：键加双引号
+{"name": "张三"}</pre>
+
+      <div class="tip">
+        <p><strong>提示：</strong>使用我们的<a href="tools/json-formatter.html">JSON格式化工具</a>可以自动检测这些错误并定位到具体行号。</p>
+      </div>
+
+      <h2 id="tools">相关工具</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0">
+        <a href="tools/json-formatter.html" style="background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:8px;padding:16px;text-decoration:none;color:var(--color-text-primary)">
+          <div style="font-weight:600;margin-bottom:4px">JSON 格式化</div>
+          <div style="color:var(--color-text-secondary);font-size:var(--text-sm)">格式化、压缩、校验JSON</div>
+        </a>
+        <a href="tools/base64.html" style="background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:8px;padding:16px;text-decoration:none;color:var(--color-text-primary)">
+          <div style="font-weight:600;margin-bottom:4px">Base64 编解码</div>
+          <div style="color:var(--color-text-secondary);font-size:var(--text-sm)">文本与Base64互转</div>
+        </a>
+        <a href="tools/url-encode.html" style="background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:8px;padding:16px;text-decoration:none;color:var(--color-text-primary)">
+          <div style="font-weight:600;margin-bottom:4px">URL 编解码</div>
+          <div style="color:var(--color-text-secondary);font-size:var(--text-sm)">URL编码与解码转换</div>
+        </a>
+        <a href="tools/hash-generator.html" style="background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:8px;padding:16px;text-decoration:none;color:var(--color-text-primary)">
+          <div style="font-weight:600;margin-bottom:4px">哈希生成器</div>
+          <div style="color:var(--color-text-secondary);font-size:var(--text-sm)">MD5/SHA哈希计算</div>
+        </a>
+      </div>
+
+      <h2 id="faq">常见问题</h2>
+      <h3>JSON和XML有什么区别？</h3>
+      <p>JSON更轻量、更易解析，适合API数据传输。XML更冗长但支持注释和命名空间，适合配置文件和文档标记。</p>
+
+      <h3>JSON支持注释吗？</h3>
+      <p>标准JSON不支持注释。如果需要注释，可以使用JSONC（带注释的JSON）或JSON5格式。</p>
+
+      <h3>JSON最大可以多大？</h3>
+      <p>理论上没有限制，但大多数解析器有内存限制。实际建议单个JSON文件不超过50MB。</p>
+
+      <div class="cta-box">
+        <h3>还有疑问？试试我们的工具</h3>
+        <p>粘贴你的JSON，一键格式化并定位错误</p>
+        <a href="tools/json-formatter.html" class="btn btn-primary" style="text-decoration:none">打开JSON格式化工具</a>
+      </div>
+    </div>
+  </main>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout } from "./js/layout.js";
+    initLayout();
+  </script>
+</body>
+</html>

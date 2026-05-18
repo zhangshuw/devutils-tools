@@ -10,6 +10,7 @@ export function renderHeader() {
             <li><a href="/devutils-tools/#encoding">编码转换</a></li>
             <li><a href="/devutils-tools/#generate">生成器</a></li>
             <li><a href="/devutils-tools/#security">安全工具</a></li>
+            <li><a href="/devutils-tools/products.html" style="color:var(--color-success);font-weight:600">产品</a></li>
           </ul>
         </nav>
         <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="菜单">☰</button>
