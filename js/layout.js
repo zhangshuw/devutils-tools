@@ -3,13 +3,13 @@ export function renderHeader() {
   return `
     <header class="site-header">
       <div class="container">
-        <a href="/devutils-tools/" class="site-logo">⚡ <span>Dev</span>Utils</a>
+        <a href="/" class="site-logo">⚡ <span>Dev</span>Utils</a>
         <nav>
           <ul class="nav-links" id="navLinks">
-            <li><a href="/devutils-tools/">全部工具</a></li>
-            <li><a href="/devutils-tools/#encoding">编码转换</a></li>
-            <li><a href="/devutils-tools/#generate">生成器</a></li>
-            <li><a href="/devutils-tools/#security">安全工具</a></li>
+            <li><a href="/">全部工具</a></li>
+            <li><a href="/#encoding">编码转换</a></li>
+            <li><a href="/#generate">生成器</a></li>
+            <li><a href="/#security">安全工具</a></li>
           </ul>
         </nav>
         <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="菜单">☰</button>
@@ -24,8 +24,8 @@ export function renderFooter() {
       <div class="container">
         <p>© ${new Date().getFullYear()} DevUtils - 在线开发者工具箱</p>
         <div class="footer-links">
-          <a href="/devutils-tools/privacy.html">隐私政策</a>
-          <a href="/devutils-tools/about.html">关于我们</a>
+          <a href="/privacy.html">隐私政策</a>
+          <a href="/about.html">关于我们</a>
           <a href="https://github.com/zhangshuw" target="_blank">GitHub</a>
         </div>
       </div>
@@ -36,7 +36,7 @@ export function renderFooter() {
 export function renderBreadcrumb(current) {
   return `
     <nav class="breadcrumb" aria-label="面包屑">
-      <a href="/devutils-tools/">首页</a>
+      <a href="/">首页</a>
       <span class="breadcrumb-sep">/</span>
       <span>${current}</span>
     </nav>
