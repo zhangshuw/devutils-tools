@@ -10,7 +10,6 @@ export function renderHeader() {
             <li><a href="/devutils-tools/#encoding">编码转换</a></li>
             <li><a href="/devutils-tools/#generate">生成器</a></li>
             <li><a href="/devutils-tools/#security">安全工具</a></li>
-            <li><a href="/devutils-tools/products.html" style="color:var(--color-success);font-weight:600">产品</a></li>
           </ul>
         </nav>
         <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="菜单">☰</button>
@@ -25,9 +24,9 @@ export function renderFooter() {
       <div class="container">
         <p>© ${new Date().getFullYear()} DevUtils - 在线开发者工具箱</p>
         <div class="footer-links">
-          <a href="#">隐私政策</a>
-          <a href="#">关于我们</a>
-          <a href="https://github.com" target="_blank">GitHub</a>
+          <a href="/devutils-tools/privacy.html">隐私政策</a>
+          <a href="/devutils-tools/about.html">关于我们</a>
+          <a href="https://github.com/zhangshuw" target="_blank">GitHub</a>
         </div>
       </div>
     </footer>
