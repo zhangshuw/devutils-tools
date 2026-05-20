@@ -16,6 +16,9 @@ const TOOLS = [
   { id: "qrcode-generator", name: "二维码生成器", desc: "生成可下载的二维码", icon: "📷", cat: "generate" },
   { id: "code-minifier", name: "代码压缩器", desc: "CSS/JS/HTML 代码压缩与美化", icon: "📦", cat: "encoding" },
   { id: "lorem-ipsum", name: "Lorem Ipsum", desc: "生成占位文本，段落/句子/单词", icon: "📄", cat: "generate" },
+  { id: "case-converter", name: "大小写转换", desc: "camelCase/snake_case/kebab-case互转", icon: "aA", cat: "encoding" },
+  { id: "cron-generator", name: "Cron 表达式", desc: "可视化编辑Cron定时任务表达式", icon: "⏱️", cat: "generate" },
+  { id: "html-entity", name: "HTML 实体编解码", desc: "HTML命名实体与数字实体互转", icon: "&lt;&gt;", cat: "encoding" },
   { id: "text-diff", name: "文本差异对比", desc: "逐行比较文本增删改", icon: "📊", cat: "encoding" },
   { id: "markdown-preview", name: "Markdown 预览", desc: "实时渲染Markdown为HTML", icon: "📝", cat: "encoding" },
 ];

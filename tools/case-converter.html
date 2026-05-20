@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大小写转换器 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线文本大小写转换工具，支持camelCase、snake_case、PascalCase、kebab-case等多种格式互转。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/case-converter.html">
+  <meta property="og:title" content="大小写转换器 - 在线开发者工具 | DevUtils">
+  <meta property="og:description" content="在线文本大小写转换，支持camelCase、snake_case、PascalCase、kebab-case互转。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/case-converter.html">
+  <meta property="og:site_name" content="DevUtils">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="大小写转换器 - 在线开发者工具 | DevUtils">
+  <meta name="twitter:description" content="在线文本大小写转换，支持camelCase、snake_case、PascalCase、kebab-case互转。">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"大小写转换器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .result-row { display:flex; align-items:center; gap:var(--space-sm); margin-bottom:var(--space-sm); }
+    .result-row label { min-width:110px; font-size:var(--text-sm); color:var(--color-text-secondary); font-family:monospace; }
+    .result-row .input { flex:1; font-family:monospace; font-size:var(--text-sm); }
+    .result-row .btn { flex-shrink:0; }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>大小写转换器</span></nav>
+    <h1>大小写 / 命名风格转换</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">camelCase、snake_case、PascalCase、kebab-case 等格式互转</p>
+    <div>
+      <div class="panel" style="margin-bottom:var(--space-md)">
+        <div class="panel-header"><span class="panel-title">输入文本</span></div>
+        <textarea class="textarea" id="inputText" placeholder="输入变量名或文本，如：myVariableName、my_variable_name、MyVariableName..." spellcheck="false"></textarea>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">转换结果</span></div>
+        <div class="result-row"><label>camelCase</label><input type="text" class="input" id="outCamel" readonly><button class="btn btn-sm btn-ghost" data-copy="outCamel">复制</button></div>
+        <div class="result-row"><label>snake_case</label><input type="text" class="input" id="outSnake" readonly><button class="btn btn-sm btn-ghost" data-copy="outSnake">复制</button></div>
+        <div class="result-row"><label>PascalCase</label><input type="text" class="input" id="outPascal" readonly><button class="btn btn-sm btn-ghost" data-copy="outPascal">复制</button></div>
+        <div class="result-row"><label>kebab-case</label><input type="text" class="input" id="outKebab" readonly><button class="btn btn-sm btn-ghost" data-copy="outKebab">复制</button></div>
+        <div class="result-row"><label>CONSTANT_CASE</label><input type="text" class="input" id="outConst" readonly><button class="btn btn-sm btn-ghost" data-copy="outConst">复制</button></div>
+        <div class="result-row"><label>dot.case</label><input type="text" class="input" id="outDot" readonly><button class="btn btn-sm btn-ghost" data-copy="outDot">复制</button></div>
+        <div class="result-row"><label>全部大写</label><input type="text" class="input" id="outUpper" readonly><button class="btn btn-sm btn-ghost" data-copy="outUpper">复制</button></div>
+        <div class="result-row"><label>全部小写</label><input type="text" class="input" id="outLower" readonly><button class="btn btn-sm btn-ghost" data-copy="outLower">复制</button></div>
+      </div>
+    </div>
+  </main>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    function tokenize(str) {
+      // Split by common delimiters and case boundaries
+      return str
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+        .replace(/[_\-\.]+/g, ' ')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(w => w.toLowerCase());
+    }
+
+    function convert() {
+      const input = document.getElementById('inputText').value.trim();
+      if (!input) {
+        ['outCamel','outSnake','outPascal','outKebab','outConst','outDot','outUpper','outLower']
+          .forEach(id => document.getElementById(id).value = '');
+        return;
+      }
+      const words = tokenize(input);
+      const camel = words.map((w, i) => i === 0 ? w : w.charAt(0).toUpperCase() + w.slice(1)).join('');
+      const snake = words.join('_');
+      const pascal = words.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+      const kebab = words.join('-');
+      const constant = words.map(w => w.toUpperCase()).join('_');
+      const dot = words.join('.');
+      const upper = input.toUpperCase();
+      const lower = input.toLowerCase();
+
+      document.getElementById('outCamel').value = camel;
+      document.getElementById('outSnake').value = snake;
+      document.getElementById('outPascal').value = pascal;
+      document.getElementById('outKebab').value = kebab;
+      document.getElementById('outConst').value = constant;
+      document.getElementById('outDot').value = dot;
+      document.getElementById('outUpper').value = upper;
+      document.getElementById('outLower').value = lower;
+    }
+
+    document.getElementById('inputText').addEventListener('input', convert);
+    document.querySelectorAll('[data-copy]').forEach(btn => {
+      btn.addEventListener('click', () => copyToClipboard(document.getElementById(btn.dataset.copy).value));
+    });
+  </script>
+</body>
+</html>

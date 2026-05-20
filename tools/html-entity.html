@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML实体编解码器 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线HTML实体编码与解码工具，支持命名实体(&amp;nbsp等)和数字实体(&#x;等)互转，实时预览。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/html-entity.html">
+  <meta property="og:title" content="HTML实体编解码器 - 在线开发者工具 | DevUtils">
+  <meta property="og:description" content="在线HTML实体编码与解码，支持命名实体和数字实体互转。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/html-entity.html">
+  <meta property="og:site_name" content="DevUtils">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="HTML实体编解码器 - 在线开发者工具 | DevUtils">
+  <meta name="twitter:description" content="在线HTML实体编码与解码，支持命名实体和数字实体互转。">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"HTML实体编解码器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .tool-layout { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-md); }
+    @media (max-width: 768px) { .tool-layout { grid-template-columns:1fr; } }
+    .mode-toggle { display:flex; gap:var(--space-sm); margin-bottom:var(--space-md); }
+    .common-table { margin-top:var(--space-lg); }
+    .common-table table { width:100%; border-collapse:collapse; }
+    .common-table th, .common-table td { padding:var(--space-xs) var(--space-sm); border:1px solid var(--color-border); font-size:var(--text-sm); text-align:left; }
+    .common-table th { background:var(--color-bg-alt); }
+    .common-table code { font-family:monospace; }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>HTML实体编解码器</span></nav>
+    <h1>HTML 实体编解码器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">HTML 实体编码与解码转换，支持命名实体和数字实体</p>
+    <div>
+      <div class="mode-toggle">
+        <button class="btn btn-primary" id="modeEncode">编码 →</button>
+        <button class="btn" id="modeDecode">← 解码</button>
+      </div>
+      <div class="tool-layout">
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title" id="inputLabel">原始文本</span>
+            <button class="btn btn-sm btn-ghost" id="clearBtn">清空</button>
+          </div>
+          <textarea class="textarea" id="inputArea" placeholder="输入要转换的文本..." spellcheck="false"></textarea>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title" id="outputLabel">编码结果</span>
+            <button class="btn btn-sm btn-ghost" id="copyBtn">复制</button>
+          </div>
+          <textarea class="textarea" id="outputArea" readonly placeholder="结果..." spellcheck="false"></textarea>
+        </div>
+      </div>
+
+      <div class="common-table panel" style="margin-top:var(--space-lg)">
+        <div class="panel-header"><span class="panel-title">常用 HTML 实体</span></div>
+        <table>
+          <tr><th>字符</th><th>命名实体</th><th>十进制</th><th>十六进制</th></tr>
+          <tr><td>&amp;</td><td><code>&amp;amp;</code></td><td><code>&amp;#38;</code></td><td><code>&amp;#x26;</code></td></tr>
+          <tr><td>&lt;</td><td><code>&amp;lt;</code></td><td><code>&amp;#60;</code></td><td><code>&amp;#x3C;</code></td></tr>
+          <tr><td>&gt;</td><td><code>&amp;gt;</code></td><td><code>&amp;#62;</code></td><td><code>&amp;#x3E;</code></td></tr>
+          <tr><td>"</td><td><code>&amp;quot;</code></td><td><code>&amp;#34;</code></td><td><code>&amp;#x22;</code></td></tr>
+          <tr><td>'</td><td><code>&amp;apos;</code></td><td><code>&amp;#39;</code></td><td><code>&amp;#x27;</code></td></tr>
+          <tr><td>空格</td><td><code>&amp;nbsp;</code></td><td><code>&amp;#160;</code></td><td><code>&amp;#xA0;</code></td></tr>
+          <tr><td>©</td><td><code>&amp;copy;</code></td><td><code>&amp;#169;</code></td><td><code>&amp;#xA9;</code></td></tr>
+          <tr><td>®</td><td><code>&amp;reg;</code></td><td><code>&amp;#174;</code></td><td><code>&amp;#xAE;</code></td></tr>
+        </table>
+      </div>
+    </div>
+  </main>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    let mode = 'encode';
+
+    const NAMED = {
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&apos;',
+      ' ':'&nbsp;', '©':'&copy;', '®':'&reg;', '™':'&trade;',
+      '‘':'&lsquo;', '’':'&rsquo;', '“':'&ldquo;', '”':'&rdquo;',
+      '–':'&ndash;', '—':'&mdash;', '×':'&times;', '÷':'&divide;',
+      '…':'&hellip;', '°':'&deg;', '±':'&plusmn;', '¢':'&cent;',
+      '£':'&pound;', '¥':'&yen;', '€':'&euro;',
+    };
+
+    function encode(text) {
+      return text.replace(/[&<>"' ©®™‘’“”–—×÷…°±¢£¥€]/g, c => NAMED[c] || `&#${c.charCodeAt(0)};`);
+    }
+
+    function decode(text) {
+      const el = document.createElement('textarea');
+      el.innerHTML = text;
+      return el.value;
+    }
+
+    function convert() {
+      const input = document.getElementById('inputArea').value;
+      const output = mode === 'encode' ? encode(input) : decode(input);
+      document.getElementById('outputArea').value = output;
+    }
+
+    document.getElementById('modeEncode').addEventListener('click', () => {
+      mode = 'encode';
+      document.getElementById('modeEncode').classList.add('btn-primary');
+      document.getElementById('modeDecode').classList.remove('btn-primary');
+      document.getElementById('inputLabel').textContent = '原始文本';
+      document.getElementById('outputLabel').textContent = '编码结果';
+      convert();
+    });
+    document.getElementById('modeDecode').addEventListener('click', () => {
+      mode = 'decode';
+      document.getElementById('modeDecode').classList.add('btn-primary');
+      document.getElementById('modeEncode').classList.remove('btn-primary');
+      document.getElementById('inputLabel').textContent = '编码文本';
+      document.getElementById('outputLabel').textContent = '解码结果';
+      convert();
+    });
+    document.getElementById('inputArea').addEventListener('input', convert);
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const v = document.getElementById('outputArea').value;
+      if (!v) { showToast('没有可复制的内容', true); return; }
+      copyToClipboard(v);
+    });
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.getElementById('inputArea').value = '';
+      document.getElementById('outputArea').value = '';
+    });
+  </script>
+</body>
+</html>
