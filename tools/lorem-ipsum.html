@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lorem Ipsum生成器 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线Lorem Ipsum占位文本生成器，支持段落、句子、单词生成，可自定义数量，一键复制。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/lorem-ipsum.html">
+  <meta property="og:title" content="Lorem Ipsum生成器 - 在线开发者工具 | DevUtils">
+  <meta property="og:description" content="在线Lorem Ipsum占位文本生成器，支持段落、句子、单词生成。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/lorem-ipsum.html">
+  <meta property="og:site_name" content="DevUtils">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Lorem Ipsum生成器 - 在线开发者工具 | DevUtils">
+  <meta name="twitter:description" content="在线Lorem Ipsum占位文本生成器，支持段落、句子、单词生成。">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Lorem Ipsum生成器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .type-group { display:flex; gap:var(--space-sm); margin-bottom:var(--space-md); }
+    .type-group .btn.active { background:var(--color-accent); color:#fff; border-color:var(--color-accent); }
+    .count-input { width:80px; text-align:center; }
+    .output-area { min-height:200px; }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>Lorem Ipsum生成器</span></nav>
+    <h1>Lorem Ipsum 生成器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">生成占位文本，支持段落、句子、单词</p>
+    <div>
+      <div class="panel" style="margin-bottom:var(--space-md)">
+        <div style="display:flex;gap:var(--space-md);align-items:center;flex-wrap:wrap">
+          <div class="type-group">
+            <button class="btn active" data-type="paragraphs">段落</button>
+            <button class="btn" data-type="sentences">句子</button>
+            <button class="btn" data-type="words">单词</button>
+          </div>
+          <label style="display:flex;align-items:center;gap:var(--space-sm)">
+            数量：<input type="number" class="input count-input" id="count" value="3" min="1" max="100">
+          </label>
+          <button class="btn btn-primary" id="generateBtn">生成</button>
+          <button class="btn" id="copyBtn">复制</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">生成结果</span></div>
+        <div class="output-area textarea" id="output" style="overflow-y:auto;max-height:400px;cursor:text;user-select:text"></div>
+      </div>
+    </div>
+  </main>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    const LOREM = [
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+      "Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+      "Nisi ut aliquip ex ea commodo consequat.",
+      "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore.",
+      "Eu fugiat nulla pariatur.",
+      "Excepteur sint occaecat cupidatat non proident.",
+      "Sunt in culpa qui officia deserunt mollit anim id est laborum.",
+      "Curabitur pretium tincidunt lacus, nec gravida arcu fermentum sed.",
+      "Nulla facilisi morbi tempus iaculis urna id volutpat lacus.",
+      "Viverra accumsan lacus vel facilisis volutpat est velit egestas.",
+      "Faucibus ornare suspendisse sed nisi lacus sed viverra tellus.",
+      "Pellentesque adipiscing commodo elit at imperdiet dui accumsan.",
+      "Sit amet nulla facilisi morbi tempus iaculis urna id volutpat.",
+      "Varius sit amet mattis vulputate enim nulla aliquet porttitor.",
+      "Tortor condimentum lacinia quis vel eros donec ac odio.",
+      "Semper auctor neque vitae tempus quam pellentesque nec nam aliquam.",
+      "Sem et tortor consequat id porta nibh venenatis cras sed.",
+      "Felis eget nunc lobortis mattis aliquam faucibus purus in massa.",
+      "Viverra mauris in aliquam sem fringilla ut morbi tincidunt.",
+      "Augue neque gravida in fermentum et sollicitudin ac orci phasellus.",
+      "Egestas tellus rutrum tellus pellentesque eu tincidunt tortor aliquam.",
+      "Consequat id porta nibh venenatis cras sed felis eget velit.",
+      "Aliquet nibh praesent tristique magna sit amet purus non.",
+      "Sit amet luctus venenatis lectus magna fringilla urna porttitor.",
+      "Risus at ultrices mi tempus imperdiet nulla malesuada pellentesque.",
+      "Elit eget gravida cum sociis natoque penatibus et magnis.",
+      "Dis parturient montes nascetur ridiculus mus mauris vitae.",
+      "Ultricies leo integer malesuada nunc vel risus commodo viverra.",
+      "Praesent elementum facilisis leo vel fringilla est ullamcorper eget.",
+    ];
+
+    const WORDS = "lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua enim ad minim veniam quis nostrud exercitation ullamco laboris nisi aliquip ex ea commodo consequat duis aute irure in reprehenderit voluptate velit esse cillum fugiat nulla pariatur excepteur sint occaecat cupidatat non proident sunt culpa qui officia deserunt mollit anim id est laborum curabitur pretium tincidunt lacus nec gravida arcu fermentum nulla facilisi morbi tempus iaculis urna volutpat viverra accumsan vel facilisis egestas faucibus ornare suspendisse pellentesque commodo imperdiet dui accumsan mattis vulputate enim aliquet porttitor tortor condimentum lacinia eros donec odio semper auctor neque vitae quam nec nam aliquam sem tortor porta nibh venenatis cras felis nunc lobortis purus massa mauris fringilla augue neque sollicitudin orci phasellus tellus rutrum eu tincidunt lectus magna purus luctus venenatis risus ultrices mi imperdiet malesuada nunc praesent elementum leo fringilla ullamcorper".split(" ");
+
+    let type = 'paragraphs';
+
+    function generate() {
+      const count = Math.max(1, Math.min(100, +document.getElementById('count').value || 3));
+      let result = '';
+
+      if (type === 'paragraphs') {
+        for (let i = 0; i < count; i++) {
+          const sentCount = 3 + Math.floor(Math.random() * 4);
+          let para = [];
+          for (let j = 0; j < sentCount; j++) {
+            para.push(LOREM[Math.floor(Math.random() * LOREM.length)]);
+          }
+          result += para.join(" ") + "\n\n";
+        }
+      } else if (type === 'sentences') {
+        const selected = [];
+        for (let i = 0; i < count; i++) {
+          selected.push(LOREM[Math.floor(Math.random() * LOREM.length)]);
+        }
+        result = selected.join(" ");
+      } else {
+        const selected = [];
+        for (let i = 0; i < count; i++) {
+          selected.push(WORDS[Math.floor(Math.random() * WORDS.length)]);
+        }
+        result = selected.join(" ");
+        if (result.length > 0) result = result.charAt(0).toUpperCase() + result.slice(1) + ".";
+      }
+
+      document.getElementById('output').textContent = result.trim();
+    }
+
+    document.querySelectorAll('.type-group .btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.type-group .btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        type = btn.dataset.type;
+      });
+    });
+
+    document.getElementById('generateBtn').addEventListener('click', generate);
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const text = document.getElementById('output').textContent;
+      if (!text) { showToast('请先生成文本', true); return; }
+      copyToClipboard(text);
+    });
+    document.getElementById('count').addEventListener('keydown', e => {
+      if (e.key === 'Enter') generate();
+    });
+
+    generate();
+  </script>
+</body>
+</html>

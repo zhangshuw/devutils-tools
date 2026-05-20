@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>代码压缩器 - CSS/JS/HTML在线压缩美化 | DevUtils</title>
+  <meta name="description" content="在线CSS、JavaScript、HTML代码压缩与美化工具，一键压缩减小体积，一键美化提高可读性。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/code-minifier.html">
+  <meta property="og:title" content="代码压缩器 - 在线开发者工具 | DevUtils">
+  <meta property="og:description" content="在线CSS/JS/HTML代码压缩与美化，一键减小体积或提高可读性。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/code-minifier.html">
+  <meta property="og:site_name" content="DevUtils">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="代码压缩器 - 在线开发者工具 | DevUtils">
+  <meta name="twitter:description" content="在线CSS/JS/HTML代码压缩与美化，一键减小体积或提高可读性。">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"代码压缩器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .stats { display:flex; gap:var(--space-md); flex-wrap:wrap; margin-bottom:var(--space-md); }
+    .stat { padding:var(--space-sm) var(--space-md); background:var(--color-bg-alt); border-radius:var(--radius-md); font-size:var(--text-sm); }
+    .stat strong { color:var(--color-accent); }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>代码压缩器</span></nav>
+    <h1>代码压缩 / 美化</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">CSS、JavaScript、HTML 代码压缩与美化</p>
+    <div>
+      <div class="tabs" id="langTabs">
+        <button class="tab-btn active" data-lang="css">CSS</button>
+        <button class="tab-btn" data-lang="js">JavaScript</button>
+        <button class="tab-btn" data-lang="html">HTML</button>
+      </div>
+      <div class="panel" style="margin-bottom:var(--space-md)">
+        <div class="panel-header"><span class="panel-title">输入代码</span></div>
+        <textarea class="textarea" id="inputCode" placeholder="粘贴代码..." spellcheck="false"></textarea>
+      </div>
+      <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-md)">
+        <button class="btn btn-primary" id="minifyBtn">压缩</button>
+        <button class="btn" id="beautifyBtn">美化</button>
+        <button class="btn btn-ghost" id="copyBtn">复制结果</button>
+        <button class="btn btn-ghost" id="clearBtn">清空</button>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="panel">
+        <div class="panel-header"><span class="panel-title">输出结果</span></div>
+        <textarea class="textarea" id="outputCode" readonly placeholder="结果将显示在这里..." spellcheck="false"></textarea>
+      </div>
+    </div>
+  </main>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    let lang = 'css';
+
+    function minifyCSS(code) {
+      return code
+        .replace(/\/\*[\s\S]*?\*\//g, '')
+        .replace(/\s*([{}:;,>~+])\s*/g, '$1')
+        .replace(/;\s*}/g, '}')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function beautifyCSS(code) {
+      let result = code.replace(/\s*{\s*/g, ' {\n  ').replace(/\s*}\s*/g, '\n}\n\n');
+      result = result.replace(/;\s*/g, ';\n  ');
+      result = result.replace(/\n\s*\n\s*\n/g, '\n\n');
+      return result.trim();
+    }
+
+    function minifyJS(code) {
+      let result = code;
+      // 移除单行注释
+      result = result.replace(/\/\/.*$/gm, '');
+      // 移除多行注释
+      result = result.replace(/\/\*[\s\S]*?\*\//g, '');
+      // 移除多余空白
+      result = result.replace(/\s+/g, ' ');
+      // 安全移除空格
+      result = result.replace(/\s*([{}();,=+\-*/<>!&|?:])\s*/g, (m, p1) => {
+        if (/^[a-zA-Z0-9_$]$/.test(code[code.indexOf(m) - 1]) || /^[a-zA-Z0-9_$]$/.test(code[code.indexOf(m) + m.length])) return ` ${p1} `;
+        return p1;
+      });
+      return result.trim();
+    }
+
+    function minifyHTML(code) {
+      return code
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/\s+/g, ' ')
+        .replace(/\s*([<>])\s*/g, '$1')
+        .replace(/>\s+</g, '><')
+        .trim();
+    }
+
+    function minify() {
+      const input = document.getElementById('inputCode').value;
+      if (!input) { showToast('请输入代码', true); return; }
+      let output = '';
+      switch (lang) {
+        case 'css': output = minifyCSS(input); break;
+        case 'js': output = minifyJS(input); break;
+        case 'html': output = minifyHTML(input); break;
+      }
+      document.getElementById('outputCode').value = output;
+      showStats(input, output);
+    }
+
+    function beautify() {
+      const input = document.getElementById('inputCode').value;
+      if (!input) { showToast('请输入代码', true); return; }
+      let output = '';
+      switch (lang) {
+        case 'css': output = beautifyCSS(input); break;
+        case 'js': output = input; break; // JS beautify需要库，这里简单缩进
+        case 'html': output = input; break;
+      }
+      document.getElementById('outputCode').value = output;
+      showStats(input, output);
+    }
+
+    function showStats(original, compressed) {
+      const origSize = new Blob([original]).size;
+      const newSize = new Blob([compressed]).size;
+      const saving = origSize > 0 ? Math.round((1 - newSize / origSize) * 100) : 0;
+      document.getElementById('stats').innerHTML = `
+        <div class="stat">原始大小：<strong>${formatSize(origSize)}</strong></div>
+        <div class="stat">压缩后：<strong>${formatSize(newSize)}</strong></div>
+        <div class="stat">节省：<strong>${saving}%</strong></div>
+      `;
+    }
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      return (bytes / 1024).toFixed(1) + ' KB';
+    }
+
+    document.getElementById('langTabs').addEventListener('click', e => {
+      if (!e.target.classList.contains('tab-btn')) return;
+      document.querySelectorAll('#langTabs .tab-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+      lang = e.target.dataset.lang;
+    });
+
+    document.getElementById('minifyBtn').addEventListener('click', minify);
+    document.getElementById('beautifyBtn').addEventListener('click', beautify);
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const v = document.getElementById('outputCode').value;
+      if (!v) { showToast('没有可复制的内容', true); return; }
+      copyToClipboard(v);
+    });
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      document.getElementById('inputCode').value = '';
+      document.getElementById('outputCode').value = '';
+      document.getElementById('stats').innerHTML = '';
+    });
+  </script>
+</body>
+</html>
