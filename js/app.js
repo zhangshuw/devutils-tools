@@ -21,6 +21,7 @@ const TOOLS = [
   { id: "html-entity", name: "HTML 实体编解码", desc: "HTML命名实体与数字实体互转", icon: "&lt;&gt;", cat: "encoding" },
   { id: "text-diff", name: "文本差异对比", desc: "逐行比较文本增删改", icon: "📊", cat: "encoding" },
   { id: "markdown-preview", name: "Markdown 预览", desc: "实时渲染Markdown为HTML", icon: "📝", cat: "encoding" },
+  { id: "number-base", name: "数字进制转换", desc: "二进制/八进制/十进制/十六进制互转", icon: "🔢", cat: "encoding" },
 ];
 
 function renderCards(filter = "") {

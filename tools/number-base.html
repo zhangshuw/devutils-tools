@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>数字进制转换器 - 二进制/八进制/十进制/十六进制互转 | DevUtils</title>
+<meta name="description" content="在线数字进制转换器：支持二进制、八进制、十进制、十六进制互转，实时计算，支持任意进制转换。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/tools/number-base.html">
+<meta property="og:title" content="数字进制转换器 - 进制互转在线工具">
+<meta property="og:description" content="在线进制转换器：二进制/八进制/十进制/十六进制互转，实时计算">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtool.blueblueliu.com/tools/number-base.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="数字进制转换器 - 进制互转在线工具">
+<meta name="twitter:description" content="在线进制转换器：二进制/八进制/十进制/十六进制互转">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"数字进制转换器","applicationCategory":"DeveloperApplication","operatingSystem":"Web","url":"https://devtool.blueblueliu.com/tools/number-base.html"}
+</script>
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/reset.css">
+<link rel="stylesheet" href="../css/layout.css">
+<link rel="stylesheet" href="../css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.converter{display:grid;gap:16px;margin:16px 0}
+.input-group{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center}
+.input-group label{font-weight:600;font-size:var(--text-sm);color:var(--color-text-primary)}
+.input-group .base-tag{background:var(--color-accent-subtle);color:var(--color-accent);padding:2px 8px;border-radius:var(--radius-sm);font-size:var(--text-xs);font-weight:700;margin-left:8px}
+.input-group input{width:100%}
+.custom-row{display:grid;grid-template-columns:120px 80px 1fr;gap:8px;align-items:center;margin-top:8px}
+.custom-row select{padding:8px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg-elevated);color:var(--color-text-primary)}
+.bit-vis{margin-top:16px;padding:12px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md)}
+.bit-vis h4{margin-bottom:8px;color:var(--color-accent);font-size:var(--text-sm)}
+.bits{display:flex;gap:2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;font-size:0.8rem}
+.bit{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:4px;cursor:pointer;transition:all .15s}
+.bit.on{background:var(--color-accent);color:#fff}
+.bit.off{background:var(--color-bg-surface);color:var(--color-text-muted);border:1px solid var(--color-border)}
+.sep{width:8px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);font-size:0.6rem}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="container">
+<div class="tool-page">
+<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><span>数字进制转换器</span></nav>
+<h1>数字进制转换器</h1>
+<p class="tool-desc">二进制、八进制、十进制、十六进制互转，实时计算，支持任意进制</p>
+
+<div class="converter" id="converter">
+<div class="input-group">
+  <label>二进制 <span class="base-tag">BIN</span></label>
+  <input type="text" id="bin" class="input" placeholder="如 10110011" data-base="2" spellcheck="false">
+</div>
+<div class="input-group">
+  <label>八进制 <span class="base-tag">OCT</span></label>
+  <input type="text" id="oct" class="input" placeholder="如 263" data-base="8" spellcheck="false">
+</div>
+<div class="input-group">
+  <label>十进制 <span class="base-tag">DEC</span></label>
+  <input type="text" id="dec" class="input" placeholder="如 179" data-base="10" spellcheck="false">
+</div>
+<div class="input-group">
+  <label>十六进制 <span class="base-tag">HEX</span></label>
+  <input type="text" id="hex" class="input" placeholder="如 B3" data-base="16" spellcheck="false">
+</div>
+<div class="custom-row">
+  <label style="font-weight:600;font-size:var(--text-sm)">自定义进制</label>
+  <select id="customBase">
+    <option value="3">3</option><option value="4">4</option><option value="5">5</option>
+    <option value="6">6</option><option value="7">7</option><option value="9">9</option>
+    <option value="11">11</option><option value="12">12</option><option value="16">16</option>
+    <option value="32">32</option><option value="36">36</option>
+  </select>
+  <input type="text" id="custom" class="input" placeholder="输入或查看自定义进制值" spellcheck="false">
+</div>
+</div>
+
+<div class="bit-vis" id="bitVis">
+  <h4>二进制位视图 (8-bit)</h4>
+  <div class="bits" id="bits"></div>
+</div>
+
+<div style="margin-top:16px;display:flex;gap:8px">
+  <button class="btn" onclick="clearAll()">清空</button>
+  <button class="btn btn-primary" onclick="copyResult()">复制结果</button>
+</div>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script type="module">
+import{initLayout,showToast,copyToClipboard}from'../js/layout.js';
+initLayout();
+
+const fields={2:document.getElementById('bin'),8:document.getElementById('oct'),10:document.getElementById('dec'),16:document.getElementById('hex')};
+const customBase=document.getElementById('customBase');
+const customInput=document.getElementById('custom');
+const bitsEl=document.getElementById('bits');
+let lastChanged=null;
+
+function toBase(n,base){
+  if(n<0)return '-'+toBase(-n,base);
+  const digits='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if(base>digits.length)return n.toString(base);
+  if(n===0)return '0';
+  let s='';
+  while(n>0){s=digits[n%base]+s;n=Math.floor(n/base);}
+  return s;
+}
+
+function fromBase(str,base){
+  const digits='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  str=str.toUpperCase().replace(/\s/g,'');
+  if(!str||str==='-')return NaN;
+  let neg=false;
+  if(str[0]==='-'){neg=true;str=str.slice(1);}
+  let n=0;
+  for(const c of str){
+    const v=digits.indexOf(c);
+    if(v<0||v>=base)return NaN;
+    n=n*base+v;
+  }
+  return neg?-n:n;
+}
+
+function isValid(str,base){
+  const digits='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.slice(0,base);
+  const re=new RegExp('^-?['+digits+']+$','i');
+  return re.test(str.replace(/\s/g,''));
+}
+
+function update(source){
+  const base=parseInt(source.dataset.base||customBase.value);
+  const val=source.value.trim();
+  if(!val){Object.values(fields).forEach(f=>{if(f!==source)f.value='';});customInput.value='';updateBits(0);return;}
+  const num=parseInt(source.dataset.base)?fromBase(val,base):NaN;
+  if(isNaN(num)||!isValid(val,base)){source.style.borderColor='var(--color-error)';return;}
+  source.style.borderColor='';
+  for(const[b,el]of Object.entries(fields)){
+    if(el!==source)el.value=toBase(num,parseInt(b));
+  }
+  const cb=parseInt(customBase.value);
+  customInput.value=toBase(num,cb);
+  updateBits(num);
+}
+
+function updateFromCustom(){
+  const cb=parseInt(customBase.value);
+  const val=customInput.value.trim();
+  if(!val){Object.values(fields).forEach(f=>f.value='');updateBits(0);return;}
+  const num=fromBase(val,cb);
+  if(isNaN(num)){customInput.style.borderColor='var(--color-error)';return;}
+  customInput.style.borderColor='';
+  for(const[b,el]of Object.entries(fields)){
+    el.value=toBase(num,parseInt(b));
+  }
+  updateBits(num);
+}
+
+function updateBits(n){
+  if(n<0||n>255){bitsEl.innerHTML='<span style="color:var(--color-text-muted);font-size:var(--text-sm)">超出8位范围 (0-255)</span>';return;}
+  bitsEl.innerHTML='';
+  for(let i=7;i>=0;i--){
+    if(i===3){const s=document.createElement('span');s.className='sep';s.textContent='·';bitsEl.appendChild(s);}
+    const b=document.createElement('span');
+    b.className='bit '+(n&(1<<i)?'on':'off');
+    b.textContent=n&(1<<i)?'1':'0';
+    b.onclick=()=>{const nv=n^(1<<i);setFromDec(nv);};
+    bitsEl.appendChild(b);
+  }
+}
+
+function setFromDec(n){
+  for(const[b,el]of Object.entries(fields))el.value=toBase(n,parseInt(b));
+  const cb=parseInt(customBase.value);customInput.value=toBase(n,cb);
+  updateBits(n);
+}
+
+Object.values(fields).forEach(el=>el.addEventListener('input',()=>update(el)));
+customInput.addEventListener('input',updateFromCustom);
+customBase.addEventListener('change',()=>{
+  const dec=fields[10].value.trim();
+  if(dec){const n=fromBase(dec,10);if(!isNaN(n))customInput.value=toBase(n,parseInt(customBase.value));}
+});
+
+window.clearAll=()=>{Object.values(fields).forEach(f=>f.value='');customInput.value='';updateBits(0);};
+window.copyResult=()=>{const r=[`BIN: ${fields[2].value}`,`OCT: ${fields[8].value}`,`DEC: ${fields[10].value}`,`HEX: ${fields[16].value}`].join('\n');copyToClipboard(r);};
+updateBits(0);
+</script>
+</body>
+</html>

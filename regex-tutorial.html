@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>正则表达式入门教程 - 语法详解与在线测试 | DevUtils</title>
+<meta name="description" content="正则表达式完整教程：从入门到精通，覆盖元字符、量词、分组、断言等核心语法。附在线正则测试工具。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/regex-tutorial.html">
+<meta property="og:title" content="正则表达式入门教程 - 语法详解与在线测试">
+<meta property="og:description" content="正则表达式完整教程：元字符、量词、分组、断言，附在线测试工具">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/regex-tutorial.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="正则表达式入门教程 - 语法详解与在线测试">
+<meta name="twitter:description" content="正则表达式完整教程：元字符、量词、分组、断言，附在线测试工具">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"正则表达式入门教程","description":"正则表达式完整教程","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-20","dateModified":"2026-05-20"}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.article{max-width:760px;margin:0 auto;padding:20px}
+.article h2{color:var(--color-accent);margin:32px 0 16px;font-size:var(--text-xl);padding-bottom:8px;border-bottom:1px solid var(--color-border)}
+.article h3{color:var(--color-text-primary);margin:24px 0 12px;font-size:var(--text-lg)}
+.article p{color:var(--color-text-secondary);line-height:1.8;margin-bottom:16px}
+.article ul,.article ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:16px;line-height:1.8}
+.article li{margin:4px 0}
+.article code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
+.article pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
+.article table{width:100%;border-collapse:collapse;margin:16px 0}
+.article th,.article td{border:1px solid var(--color-border);padding:8px 12px;text-align:left}
+.article th{background:var(--color-bg-elevated);color:var(--color-accent);font-weight:600}
+.article td{color:var(--color-text-secondary)}
+.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
+.tip p{color:var(--color-text-primary);margin:0}
+.cta-box{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+.cta-box h3{color:var(--color-accent);margin-bottom:8px}
+.cta-box p{color:var(--color-text-secondary);margin-bottom:16px}
+.toc{background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px 24px;margin:20px 0}
+.toc h3{margin-bottom:8px}
+.toc ul{list-style:none;padding-left:0}
+.toc li{padding:4px 0}
+.toc a{color:var(--color-accent);font-size:var(--text-sm)}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="container">
+<div class="article">
+<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/tools/regex-tester.html">正则测试器</a><span class="breadcrumb-sep">/</span><span>教程</span></nav>
+
+<h1>正则表达式入门教程：从零到实战</h1>
+<p style="color:var(--color-text-muted);font-size:var(--text-sm)">最后更新：2026年5月 · 阅读时间：15分钟</p>
+
+<div class="toc">
+<h3>目录</h3>
+<ul>
+<li><a href="#what">什么是正则表达式？</a></li>
+<li><a href="#basic">基础语法</a></li>
+<li><a href="#quantifier">量词</a></li>
+<li><a href="#group">分组与引用</a></li>
+<li><a href="#anchor">锚点与边界</a></li>
+<li><a href="#lookaround">零宽断言</a></li>
+<li><a href="#examples">常用正则示例</a></li>
+<li><a href="#faq">常见问题</a></li>
+</ul>
+</div>
+
+<div class="cta-box">
+<h3>在线正则表达式测试器</h3>
+<p>边学边练，实时测试正则表达式匹配结果</p>
+<a href="/tools/regex-tester.html" class="btn btn-primary" style="text-decoration:none">打开正则测试器</a>
+</div>
+
+<h2 id="what">什么是正则表达式？</h2>
+<p>正则表达式（Regular Expression，简称 Regex）是一种描述字符串模式的语言。它用特殊语法定义搜索模式，用于匹配、查找、替换文本。</p>
+<p>正则表达式广泛应用于：</p>
+<ul>
+<li><strong>表单验证</strong>：邮箱、手机号、密码强度校验</li>
+<li><strong>文本提取</strong>：从日志中提取关键信息</li>
+<li><strong>批量替换</strong>：代码重构中的查找替换</li>
+<li><strong>爬虫解析</strong>：从 HTML 中提取数据</li>
+</ul>
+
+<h2 id="basic">基础语法</h2>
+
+<h3>普通字符</h3>
+<p>普通字符匹配自身：</p>
+<pre>/hello/  → 匹配 "hello world" 中的 "hello"</pre>
+
+<h3>元字符</h3>
+<p>元字符有特殊含义，是正则表达式的核心：</p>
+<table>
+<tr><th>元字符</th><th>含义</th><th>示例</th></tr>
+<tr><td><code>.</code></td><td>匹配任意字符（除换行符）</td><td><code>a.c</code> → abc, a1c, a c</td></tr>
+<tr><td><code>\d</code></td><td>数字 [0-9]</td><td><code>\d{3}</code> → 123, 456</td></tr>
+<tr><td><code>\D</code></td><td>非数字 [^0-9]</td><td><code>\D+</code> → abc, hello</td></tr>
+<tr><td><code>\w</code></td><td>单词字符 [a-zA-Z0-9_]</td><td><code>\w+</code> → hello_123</td></tr>
+<tr><td><code>\W</code></td><td>非单词字符</td><td><code>\W</code> → @, #, 空格</td></tr>
+<tr><td><code>\s</code></td><td>空白字符（空格、制表、换行）</td><td><code>a\sb</code> → a b</td></tr>
+<tr><td><code>\S</code></td><td>非空白字符</td><td><code>\S+</code> → hello</td></tr>
+</table>
+
+<h3>字符类</h3>
+<p>用方括号定义字符集合：</p>
+<pre>[abc]     → 匹配 a 或 b 或 c
+[a-z]     → 匹配任意小写字母
+[A-Z0-9]  → 匹配大写字母或数字
+[^abc]    → 匹配除 a、b、c 外的任意字符</pre>
+
+<h2 id="quantifier">量词</h2>
+<p>量词控制匹配的重复次数：</p>
+<table>
+<tr><th>量词</th><th>含义</th><th>示例</th></tr>
+<tr><td><code>*</code></td><td>0 次或多次</td><td><code>ab*c</code> → ac, abc, abbc</td></tr>
+<tr><td><code>+</code></td><td>1 次或多次</td><td><code>ab+c</code> → abc, abbc</td></tr>
+<tr><td><code>?</code></td><td>0 次或 1 次</td><td><code>colou?r</code> → color, colour</td></tr>
+<tr><td><code>{n}</code></td><td>恰好 n 次</td><td><code>\d{4}</code> → 4位数字</td></tr>
+<tr><td><code>{n,}</code></td><td>至少 n 次</td><td><code>\d{2,}</code> → 2位及以上数字</td></tr>
+<tr><td><code>{n,m}</code></td><td>n 到 m 次</td><td><code>\d{3,5}</code> → 3到5位数字</td></tr>
+</table>
+
+<h3>贪婪 vs 非贪婪</h3>
+<p>默认量词是<strong>贪婪</strong>的，会匹配尽可能多的字符。在量词后加 <code>?</code> 变为<strong>非贪婪</strong>（懒惰）模式：</p>
+<pre>// 贪婪
+/".*"/   → "hello" world" 匹配 "hello" world"
+
+// 非贪婪
+/".*?"/  → "hello" world" 只匹配 "hello"</pre>
+
+<h2 id="group">分组与引用</h2>
+
+<h3>捕获组</h3>
+<p>用 <code>()</code> 创建捕获组，可以提取匹配的子串：</p>
+<pre>/(\d{4})-(\d{2})-(\d{2})/  → 2026-05-20
+  组1: 2026  组2: 05  组3: 20</pre>
+
+<h3>非捕获组</h3>
+<p>用 <code>(?:)</code> 创建非捕获组，不保存匹配结果：</p>
+<pre>/(?:http|https):\/\/.*/  → 匹配URL但不捕获协议</pre>
+
+<h3>反向引用</h3>
+<p>用 <code>\1</code>、<code>\2</code> 引用前面的捕获组：</p>
+<pre>/(\w)\1/  → 匹配重复字符，如 aa, bb, 11</pre>
+
+<h2 id="anchor">锚点与边界</h2>
+<table>
+<tr><th>符号</th><th>含义</th><th>示例</th></tr>
+<tr><td><code>^</code></td><td>字符串开头</td><td><code>^Hello</code> → 以Hello开头</td></tr>
+<tr><td><code>$</code></td><td>字符串结尾</td><td><code>world$</code> → 以world结尾</td></tr>
+<tr><td><code>\b</code></td><td>单词边界</td><td><code>\bcat\b</code> → 单词cat</td></tr>
+<tr><td><code>\B</code></td><td>非单词边界</td><td><code>\Bcat\B</code> → scatter中的cat</td></tr>
+</table>
+
+<div class="tip">
+<p><strong>提示：</strong><code>^</code> 在字符类 <code>[^...]</code> 中表示"取反"，在字符类外表示"开头"。</p>
+</div>
+
+<h2 id="lookaround">零宽断言</h2>
+<p>零宽断言只判断条件，不消耗字符：</p>
+<table>
+<tr><th>语法</th><th>名称</th><th>含义</th></tr>
+<tr><td><code>(?=...)</code></td><td>正向前瞻</td><td>后面必须匹配</td></tr>
+<tr><td><code>(?!...)</code></td><td>负向前瞻</td><td>后面必须不匹配</td></tr>
+<tr><td><code>(?&lt;=...)</code></td><td>正向后瞻</td><td>前面必须匹配</td></tr>
+<tr><td><code>(?&lt;!...)</code></td><td>负向后瞻</td><td>前面必须不匹配</td></tr>
+</table>
+
+<h3>示例</h3>
+<pre>// 匹配数字后面的单位
+/\d(?=px)/  → "100px" 匹配 1、0、0（每个数字后跟px）
+
+// 匹配不以 http 开头的 URL
+/^(?!http).*/  → 不以http开头的字符串
+
+// 匹配 $ 符号前面的数字
+/(?&lt;=\$)\d+/  → "$100" 匹配 100</pre>
+
+<h2 id="examples">常用正则示例</h2>
+<table>
+<tr><th>用途</th><th>正则表达式</th></tr>
+<tr><td>邮箱</td><td><code>^[\w.-]+@[\w-]+\.[\w.]+$</code></td></tr>
+<tr><td>手机号（中国大陆）</td><td><code>^1[3-9]\d{9}$</code></td></tr>
+<tr><td>身份证号</td><td><code>^\d{17}[\dXx]$</code></td></tr>
+<tr><td>IP 地址</td><td><code>^\d{1,3}(\.\d{1,3}){3}$</code></td></tr>
+<tr><td>URL</td><td><code>^https?://[\w.-]+\.[a-z]{2,}(/\S*)?$</code></td></tr>
+<tr><td>中文</td><td><code>[一-龥]+</code></td></tr>
+<tr><td>邮政编码</td><td><code>^\d{6}$</code></td></tr>
+<tr><td>HTML 标签</td><td><code>&lt;(\w+)[^&gt;]*&gt;.*?&lt;/\1&gt;</code></td></tr>
+<tr><td>日期 YYYY-MM-DD</td><td><code>\d{4}-\d{2}-\d{2}</code></td></tr>
+<tr><td>密码强度（8位+大小写+数字+特殊）</td><td><code>^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$</code></td></tr>
+</table>
+
+<h2 id="faq">常见问题</h2>
+
+<h3>正则表达式应该加 ^ 和 $ 吗？</h3>
+<p>如果需要<strong>完全匹配</strong>（如表单验证），必须加 <code>^</code> 和 <code>$</code>。否则正则只要求字符串中<strong>包含</strong>匹配即可。例如 <code>/\d{11}/</code> 会匹配 "abc12345678900xyz" 中的 11 位数字。</p>
+
+<h3>如何匹配换行符？</h3>
+<p>默认 <code>.</code> 不匹配换行符。在 JavaScript 中使用 <code>s</code> 标志：<code>/regex/s</code>，或使用 <code>[\s\S]</code> 代替 <code>.</code>。</p>
+
+<h3>正则表达式性能如何优化？</h3>
+<ul>
+<li>避免嵌套量词，如 <code>/(a+)+/</code> 容易导致灾难性回溯</li>
+<li>使用非捕获组 <code>(?:)</code> 替代捕获组 <code>()</code></li>
+<li>尽量用具体字符代替 <code>.</code></li>
+<li>使用锚点 <code>^</code> <code>$</code> 缩小匹配范围</li>
+</ul>
+
+<div class="tip">
+<p><strong>提示：</strong>使用我们的<a href="/tools/regex-tester.html">在线正则测试器</a>可以实时测试正则表达式的匹配结果，边学边练。</p>
+</div>
+
+<div class="cta-box">
+<h3>试试我们的正则测试器</h3>
+<p>输入正则和文本，实时查看匹配高亮</p>
+<a href="/tools/regex-tester.html" class="btn btn-primary" style="text-decoration:none">打开正则表达式测试器</a>
+</div>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+</body>
+</html>
