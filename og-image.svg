@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <text x="600" y="220" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="bold" font-size="96" fill="white">⚡ DevUtils</text>
+  <text x="600" y="320" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="600" font-size="40" fill="rgba(255,255,255,0.9)">在线开发者工具箱</text>
+  <text x="600" y="400" text-anchor="middle" font-family="system-ui, sans-serif" font-size="28" fill="rgba(255,255,255,0.7)">19+ 免费工具 · 隐私优先 · 无需安装</text>
+  <text x="600" y="500" text-anchor="middle" font-family="monospace" font-size="22" fill="rgba(255,255,255,0.5)">{  } 🔐 🔒 🔤 🔗 🎨 🔍 #️⃣ 🔑 🕐 🌈 📷 📦 📄 aA ⏱️ &lt;&gt; 📊 📝</text>
+</svg>

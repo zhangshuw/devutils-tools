@@ -10,6 +10,7 @@ export function renderHeader() {
             <li><a href="/#encoding">编码转换</a></li>
             <li><a href="/#generate">生成器</a></li>
             <li><a href="/#security">安全工具</a></li>
+            <li><a href="/products.html">数字产品</a></li>
           </ul>
         </nav>
         <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="菜单">☰</button>
@@ -24,6 +25,7 @@ export function renderFooter() {
       <div class="container">
         <p>© ${new Date().getFullYear()} DevUtils - 在线开发者工具箱</p>
         <div class="footer-links">
+          <a href="/products.html">数字产品</a>
           <a href="/privacy.html">隐私政策</a>
           <a href="/about.html">关于我们</a>
           <a href="https://github.com/zhangshuw" target="_blank">GitHub</a>
