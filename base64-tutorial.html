@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>Base64编解码教程 - 什么是Base64？编码原理与在线转换 | DevUtils</title>
+<meta name="description" content="Base64编解码完整教程：什么是Base64、编码原理、使用场景、常见问题。附在线Base64转换工具，即开即用。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/base64-tutorial.html">
+<meta property="og:title" content="Base64编解码教程 - 编码原理与在线转换">
+<meta property="og:description" content="Base64完整教程：编码原理、使用场景、常见问题与在线转换工具">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/base64-tutorial.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Base64编解码教程 - 编码原理与在线转换">
+<meta name="twitter:description" content="Base64完整教程：编码原理、使用场景、常见问题与在线转换工具">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"Base64编解码教程","description":"Base64编解码完整教程","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-20","dateModified":"2026-05-20"}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.article{max-width:760px;margin:0 auto;padding:20px}
+.article h2{color:var(--color-accent);margin:32px 0 16px;font-size:var(--text-xl);padding-bottom:8px;border-bottom:1px solid var(--color-border)}
+.article h3{color:var(--color-text-primary);margin:24px 0 12px;font-size:var(--text-lg)}
+.article p{color:var(--color-text-secondary);line-height:1.8;margin-bottom:16px}
+.article ul,.article ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:16px;line-height:1.8}
+.article li{margin:4px 0}
+.article code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
+.article pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
+.article table{width:100%;border-collapse:collapse;margin:16px 0}
+.article th,.article td{border:1px solid var(--color-border);padding:8px 12px;text-align:left}
+.article th{background:var(--color-bg-elevated);color:var(--color-accent);font-weight:600}
+.article td{color:var(--color-text-secondary)}
+.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
+.tip p{color:var(--color-text-primary);margin:0}
+.cta-box{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+.cta-box h3{color:var(--color-accent);margin-bottom:8px}
+.cta-box p{color:var(--color-text-secondary);margin-bottom:16px}
+.toc{background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px 24px;margin:20px 0}
+.toc h3{margin-bottom:8px}
+.toc ul{list-style:none;padding-left:0}
+.toc li{padding:4px 0}
+.toc a{color:var(--color-accent);font-size:var(--text-sm)}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="container">
+<div class="article">
+<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/tools/base64.html">Base64 编解码</a><span class="breadcrumb-sep">/</span><span>教程</span></nav>
+
+<h1>Base64 编解码完整教程：原理、场景与常见问题</h1>
+<p style="color:var(--color-text-muted);font-size:var(--text-sm)">最后更新：2026年5月 · 阅读时间：10分钟</p>
+
+<div class="toc">
+<h3>目录</h3>
+<ul>
+<li><a href="#what">什么是 Base64？</a></li>
+<li><a href="#why">为什么需要 Base64？</a></li>
+<li><a href="#how">Base64 编码原理</a></li>
+<li><a href="#usage">使用场景</a></li>
+<li><a href="#faq">常见问题</a></li>
+</ul>
+</div>
+
+<div class="cta-box">
+<h3>在线 Base64 编解码工具</h3>
+<p>直接使用我们的免费工具，一键编码解码 Base64</p>
+<a href="/tools/base64.html" class="btn btn-primary" style="text-decoration:none">打开工具</a>
+</div>
+
+<h2 id="what">什么是 Base64？</h2>
+<p>Base64 是一种基于 64 个可打印字符来表示二进制数据的编码方式。它将任意二进制数据转换为由 <code>A-Z</code>、<code>a-z</code>、<code>0-9</code>、<code>+</code>、<code>/</code> 共 64 个字符组成的 ASCII 字符串。</p>
+<p>简单来说，Base64 的作用就是把"不可见"的二进制数据变成"可见"的文本字符，方便在文本环境中传输。</p>
+
+<h3>Base64 字符表</h3>
+<table>
+<tr><th>值</th><th>字符</th><th>值</th><th>字符</th><th>值</th><th>字符</th><th>值</th><th>字符</th></tr>
+<tr><td>0-25</td><td>A-Z</td><td>26-51</td><td>a-z</td><td>52-61</td><td>0-9</td><td>62</td><td>+</td></tr>
+<tr><td>63</td><td>/</td><td colspan="6"><code>=</code> 用于末尾填充</td></tr>
+</table>
+
+<h2 id="why">为什么需要 Base64？</h2>
+<p>很多场景只支持文本传输，不支持原始二进制数据：</p>
+<ul>
+<li><strong>电子邮件</strong>：SMTP 协议最初只支持 7-bit ASCII，无法直接传输图片、附件等二进制数据</li>
+<li><strong>URL 参数</strong>：某些二进制数据需要通过 URL 传递</li>
+<li><strong>JSON/Web</strong>：在 JSON 中嵌入图片数据（Data URL）</li>
+<li><strong>配置文件</strong>：在 YAML/XML 等文本配置中存储证书、密钥等二进制数据</li>
+</ul>
+<p>Base64 将二进制数据编码为纯文本，解决了这些兼容性问题。</p>
+
+<h2 id="how">Base64 编码原理</h2>
+
+<h3>编码步骤</h3>
+<ol>
+<li>将原始数据按 <strong>3 字节</strong>（24 位）一组分割</li>
+<li>将每组 24 位分成 <strong>4 个 6 位</strong>组</li>
+<li>每个 6 位值（0-63）查表对应一个 Base64 字符</li>
+<li>如果原始数据不是 3 的倍数，用 <code>=</code> 填充</li>
+</ol>
+
+<h3>编码示例</h3>
+<p>以字符串 <code>"Man"</code> 为例：</p>
+<pre>原始数据：   M        a        n
+ASCII：      77       97       110
+二进制：     01001101 01100001 01101110
+6位分组：    010011  010110  000101  101110
+查表：       T      W      F      u
+Base64：     TWFu</pre>
+
+<div class="tip">
+<p><strong>注意：</strong>Base64 编码后的数据比原始数据大约大 33%（每 3 字节变成 4 字节），所以它不适合用于压缩数据。</p>
+</div>
+
+<h3>变体</h3>
+<ul>
+<li><strong>标准 Base64</strong>：<code>+/</code> 字符，用于 MIME、PEM 证书</li>
+<li><strong>URL-safe Base64</strong>：<code>-_</code> 替换 <code>+/</code>，用于 URL 和文件名</li>
+<li><strong>Base64URL</strong>：JWT 中使用的变体，去掉 <code>=</code> 填充</li>
+</ul>
+
+<h2 id="usage">常见使用场景</h2>
+
+<h3>1. Data URL（内嵌图片）</h3>
+<pre>&lt;img src="data:image/png;base64,iVBORw0KGgo..." alt="内嵌图片"&gt;</pre>
+<p>小图标可以直接内嵌在 HTML/CSS 中，减少 HTTP 请求数。</p>
+
+<h3>2. JWT Token</h3>
+<p>JWT 的 Header 和 Payload 都使用 Base64URL 编码：</p>
+<pre>Header:    eyJhbGciOiJIUzI1NiJ9
+Payload:   eyJzdWIiOiIxMjM0NTY3ODkwIn0
+Signature: SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</pre>
+
+<h3>3. 邮件附件（MIME）</h3>
+<p>电子邮件中的图片、PDF 等附件使用 Base64 编码传输。</p>
+
+<h3>4. API 认证</h3>
+<pre>// HTTP Basic Auth
+Authorization: Basic base64(username:password)</pre>
+
+<h2 id="faq">常见问题</h2>
+
+<h3>Base64 是加密吗？</h3>
+<p><strong>不是。</strong>Base64 是编码，不是加密。任何人都可以解码 Base64 数据。请勿将 Base64 用于保护敏感数据，应使用 AES、RSA 等真正的加密算法。</p>
+
+<h3>Base64 编码会增大多少体积？</h3>
+<p>编码后数据约为原始数据的 <strong>133%</strong>。具体来说，每 3 字节变成 4 字节，加上可能的 1-2 个 <code>=</code> 填充符。</p>
+
+<h3>为什么我的 Base64 解码失败？</h3>
+<ul>
+<li>数据中包含换行符或空格：先清理再解码</li>
+<li>长度不是 4 的倍数：缺少填充符 <code>=</code></li>
+<li>包含非法字符：确认是标准 Base64 还是 URL-safe 变体</li>
+<li>数据被截断：确认完整性</li>
+</ul>
+
+<div class="tip">
+<p><strong>提示：</strong>使用我们的<a href="/tools/base64.html">在线 Base64 编解码工具</a>可以快速验证和调试编码问题。</p>
+</div>
+
+<h3>Base64 和 Hex 编码的区别？</h3>
+<table>
+<tr><th>特性</th><th>Base64</th><th>Hex</th></tr>
+<tr><td>编码效率</td><td>~133%</td><td>~200%</td></tr>
+<tr><td>字符集</td><td>64 个</td><td>16 个</td></tr>
+<tr><td>可读性</td><td>较低</td><td>较高</td></tr>
+<tr><td>适用场景</td><td>邮件、JWT、Data URL</td><td>哈希值、调试、颜色值</td></tr>
+</table>
+
+<div class="cta-box">
+<h3>试试我们的 Base64 工具</h3>
+<p>支持文本和文件编解码，即开即用</p>
+<a href="/tools/base64.html" class="btn btn-primary" style="text-decoration:none">打开 Base64 编解码工具</a>
+</div>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+</body>
+</html>

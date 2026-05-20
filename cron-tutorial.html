@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>Cron表达式教程 - 定时任务语法详解与在线生成 | DevUtils</title>
+<meta name="description" content="Cron表达式完整教程：定时任务语法详解、各字段含义、常用示例、常见问题。附在线Cron表达式生成器。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/cron-tutorial.html">
+<meta property="og:title" content="Cron表达式教程 - 定时任务语法详解与在线生成">
+<meta property="og:description" content="Cron表达式完整教程：语法详解、常用示例、常见问题与在线生成器">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/cron-tutorial.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cron表达式教程 - 定时任务语法详解与在线生成">
+<meta name="twitter:description" content="Cron表达式完整教程：语法详解、常用示例、常见问题与在线生成器">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"Cron表达式教程","description":"Cron表达式完整教程","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-20","dateModified":"2026-05-20"}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.article{max-width:760px;margin:0 auto;padding:20px}
+.article h2{color:var(--color-accent);margin:32px 0 16px;font-size:var(--text-xl);padding-bottom:8px;border-bottom:1px solid var(--color-border)}
+.article h3{color:var(--color-text-primary);margin:24px 0 12px;font-size:var(--text-lg)}
+.article p{color:var(--color-text-secondary);line-height:1.8;margin-bottom:16px}
+.article ul,.article ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:16px;line-height:1.8}
+.article li{margin:4px 0}
+.article code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
+.article pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
+.article table{width:100%;border-collapse:collapse;margin:16px 0}
+.article th,.article td{border:1px solid var(--color-border);padding:8px 12px;text-align:left}
+.article th{background:var(--color-bg-elevated);color:var(--color-accent);font-weight:600}
+.article td{color:var(--color-text-secondary)}
+.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
+.tip p{color:var(--color-text-primary);margin:0}
+.cta-box{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+.cta-box h3{color:var(--color-accent);margin-bottom:8px}
+.cta-box p{color:var(--color-text-secondary);margin-bottom:16px}
+.toc{background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px 24px;margin:20px 0}
+.toc h3{margin-bottom:8px}
+.toc ul{list-style:none;padding-left:0}
+.toc li{padding:4px 0}
+.toc a{color:var(--color-accent);font-size:var(--text-sm)}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="container">
+<div class="article">
+<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/tools/cron-generator.html">Cron 表达式</a><span class="breadcrumb-sep">/</span><span>教程</span></nav>
+
+<h1>Cron 表达式完整教程：语法、示例与常见问题</h1>
+<p style="color:var(--color-text-muted);font-size:var(--text-sm)">最后更新：2026年5月 · 阅读时间：10分钟</p>
+
+<div class="toc">
+<h3>目录</h3>
+<ul>
+<li><a href="#what">什么是 Cron？</a></li>
+<li><a href="#syntax">Cron 表达式语法</a></li>
+<li><a href="#special">特殊字符</a></li>
+<li><a href="#examples">常用示例</a></li>
+<li><a href="#diff">5位 vs 6位 vs 7位</a></li>
+<li><a href="#faq">常见问题</a></li>
+</ul>
+</div>
+
+<div class="cta-box">
+<h3>在线 Cron 表达式生成器</h3>
+<p>可视化编辑 Cron 表达式，实时查看下次执行时间</p>
+<a href="/tools/cron-generator.html" class="btn btn-primary" style="text-decoration:none">打开生成器</a>
+</div>
+
+<h2 id="what">什么是 Cron？</h2>
+<p>Cron 是 Linux/Unix 系统中的定时任务调度程序。通过编写 <strong>Cron 表达式</strong>，你可以指定任务在什么时候自动执行，例如"每天凌晨3点备份数据库"或"每5分钟检查一次服务状态"。</p>
+<p>Cron 表达式虽然功能强大，但语法让很多开发者头疼。本教程将帮你彻底理解它。</p>
+
+<h2 id="syntax">Cron 表达式语法</h2>
+<p>标准 Cron 表达式由 <strong>5 个字段</strong>组成，用空格分隔：</p>
+<pre>┌──────── 分钟 (0-59)
+│ ┌────── 小时 (0-23)
+│ │ ┌──── 日期 (1-31)
+│ │ │ ┌── 月份 (1-12)
+│ │ │ │ ┌─ 星期 (0-6, 0=周日)
+│ │ │ │ │
+* * * * *</pre>
+
+<h3>各字段取值范围</h3>
+<table>
+<tr><th>字段</th><th>含义</th><th>取值范围</th><th>说明</th></tr>
+<tr><td>分钟</td><td>第几分钟执行</td><td>0-59</td><td></td></tr>
+<tr><td>小时</td><td>第几小时执行</td><td>0-23</td><td>0 = 午夜</td></tr>
+<tr><td>日期</td><td>每月第几天执行</td><td>1-31</td><td></td></tr>
+<tr><td>月份</td><td>第几月执行</td><td>1-12</td><td>也可用 JAN-DEC</td></tr>
+<tr><td>星期</td><td>每周第几天执行</td><td>0-6</td><td>0=周日, 也可用 SUN-SAT</td></tr>
+</table>
+
+<h2 id="special">特殊字符</h2>
+
+<h3>星号 <code>*</code></h3>
+<p>匹配所有值。如分钟字段使用 <code>*</code> 表示每分钟。</p>
+
+<h3>逗号 <code>,</code></h3>
+<p>列举多个值。如 <code>1,15,30</code> 表示第 1、15、30 分钟。</p>
+<pre># 每天的 9:00 和 18:00 执行
+0 9,18 * * *</pre>
+
+<h3>连字符 <code>-</code></h3>
+<p>指定范围。如 <code>1-5</code> 表示 1 到 5。</p>
+<pre># 工作日每小时执行
+0 * * * 1-5</pre>
+
+<h3>斜杠 <code>/</code></h3>
+<p>指定间隔。如 <code>*/5</code> 表示每 5 个单位，<code>0-30/10</code> 表示从 0 开始每 10 个单位。</p>
+<pre># 每 5 分钟执行
+*/5 * * * *
+
+# 每小时第 0 和 30 分钟执行（从 0 开始每 30 分钟）
+0,30 * * * *</pre>
+
+<h2 id="examples">常用示例</h2>
+<table>
+<tr><th>表达式</th><th>含义</th></tr>
+<tr><td><code>* * * * *</code></td><td>每分钟</td></tr>
+<tr><td><code>*/5 * * * *</code></td><td>每 5 分钟</td></tr>
+<tr><td><code>0 * * * *</code></td><td>每小时</td></tr>
+<tr><td><code>0 */2 * * *</code></td><td>每 2 小时</td></tr>
+<tr><td><code>0 0 * * *</code></td><td>每天午夜</td></tr>
+<tr><td><code>0 3 * * *</code></td><td>每天凌晨 3 点</td></tr>
+<tr><td><code>0 0 * * 0</code></td><td>每周日午夜</td></tr>
+<tr><td><code>0 0 1 * *</code></td><td>每月 1 日午夜</td></tr>
+<tr><td><code>0 0 1 1 *</code></td><td>每年 1 月 1 日午夜</td></tr>
+<tr><td><code>0 9 * * 1-5</code></td><td>工作日早上 9 点</td></tr>
+<tr><td><code>30 6 * * 1</code></td><td>每周一早上 6:30</td></tr>
+<tr><td><code>0 */6 * * *</code></td><td>每 6 小时</td></tr>
+<tr><td><code>0 8,12,18 * * *</code></td><td>每天 8:00、12:00、18:00</td></tr>
+<tr><td><code>0 0 1,15 * *</code></td><td>每月 1 日和 15 日午夜</td></tr>
+</table>
+
+<h2 id="diff">5 位 vs 6 位 vs 7 位 Cron</h2>
+<p>不同系统的 Cron 表达式格式不同：</p>
+<table>
+<tr><th>格式</th><th>字段</th><th>使用场景</th></tr>
+<tr><td>5 位</td><td>分 时 日 月 周</td><td>Linux crontab、标准 Cron</td></tr>
+<tr><td>6 位</td><td>秒 分 时 日 月 周</td><td>Spring、Quartz、AWS EventBridge</td></tr>
+<tr><td>7 位</td><td>秒 分 时 日 月 周 年</td><td>Quartz 完整格式</td></tr>
+</table>
+
+<div class="tip">
+<p><strong>提示：</strong>我们的<a href="/tools/cron-generator.html">Cron 表达式生成器</a>支持 5 位和 6 位格式，可视化编辑并显示下次执行时间。</p>
+</div>
+
+<h2 id="faq">常见问题</h2>
+
+<h3>日期和星期同时指定会怎样？</h3>
+<p>如果日期和星期字段都不是 <code>*</code>，则两者是<strong>或</strong>的关系。例如 <code>0 0 1 * 5</code> 表示每月 1 日<strong>或</strong>每周五执行，而不是每月 1 日且是周五才执行。</p>
+
+<h3>Cron 表达式如何处理月末？</h3>
+<p>标准 Cron 不支持"L"（最后一天）。如需在月末执行，需要配合脚本判断：</p>
+<pre># 每月 28-31 日执行，脚本内判断是否为最后一天
+0 0 28-31 * * [ "$(date +\%d -d tomorrow)" = "01" ] && your_command</pre>
+
+<h3>Cron 的时区问题</h3>
+<p>Linux crontab 默认使用系统时区。如需使用其他时区：</p>
+<pre>CRON_TZ=America/New_York
+0 9 * * * your_command</pre>
+
+<h3>如何查看 Cron 执行日志？</h3>
+<pre># 查看 cron 日志
+sudo tail -f /var/log/cron
+# 或查看系统日志
+journalctl -u cron</pre>
+
+<div class="cta-box">
+<h3>试试我们的 Cron 生成器</h3>
+<p>可视化编辑表达式，自动计算下次执行时间</p>
+<a href="/tools/cron-generator.html" class="btn btn-primary" style="text-decoration:none">打开 Cron 表达式生成器</a>
+</div>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+</body>
+</html>
