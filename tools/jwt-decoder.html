@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JWT解码器 - 在线开发者工具 | DevUtils</title>
+  <meta name="description" content="在线JWT解码验证工具，实时解析JWT Token的Header和Payload，支持格式化高亮显示。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/jwt-decoder.html">
+  <meta property="og:title" content="JWT解码器 - 在线开发者工具 | DevUtils">
+  <meta property="og:description" content="在线JWT解码验证工具，实时解析JWT Token，格式化高亮显示。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/jwt-decoder.html">
+  <meta property="og:site_name" content="DevUtils">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="JWT解码器 - 在线开发者工具 | DevUtils">
+  <meta name="twitter:description" content="在线JWT解码验证工具，实时解析JWT Token，格式化高亮显示。">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"JWT解码器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .jwt-section { margin-bottom: var(--space-lg); }
+    .jwt-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-sm); }
+    .jwt-section-title { font-size:var(--text-sm); font-weight:600; color:var(--color-text-secondary); }
+    .jwt-section-code { position:relative; }
+    .jwt-section-code pre { background:var(--color-bg-alt); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:var(--space-md); overflow-x:auto; font-family:"JetBrains Mono","Fira Code","Consolas",monospace; font-size:var(--text-sm); line-height:1.6; margin:0; }
+    .jwt-error { color:var(--color-error); font-size:var(--text-sm); padding:var(--space-md); background:rgba(239,68,68,0.08); border-radius:var(--radius-md); border:1px solid rgba(239,68,68,0.2); }
+    .claim-row { display:flex; gap:var(--space-md); padding:var(--space-xs) 0; border-bottom:1px solid var(--color-border); }
+    .claim-key { min-width:120px; font-weight:600; font-family:monospace; color:var(--color-accent); }
+    .claim-val { font-family:monospace; word-break:break-all; }
+    .time-claim { color:var(--color-text-secondary); font-size:var(--text-xs); margin-left:var(--space-sm); }
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>JWT解码器</span></nav>
+    <h1>JWT 解码器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">粘贴 JWT Token，实时解析 Header 和 Payload</p>
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">JWT Token</span>
+          <button class="btn btn-sm" id="pasteBtn">粘贴示例</button>
+        </div>
+        <textarea class="textarea" id="jwtInput" placeholder="粘贴 JWT Token（格式：xxxxx.yyyyy.zzzzz）..." spellcheck="false"></textarea>
+      </div>
+
+      <div id="jwtResult" style="margin-top:var(--space-lg)"></div>
+    </div>
+  </main>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    const SAMPLE_JWT = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+
+    function b64UrlDecode(str) {
+      str = str.replace(/-/g, '+').replace(/_/g, '/');
+      while (str.length % 4) str += '=';
+      try {
+        return decodeURIComponent(atob(str).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+      } catch {
+        return atob(str);
+      }
+    }
+
+    function formatTime(ts) {
+      if (typeof ts !== 'number') return '';
+      const d = new Date(ts * 1000);
+      const now = Date.now() / 1000;
+      const diff = ts - now;
+      let rel = '';
+      if (diff > 0) rel = `（${formatDuration(diff)}后）`;
+      else rel = `（${formatDuration(-diff)}前）`;
+      return `${d.toLocaleString('zh-CN')}${rel}`;
+    }
+
+    function formatDuration(s) {
+      if (s < 60) return `${Math.round(s)}秒`;
+      if (s < 3600) return `${Math.round(s / 60)}分钟`;
+      if (s < 86400) return `${Math.round(s / 3600)}小时`;
+      return `${Math.round(s / 86400)}天`;
+    }
+
+    const TIME_CLAIMS = ['iat', 'exp', 'nbf', 'auth_time'];
+
+    function decodeJWT(token) {
+      const parts = token.trim().split('.');
+      if (parts.length !== 3) return { error: '无效的 JWT 格式，需要三段以 . 分隔' };
+
+      let header, payload;
+      try {
+        header = JSON.parse(b64UrlDecode(parts[0]));
+      } catch {
+        return { error: '无法解析 Header（第一段）' };
+      }
+      try {
+        payload = JSON.parse(b64UrlDecode(parts[1]));
+      } catch {
+        return { error: '无法解析 Payload（第二段）' };
+      }
+
+      return { header, payload, signature: parts[2] };
+    }
+
+    function renderClaims(obj) {
+      return Object.entries(obj).map(([k, v]) => {
+        const val = typeof v === 'object' ? JSON.stringify(v) : String(v);
+        const timeInfo = TIME_CLAIMS.includes(k) && typeof v === 'number' ? `<span class="time-claim">${formatTime(v)}</span>` : '';
+        return `<div class="claim-row"><span class="claim-key">${k}</span><span class="claim-val">${val}${timeInfo}</span></div>`;
+      }).join('');
+    }
+
+    function render() {
+      const token = document.getElementById('jwtInput').value;
+      const result = document.getElementById('jwtResult');
+      if (!token) { result.innerHTML = ''; return; }
+
+      const decoded = decodeJWT(token);
+      if (decoded.error) {
+        result.innerHTML = `<div class="jwt-error">${decoded.error}</div>`;
+        return;
+      }
+
+      result.innerHTML = `
+        <div class="jwt-section">
+          <div class="jwt-section-header">
+            <span class="jwt-section-title">HEADER</span>
+            <button class="btn btn-sm btn-ghost" data-copy='${JSON.stringify(decoded.header)}'>复制</button>
+          </div>
+          <div class="jwt-section-code"><pre>${syntaxHighlight(JSON.stringify(decoded.header, null, 2))}</pre></div>
+        </div>
+        <div class="jwt-section">
+          <div class="jwt-section-header">
+            <span class="jwt-section-title">PAYLOAD</span>
+            <button class="btn btn-sm btn-ghost" data-copy-payload>复制</button>
+          </div>
+          <div class="jwt-section-code"><pre>${syntaxHighlight(JSON.stringify(decoded.payload, null, 2))}</pre></div>
+          <div class="panel" style="margin-top:var(--space-sm)">
+            <div class="panel-header"><span class="panel-title">字段说明</span></div>
+            ${renderClaims(decoded.payload)}
+          </div>
+        </div>
+        <div class="jwt-section">
+          <div class="jwt-section-header">
+            <span class="jwt-section-title">SIGNATURE</span>
+          </div>
+          <div class="jwt-section-code"><pre style="word-break:break-all;color:var(--color-text-muted)">${decoded.signature}</pre></div>
+        </div>
+      `;
+
+      result.querySelectorAll('[data-copy]').forEach(btn => {
+        btn.addEventListener('click', () => copyToClipboard(JSON.stringify(decoded.header, null, 2)));
+      });
+      result.querySelector('[data-copy-payload]')?.addEventListener('click', () => {
+        copyToClipboard(JSON.stringify(decoded.payload, null, 2));
+      });
+    }
+
+    function syntaxHighlight(json) {
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g, match => {
+        let cls = 'color:var(--color-text-secondary)';
+        if (/^"/.test(match)) {
+          cls = /:$/.test(match) ? 'color:var(--color-accent)' : 'color:var(--color-success)';
+        } else if (/true|false/.test(match)) {
+          cls = 'color:var(--color-warning,#f59e0b)';
+        } else if (/null/.test(match)) {
+          cls = 'color:var(--color-text-muted)';
+        }
+        return `<span style="${cls}">${match}</span>`;
+      });
+    }
+
+    document.getElementById('jwtInput').addEventListener('input', render);
+    document.getElementById('pasteBtn').addEventListener('click', () => {
+      document.getElementById('jwtInput').value = SAMPLE_JWT;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>

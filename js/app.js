@@ -3,6 +3,8 @@ import { renderHeader, renderFooter } from "./layout.js";
 
 const TOOLS = [
   { id: "json-formatter", name: "JSON 格式化", desc: "格式化、压缩、校验 JSON 数据", icon: "{}", cat: "encoding" },
+  { id: "jwt-decoder", name: "JWT 解码器", desc: "解析 JWT Token 的 Header 和 Payload", icon: "🔐", cat: "security" },
+  { id: "password-generator", name: "密码生成器", desc: "生成高强度随机密码，支持自定义选项", icon: "🔒", cat: "security" },
   { id: "base64", name: "Base64 编解码", desc: "文本与 Base64 互转，支持文件", icon: "🔤", cat: "encoding" },
   { id: "url-encode", name: "URL 编解码", desc: "URL 编码与解码转换", icon: "🔗", cat: "encoding" },
   { id: "color-converter", name: "颜色转换器", desc: "HEX/RGB/HSL 颜色格式互转", icon: "🎨", cat: "generate" },
