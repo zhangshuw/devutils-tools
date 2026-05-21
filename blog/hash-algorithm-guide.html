@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>在线哈希计算工具使用指南：MD5、SHA-1、SHA-256 有什么区别？ | DevUtils 博客</title>
+<meta name="description" content="MD5、SHA-1、SHA-256哈希算法有什么区别？哪种最安全？在线哈希计算工具怎么选？本文带你彻底搞懂哈希算法。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/hash-algorithm-guide.html">
+<meta property="og:title" content="MD5、SHA-1、SHA-256有什么区别？哈希算法选择指南">
+<meta property="og:description" content="哈希算法对比：MD5/SHA-1/SHA-256区别与安全选择指南">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/hash-algorithm-guide.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MD5、SHA-1、SHA-256有什么区别？哈希算法选择指南">
+<meta name="twitter:description" content="哈希算法对比与安全选择指南">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"在线哈希计算工具使用指南","description":"MD5、SHA-1、SHA-256哈希算法区别与选择","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-21","dateModified":"2026-05-21"}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.post{max-width:760px;margin:0 auto;padding:20px}
+.post h1{font-size:2rem;margin:24px 0 8px}
+.post .meta{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:24px}
+.post h2{color:var(--color-accent);margin:32px 0 16px;font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
+.post p{color:var(--color-text-secondary);line-height:1.9;margin-bottom:18px}
+.post ul,.post ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:18px;line-height:1.8}
+.post li{margin:6px 0}
+.post code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
+.post pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
+.post table{width:100%;border-collapse:collapse;margin:16px 0}
+.post th,.post td{border:1px solid var(--color-border);padding:8px 12px;text-align:left}
+.post th{background:var(--color-bg-elevated);color:var(--color-accent);font-weight:600}
+.post td{color:var(--color-text-secondary)}
+.post a{color:var(--color-accent);text-decoration:underline}
+.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
+.tip p{color:var(--color-text-primary);margin:0}
+.warning{background:#fff3cd;border-left:3px solid #ffc107;padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
+.warning p{color:#856404;margin:0}
+.cta{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+.cta h3{color:var(--color-accent);margin-bottom:8px}
+.cta p{color:var(--color-text-secondary);margin-bottom:16px}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="post">
+<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span><span>哈希算法指南</span></nav>
+
+<h1>MD5、SHA-1、SHA-256 有什么区别？哈希算法选择指南</h1>
+<p class="meta">发布于 2026年5月21日 · 阅读时间约8分钟</p>
+
+<p>开发中经常需要计算文件的哈希值——验证下载完整性、存储密码、生成唯一标识……但 MD5、SHA-1、SHA-256、SHA-512 这些算法有什么区别？应该选哪个？这篇文章给你讲清楚。</p>
+
+<h2>什么是哈希？</h2>
+<p>哈希（Hash）是一种单向函数：把任意长度的输入变成固定长度的输出。就像指纹一样——不同的人有不同的指纹，同一个人的指纹永远相同。</p>
+<p>关键特性：</p>
+<ul>
+<li><strong>确定性</strong>：相同输入永远产生相同输出</li>
+<li><strong>不可逆</strong>：从哈希值无法推算原始数据</li>
+<li><strong>雪崩效应</strong>：输入微小变化，输出完全不同</li>
+<li><strong>抗碰撞</strong>：很难找到两个不同输入产生相同输出</li>
+</ul>
+
+<h2>常见哈希算法对比</h2>
+<table>
+<tr><th>算法</th><th>输出长度</th><th>安全性</th><th>速度</th><th>典型用途</th></tr>
+<tr><td><strong>MD5</strong></td><td>128 位（32 字符）</td><td>❌ 已破解</td><td>很快</td><td>文件校验、缓存键</td></tr>
+<tr><td><strong>SHA-1</strong></td><td>160 位（40 字符）</td><td>❌ 已破解</td><td>快</td><td>Git 提交哈希（历史遗留）</td></tr>
+<tr><td><strong>SHA-256</strong></td><td>256 位（64 字符）</td><td>✅ 安全</td><td>中等</td><td>数字签名、区块链、密码存储</td></tr>
+<tr><td><strong>SHA-512</strong></td><td>512 位（128 字符）</td><td>✅ 安全</td><td>较慢</td><td>高安全场景、大文件校验</td></tr>
+</table>
+
+<h2>MD5：已不安全但仍在用</h2>
+<p>MD5 是最古老的哈希算法之一，输出 32 个十六进制字符：</p>
+<pre>MD5("hello") = 5d41402abc4b2a76b9719d911017c592</pre>
+<p>MD5 的致命问题：</p>
+<ul>
+<li>2004 年被发现存在<strong>碰撞攻击</strong>——可以人为构造两个不同文件具有相同 MD5</li>
+<li>彩虹表攻击可在秒级破解常见密码的 MD5</li>
+</ul>
+<div class="warning"><p><strong>不要用 MD5 存密码！</strong>MD5 只适合非安全场景：文件去重、缓存键、调试日志指纹。</p></div>
+
+<h2>SHA-1：正在被淘汰</h2>
+<p>SHA-1 输出 40 个十六进制字符，比 MD5 安全但已在 2017 年被攻破：</p>
+<pre>SHA1("hello") = aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d</pre>
+<p>SHA-1 的使用场景正在快速减少：</p>
+<ul>
+<li>Git 正在迁移到 SHA-256</li>
+<li>SSL 证书已停止使用 SHA-1 签名</li>
+<li>Chrome 等浏览器会标记 SHA-1 证书为不安全</li>
+</ul>
+
+<h2>SHA-256：当前推荐</h2>
+<p>SHA-256 是 SHA-2 家族中最常用的算法，输出 64 个十六进制字符：</p>
+<pre>SHA256("hello") = 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824</pre>
+<p><strong>你应该在以下场景优先选择 SHA-256：</strong></p>
+<ul>
+<li>文件完整性校验（下载验证）</li>
+<li>数字签名</li>
+<li>密码存储（配合 salt 和迭代次数）</li>
+<li>API 签名验证</li>
+<li>区块链数据哈希</li>
+</ul>
+
+<h2>密码存储的正确方式</h2>
+<p>直接用 SHA-256 存密码仍然不够安全（彩虹表攻击）。正确做法是：</p>
+<ol>
+<li>生成随机盐值（salt），每个用户不同</li>
+<li>使用 <code>bcrypt</code>、<code>scrypt</code> 或 <code>Argon2</code> 代替 SHA-256</li>
+<li>这些算法内置盐值和迭代，专门设计用于密码存储</li>
+</ol>
+<pre>// Node.js 密码存储示例（bcrypt）
+const bcrypt = require('bcrypt');
+const hash = await bcrypt.hash(password, 10);  // 10 = cost factor
+const match = await bcrypt.compare(inputPassword, hash);</pre>
+
+<div class="tip"><p>需要快速计算文本或文件的哈希值？试试 <a href="/tools/hash-generator.html">在线哈希生成器</a>，支持 MD5/SHA-1/SHA-256/SHA-512。</p></div>
+
+<h2>各语言计算哈希示例</h2>
+
+<h3>JavaScript（浏览器）</h3>
+<pre>const text = "hello";
+const buffer = new TextEncoder().encode(text);
+const hash = await crypto.subtle.digest('SHA-256', buffer);
+const hex = Array.from(new Uint8Array(hash))
+  .map(b => b.toString(16).padStart(2, '0'))
+  .join('');
+console.log(hex);</pre>
+
+<h3>Python</h3>
+<pre>import hashlib
+text = "hello"
+sha256 = hashlib.sha256(text.encode()).hexdigest()
+print(sha256)</pre>
+
+<h3>命令行</h3>
+<pre># macOS / Linux
+echo -n "hello" | shasum -a 256
+
+# 使用 OpenSSL
+echo -n "hello" | openssl dgst -sha256</pre>
+
+<h2>如何选择哈希算法？</h2>
+<table>
+<tr><th>场景</th><th>推荐算法</th><th>原因</th></tr>
+<tr><td>密码存储</td><td>bcrypt / Argon2</td><td>内置盐值和迭代，抗暴力破解</td></tr>
+<tr><td>文件完整性</td><td>SHA-256</td><td>安全、广泛支持</td></tr>
+<tr><td>数据去重</td><td>MD5 或 SHA-256</td><td>MD5 速度快、碰撞概率极低</td></tr>
+<tr><td>数字签名</td><td>SHA-256 或 SHA-512</td><td>安全性有保障</td></tr>
+<tr><td>缓存键</td><td>MD5</td><td>速度快、不需要安全性</td></tr>
+<tr><td>Git 提交</td><td>SHA-1（默认）/ SHA-256</td><td>Git 正在过渡到 SHA-256</td></tr>
+</table>
+
+<div class="cta">
+<h3>在线哈希生成器</h3>
+<p>输入文本即可计算 MD5、SHA-1、SHA-256、SHA-512，支持文件上传</p>
+<a href="/tools/hash-generator.html" class="btn btn-primary" style="text-decoration:none">打开哈希生成器</a>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+</body>
+</html>
