@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>URL编码是什么？为什么要对URL进行编码？完整指南 | DevUtils 博客</title>
+<meta name="description" content="URL编码完整指南：什么是URL编码、为什么需要编码、哪些字符需要编码、和Base64有什么区别？附在线URL编解码工具。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/url-encoding-guide.html">
+<meta property="og:title" content="URL编码是什么？完整指南与在线工具">
+<meta property="og:description" content="URL编码完整指南：原理、使用场景、常见问题与在线工具">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/url-encoding-guide.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="URL编码是什么？完整指南与在线工具">
+<meta name="twitter:description" content="URL编码完整指南：原理、使用场景与在线工具">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"URL编码是什么？完整指南","description":"URL编码完整指南","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-21"}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.post{max-width:760px;margin:0 auto;padding:20px}
+.post h1{font-size:2rem;margin:24px 0 8px}
+.post .meta{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:24px}
+.post h2{color:var(--color-accent);margin:32px 0 16px;font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
+.post p{color:var(--color-text-secondary);line-height:1.9;margin-bottom:18px}
+.post ul,.post ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:18px;line-height:1.8}
+.post li{margin:6px 0}
+.post code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
+.post pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
+.post table{width:100%;border-collapse:collapse;margin:16px 0}
+.post th,.post td{border:1px solid var(--color-border);padding:8px 12px;text-align:left}
+.post th{background:var(--color-bg-elevated);color:var(--color-accent);font-weight:600}
+.post td{color:var(--color-text-secondary)}
+.post a{color:var(--color-accent);text-decoration:underline}
+.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
+.tip p{color:var(--color-text-primary);margin:0}
+.cta{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+.cta h3{color:var(--color-accent);margin-bottom:8px}
+.cta p{color:var(--color-text-secondary);margin-bottom:16px}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="post">
+<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span><span>URL编码指南</span></nav>
+
+<h1>URL 编码是什么？为什么要对 URL 进行编码？</h1>
+<p class="meta">发布于 2026年5月21日 · 阅读时间约7分钟</p>
+
+<p>你有没有见过 URL 里的 <code>%E4%B8%AD%E6%96%87</code> 这种奇怪字符串？这就是 URL 编码（也叫百分号编码）。本文解释 URL 编码的原理、为什么需要它、以及什么时候该用它。</p>
+
+<h2>什么是 URL 编码？</h2>
+<p>URL 只允许包含一部分 ASCII 字符（字母、数字、<code>-</code>、<code>_</code>、<code>.</code>、<code>~</code>）。其他字符——包括中文、空格、特殊符号——必须编码为 <code>%</code> 加两位十六进制数的形式。</p>
+<p>例如：</p>
+<table>
+<tr><th>原始字符</th><th>URL 编码</th></tr>
+<tr><td>空格</td><td><code>%20</code> 或 <code>+</code></td></tr>
+<tr><td>中文"你好"</td><td><code>%E4%BD%A0%E5%A5%BD</code></td></tr>
+<tr><td><code>&</code></td><td><code>%26</code></td></tr>
+<tr><td><code>=</code></td><td><code>%3D</code></td></tr>
+<tr><td><code>/</code></td><td><code>%2F</code></td></tr>
+</table>
+
+<h2>为什么需要 URL 编码？</h2>
+<p>URL 中的特殊字符有特殊含义：</p>
+<ul>
+<li><code>?</code> 分隔路径和查询参数</li>
+<li><code>&</code> 分隔多个参数</li>
+<li><code>=</code> 分隔参数名和值</li>
+<li><code>#</code> 标记锚点</li>
+</ul>
+<p>如果参数值本身包含这些字符，不编码就会被误解析。比如搜索 <code>"a&b"</code>，如果不编码 <code>&</code>，服务器会把 <code>&</code> 当作参数分隔符，导致参数被截断。</p>
+
+<h2>哪些字符需要编码？</h2>
+<p>按 RFC 3986 标准，字符分为三类：</p>
+<ul>
+<li><strong>保留字符</strong>（必须编码）：<code>: / ? # [ ] @ ! $ & ' ( ) * + , ; =</code></li>
+<li><strong>非保留字符</strong>（无需编码）：<code>A-Z a-z 0-9 - _ . ~</code></li>
+<li><strong>其他字符</strong>（必须编码）：中文、emoji、空格等非 ASCII 字符</li>
+</ul>
+
+<h2>URL 编码 vs Base64</h2>
+<p>两者常被混淆，但用途完全不同：</p>
+<table>
+<tr><th>特性</th><th>URL 编码</th><th>Base64</th></tr>
+<tr><td>目的</td><td>让数据安全通过 URL 传输</td><td>让二进制数据通过文本协议传输</td></tr>
+<tr><td>输出长度</td><td>原始的 3 倍（中文）</td><td>原始的 133%</td></tr>
+<tr><td>可逆性</td><td>可逆</td><td>可逆</td></tr>
+<tr><td>典型场景</td><td>URL 参数中的中文/特殊字符</td><td>JWT、邮件附件、Data URL</td></tr>
+</table>
+<p>需要 Base64 编解码？用 <a href="/tools/base64.html">Base64 编解码工具</a>。</p>
+
+<h2>各语言 URL 编解码示例</h2>
+
+<h3>JavaScript</h3>
+<pre>// 编码
+encodeURIComponent("你好 world")  // "%E4%BD%A0%E5%A5%BD%20world"
+
+// 解码
+decodeURIComponent("%E4%BD%A0%E5%A5%BD%20world")  // "你好 world"</pre>
+
+<div class="tip"><p><strong>注意：</strong><code>encodeURI</code> 不编码 <code>:/?#&amp;=</code> 等字符（用于编码整个 URL），<code>encodeURIComponent</code> 编码所有特殊字符（用于编码参数值）。大多数情况下用 <code>encodeURIComponent</code>。</p></div>
+
+<h3>Python</h3>
+<pre>from urllib.parse import quote, unquote
+
+quote("你好 world")        # '%E4%BD%A0%E5%A5%BD%20world'
+unquote('%E4%BD%A0%E5%A5%BD')  # '你好'</pre>
+
+<h3>Java</h3>
+<pre>import java.net.URLEncoder;
+import java.net.URLDecoder;
+
+String encoded = URLEncoder.encode("你好", "UTF-8");
+String decoded = URLDecoder.decode(encoded, "UTF-8");</pre>
+
+<h2>常见问题</h2>
+
+<h3>空格编码为 %20 还是 +？</h3>
+<p><code>%20</code> 是标准 URL 编码（RFC 3986）。<code>+</code> 是 HTML 表单提交（<code>application/x-www-form-urlencoded</code>）的约定。现代开发中推荐使用 <code>%20</code>。</p>
+
+<h3>双重编码怎么办？</h3>
+<p>如果 URL 被编码了两次，字符会变成双重 <code>%25</code>：</p>
+<pre>原始:   你好
+编码1:  %E4%BD%A0%E5%A5%BD
+编码2:  %25E4%25BD%25A0%25E5%25A5%25BD</pre>
+<p>用 <a href="/tools/url-encode.html">URL 编解码工具</a> 多次解码即可修复。</p>
+
+<h3>中文 URL 对 SEO 有影响吗？</h3>
+<p>中文 URL 会被浏览器自动编码。Google 可以正常索引中文 URL，但建议在 sitemap 中使用编码后的 URL。百度也能处理中文 URL，但部分旧系统可能有问题。</p>
+
+<div class="cta">
+<h3>在线 URL 编解码工具</h3>
+<p>粘贴文本即可编码解码，支持中文和特殊字符</p>
+<a href="/tools/url-encode.html" class="btn btn-primary" style="text-decoration:none">打开 URL 编解码器</a>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+</body>
+</html>
