@@ -24,13 +24,21 @@ const TOOLS = [
   { id: "number-base", name: "数字进制转换", desc: "二进制/八进制/十进制/十六进制互转", icon: "🔢", cat: "encoding" },
 ];
 
+const CAT_NAMES = { encoding: "编码转换", generate: "生成器", security: "安全工具" };
+
 function renderCards(filter = "") {
   const grid = document.getElementById("toolGrid");
   if (!grid) return;
   const kw = filter.toLowerCase();
-  const filtered = TOOLS.filter(t =>
-    t.name.toLowerCase().includes(kw) || t.desc.toLowerCase().includes(kw)
-  );
+  let filtered = TOOLS;
+  if (filter.startsWith("cat:")) {
+    const cat = filter.slice(4);
+    filtered = TOOLS.filter(t => t.cat === cat);
+  } else if (filter) {
+    filtered = TOOLS.filter(t =>
+      t.name.toLowerCase().includes(kw) || t.desc.toLowerCase().includes(kw)
+    );
+  }
   grid.innerHTML = filtered.map(t => `
     <a href="tools/${t.id}.html" class="card card-hover" data-cat="${t.cat}">
       <div class="card-icon">${t.icon}</div>
@@ -38,6 +46,17 @@ function renderCards(filter = "") {
       <div class="card-desc">${t.desc}</div>
     </a>
   `).join("");
+  return filtered.length;
+}
+
+function applyHashFilter() {
+  const hash = window.location.hash.slice(1);
+  const catMap = { encoding: "encoding", generate: "generate", security: "security" };
+  if (catMap[hash]) {
+    const count = renderCards("cat:" + catMap[hash]);
+    const hero = document.querySelector(".hero p");
+    if (hero) hero.textContent = `筛选：${CAT_NAMES[hash]}（${count} 个工具）— 点击"全部工具"查看所有`;
+  }
 }
 
 function init() {
@@ -45,8 +64,23 @@ function init() {
   document.getElementById("siteHeader").innerHTML = renderHeader();
   document.getElementById("siteFooter").innerHTML = renderFooter();
 
-  // 渲染卡片
-  renderCards();
+  // 初始渲染
+  if (window.location.hash) {
+    applyHashFilter();
+  } else {
+    renderCards();
+  }
+
+  // Hash 变化监听
+  window.addEventListener("hashchange", () => {
+    if (!window.location.hash) {
+      renderCards();
+      const hero = document.querySelector(".hero p");
+      if (hero) hero.textContent = "免费、快速、无需安装 — 20+ 实用工具即开即用";
+    } else {
+      applyHashFilter();
+    }
+  });
 
   // 搜索
   const searchInput = document.getElementById("searchInput");
