@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>JSON 开发中的10个实用技巧 | DevUtils 博客</title>
+<meta name="description" content="JSON开发中的10个实用技巧：格式化、验证、去重、转CSV、压缩等，帮你在日常开发中高效处理JSON数据。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/json-tips.html">
+<meta property="og:title" content="JSON 开发中的10个实用技巧">
+<meta property="og:description" content="JSON开发实用技巧：格式化、验证、压缩、转CSV等">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/json-tips.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="JSON 开发中的10个实用技巧">
+<meta name="twitter:description" content="JSON开发实用技巧：格式化、验证、压缩、转CSV等">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"JSON 开发中的10个实用技巧","description":"JSON开发中的10个实用技巧","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-21"}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.post{max-width:760px;margin:0 auto;padding:20px}
+.post h1{font-size:2rem;margin:24px 0 8px}
+.post .meta{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:24px}
+.post h2{color:var(--color-accent);margin:32px 0 16px;font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
+.post p{color:var(--color-text-secondary);line-height:1.9;margin-bottom:18px}
+.post ul,.post ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:18px;line-height:1.8}
+.post li{margin:6px 0}
+.post code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
+.post pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
+.post a{color:var(--color-accent);text-decoration:underline}
+.cta{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+.cta h3{color:var(--color-accent);margin-bottom:8px}
+.cta p{color:var(--color-text-secondary);margin-bottom:16px}
+.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
+.tip p{color:var(--color-text-primary);margin:0}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="post">
+<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span><span>JSON 实用技巧</span></nav>
+
+<h1>JSON 开发中的 10 个实用技巧</h1>
+<p class="meta">发布于 2026年5月21日 · 阅读时间约8分钟</p>
+
+<p>JSON 是现代开发中最常用的数据交换格式。无论你是前端、后端还是全栈，每天都要和 JSON 打交道。以下 10 个技巧能让你处理 JSON 时事半功倍。</p>
+
+<h2>1. 一键格式化压缩 JSON</h2>
+<p>面对一行几千字符的压缩 JSON，直接手动缩进是不现实的。最快的办法是用 <a href="/tools/json-formatter.html">在线 JSON 格式化工具</a>，粘贴即格式化，语法高亮让数据结构一目了然。反过来，发送数据前也可以一键压缩。</p>
+
+<h2>2. 自动检测 JSON 语法错误</h2>
+<p>JSON 报错 <code>Unexpected token</code> 又找不到问题在哪？常见的错误：</p>
+<ul>
+<li><strong>尾部逗号</strong>：最后一个元素后面多了个逗号 <code>{"name": "test",}</code></li>
+<li><strong>单引号</strong>：JSON 只认双引号，单引号会报错</li>
+<li><strong>注释</strong>：标准 JSON 不支持 <code>//</code> 或 <code>/* */</code> 注释</li>
+<li><strong>未引用键名</strong>：键名必须用双引号包裹</li>
+</ul>
+<p>用 <a href="/tools/json-formatter.html">JSON 格式化工具</a> 的验证功能可以精确定位错误行号。更详细的排查方法见 <a href="/json-tutorial.html">JSON 教程</a>。</p>
+
+<h2>3. 用 jq 命令行处理 JSON</h2>
+<p>Linux/Mac 上处理 JSON 文件，<code>jq</code> 是最好的命令行工具：</p>
+<pre># 格式化
+cat data.json | jq .
+
+# 提取字段
+cat data.json | jq '.users[].name'
+
+# 过滤
+cat data.json | jq '.items[] | select(.price > 100)'</pre>
+
+<h2>4. JSON 转 CSV</h2>
+<p>有时需要把 JSON 数据导入 Excel 分析。用 <code>jq</code> 一行搞定：</p>
+<pre>cat data.json | jq -r '.[] | [.name, .age, .city] | @csv'</pre>
+
+<h2>5. 深度比较两个 JSON</h2>
+<p>接口返回的 JSON 和预期不一致？用 <a href="/tools/text-diff.html">文本差异对比工具</a> 粘贴两个 JSON，逐行高亮差异，快速定位变化。</p>
+
+<h2>6. JSON Schema 验证</h2>
+<p>生产环境中 JSON 结构必须符合规范。JSON Schema 可以在数据进入系统前做自动化校验：</p>
+<pre>{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["name", "age"],
+  "properties": {
+    "name": {"type": "string", "minLength": 1},
+    "age": {"type": "integer", "minimum": 0}
+  }
+}</pre>
+
+<h2>7. 避免 JSON 中的常见坑</h2>
+<ul>
+<li><strong>大整数精度丢失</strong>：JavaScript 的 <code>Number</code> 只能安全表示 ±2^53 以内的整数，超出范围的大整数用字符串传</li>
+<li><strong>undefined 和 NaN</strong>：JSON 不支持这两个值，序列化时会被转为 <code>null</code> 或直接丢弃</li>
+<li><strong>循环引用</strong>：对象包含自身引用时 <code>JSON.stringify()</code> 会报错</li>
+</ul>
+
+<h2>8. 美化浏览器中的 JSON 显示</h2>
+<p>Chrome 浏览器直接访问 JSON API 时，可以安装 JSON Viewer 扩展；或者用 <code>JSON.stringify(obj, null, 2)</code> 在控制台输出。</p>
+
+<h2>9. 安全地解析 JSON</h2>
+<p>永远不要用 <code>eval()</code> 解析 JSON（XSS 风险）。使用 <code>JSON.parse()</code> 并配合 try-catch：</p>
+<pre>try {
+  const data = JSON.parse(input);
+} catch (e) {
+  console.error('JSON 解析失败:', e.message);
+}</pre>
+
+<h2>10. 用 Base64 传输二进制 JSON</h2>
+<p>如果要在 JSON 中嵌入二进制数据（如图片），先 <a href="/tools/base64.html">Base64 编码</a>再放入 JSON 字符串字段。</p>
+
+<div class="tip"><p>以上技巧中涉及的格式化、验证、对比等操作，都可以在 <a href="/">DevUtils</a> 上免费完成，无需安装任何软件。</p></div>
+
+<div class="cta">
+<h3>JSON 格式化工具</h3>
+<p>粘贴 JSON 即可格式化、压缩、验证，支持语法高亮和错误定位</p>
+<a href="/tools/json-formatter.html" class="btn btn-primary" style="text-decoration:none">打开 JSON 格式化</a>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+</body>
+</html>

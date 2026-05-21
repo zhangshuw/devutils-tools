@@ -10,6 +10,7 @@ export function renderHeader() {
             <li><a href="/#encoding">编码转换</a></li>
             <li><a href="/#generate">生成器</a></li>
             <li><a href="/#security">安全工具</a></li>
+            <li><a href="/blog.html">📝 博客</a></li>
           </ul>
         </nav>
         <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="菜单">☰</button>
