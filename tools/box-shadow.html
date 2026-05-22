@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>CSS Box Shadow 生成器 - 在线可视化阴影效果 | DevUtils</title>
+  <meta name="description" content="在线CSS Box Shadow生成器，可视化调节偏移、模糊、扩散、颜色，支持内阴影和预设，一键复制CSS代码。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/box-shadow.html">
+  <meta property="og:title" content="CSS Box Shadow 生成器 - 在线可视化阴影效果 | DevUtils">
+  <meta property="og:description" content="在线CSS Box Shadow生成器，可视化调节参数，支持内阴影，一键复制CSS。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/box-shadow.html">
+  <meta property="og:site_name" content="DevUtils">
+  <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="CSS Box Shadow 生成器 - 在线可视化阴影效果 | DevUtils">
+  <meta name="twitter:description" content="在线CSS Box Shadow生成器，可视化调节参数，一键复制CSS。">
+  <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"CSS Box Shadow 生成器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .preview-area{display:flex;align-items:center;justify-content:center;min-height:320px;background:var(--color-bg);border:1px solid var(--color-border);border-radius:var(--radius-lg);margin-bottom:var(--space-lg);padding:40px}
+    .preview-box{width:200px;height:200px;background:var(--color-bg-surface);border-radius:12px;transition:box-shadow .15s}
+    .controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);margin-bottom:var(--space-lg)}
+    @media(max-width:600px){.controls-grid{grid-template-columns:1fr}}
+    .control-item{display:flex;flex-direction:column;gap:4px}
+    .control-item label{font-size:var(--text-sm);color:var(--color-text-secondary)}
+    .control-item input[type="range"]{width:100%}
+    .control-item .value-display{font-family:monospace;font-size:0.9rem;color:var(--color-accent);text-align:right}
+    .control-row{display:flex;align-items:center;gap:var(--space-md)}
+    .control-row input[type="color"]{width:48px;height:36px;border:1px solid var(--color-border);border-radius:var(--radius-sm);cursor:pointer;padding:2px}
+    .toggle-row{display:flex;align-items:center;gap:var(--space-sm);margin-bottom:var(--space-lg)}
+    .presets-section{margin-bottom:var(--space-lg)}
+    .presets-section h3{margin-bottom:var(--space-sm);font-size:1rem}
+    .preset-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:var(--space-sm)}
+    .preset-btn{background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:12px 8px;cursor:pointer;text-align:center;transition:all .2s}
+    .preset-btn:hover{border-color:var(--color-accent);transform:translateY(-1px)}
+    .preset-btn .preset-name{font-size:0.8rem;color:var(--color-text-secondary)}
+    .preset-btn .preset-box{width:48px;height:36px;background:#fff;border-radius:6px;margin:0 auto 6px}
+    .code-output{margin-top:var(--space-lg)}
+    .code-block{position:relative;background:var(--color-bg-alt);border:1px solid var(--color-border);border-radius:var(--radius-sm);padding:var(--space-md);font-family:monospace;font-size:0.9rem;word-break:break-all;line-height:1.6;color:var(--color-text-primary)}
+    .code-block .copy-btn{position:absolute;top:var(--space-sm);right:var(--space-sm)}
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>CSS Box Shadow 生成器</span></nav>
+    <h1>CSS Box Shadow 生成器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">可视化调节 CSS 阴影效果，实时预览，一键复制代码</p>
+
+    <div class="preview-area">
+      <div class="preview-box" id="previewBox"></div>
+    </div>
+
+    <div class="toggle-row">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="insetCheck"> <span>内阴影 (inset)</span>
+      </label>
+    </div>
+
+    <div class="controls-grid">
+      <div class="control-item">
+        <label>水平偏移 (X)</label>
+        <input type="range" id="offsetX" min="-100" max="100" value="4">
+        <div class="value-display" id="offsetXVal">4px</div>
+      </div>
+      <div class="control-item">
+        <label>垂直偏移 (Y)</label>
+        <input type="range" id="offsetY" min="-100" max="100" value="4">
+        <div class="value-display" id="offsetYVal">4px</div>
+      </div>
+      <div class="control-item">
+        <label>模糊半径 (Blur)</label>
+        <input type="range" id="blur" min="0" max="200" value="12">
+        <div class="value-display" id="blurVal">12px</div>
+      </div>
+      <div class="control-item">
+        <label>扩散半径 (Spread)</label>
+        <input type="range" id="spread" min="-100" max="100" value="0">
+        <div class="value-display" id="spreadVal">0px</div>
+      </div>
+      <div class="control-item">
+        <label>阴影颜色</label>
+        <div class="control-row">
+          <input type="color" id="shadowColor" value="#6366f1">
+          <input type="text" class="input" id="shadowColorText" value="#6366f1" style="font-family:monospace;font-size:0.9rem">
+        </div>
+      </div>
+      <div class="control-item">
+        <label>透明度</label>
+        <input type="range" id="opacity" min="0" max="100" value="40">
+        <div class="value-display" id="opacityVal">40%</div>
+      </div>
+    </div>
+
+    <div class="presets-section">
+      <h3>预设效果</h3>
+      <div class="preset-grid" id="presetGrid"></div>
+    </div>
+
+    <div class="code-output">
+      <h3>CSS 代码</h3>
+      <div class="code-block" id="codeOutput">
+        <button class="btn btn-sm btn-ghost copy-btn" id="copyBtn">复制</button>
+        <code id="codeText"></code>
+      </div>
+    </div>
+  </main>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, copyToClipboard, showToast } from "../js/layout.js";
+    initLayout();
+
+    const els = {
+      offsetX: document.getElementById("offsetX"),
+      offsetY: document.getElementById("offsetY"),
+      blur: document.getElementById("blur"),
+      spread: document.getElementById("spread"),
+      shadowColor: document.getElementById("shadowColor"),
+      shadowColorText: document.getElementById("shadowColorText"),
+      opacity: document.getElementById("opacity"),
+      insetCheck: document.getElementById("insetCheck"),
+      previewBox: document.getElementById("previewBox"),
+      codeText: document.getElementById("codeText"),
+    };
+
+    const PRESETS = [
+      { name: "柔和", x: 0, y: 4, blur: 12, spread: 0, color: "#6366f1", opacity: 25, inset: false },
+      { name: "浮起", x: 0, y: 8, blur: 24, spread: -4, color: "#000000", opacity: 15, inset: false },
+      { name: "硬边", x: 4, y: 4, blur: 0, spread: 0, color: "#000000", opacity: 30, inset: false },
+      { name: "凹陷", x: 0, y: 2, blur: 4, spread: 0, color: "#000000", opacity: 20, inset: true },
+      { name: "霓虹", x: 0, y: 0, blur: 20, spread: 2, color: "#6366f1", opacity: 60, inset: false },
+      { name: "层叠", x: 0, y: 10, blur: 30, spread: -10, color: "#6366f1", opacity: 20, inset: false },
+      { name: "锐利", x: 2, y: 2, blur: 2, spread: 0, color: "#333333", opacity: 50, inset: false },
+      { name: "弥散", x: 0, y: 0, blur: 40, spread: 10, color: "#6366f1", opacity: 15, inset: false },
+    ];
+
+    function hexToRgba(hex, opacity) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${(opacity / 100).toFixed(2)})`;
+    }
+
+    function update() {
+      const x = els.offsetX.value;
+      const y = els.offsetY.value;
+      const b = els.blur.value;
+      const s = els.spread.value;
+      const color = els.shadowColor.value;
+      const op = els.opacity.value;
+      const inset = els.insetCheck.checked;
+
+      document.getElementById("offsetXVal").textContent = x + "px";
+      document.getElementById("offsetYVal").textContent = y + "px";
+      document.getElementById("blurVal").textContent = b + "px";
+      document.getElementById("spreadVal").textContent = s + "px";
+      document.getElementById("opacityVal").textContent = op + "%";
+
+      const rgba = hexToRgba(color, op);
+      const insetStr = inset ? "inset " : "";
+      const shadow = `${insetStr}${x}px ${y}px ${b}px ${s}px ${rgba}`;
+      els.previewBox.style.boxShadow = shadow;
+
+      const cssCode = `box-shadow: ${shadow};`;
+      els.codeText.textContent = cssCode;
+    }
+
+    // 预设按钮
+    const presetGrid = document.getElementById("presetGrid");
+    PRESETS.forEach((p) => {
+      const btn = document.createElement("button");
+      btn.className = "preset-btn";
+      const rgba = hexToRgba(p.color, p.opacity);
+      const insetStr = p.inset ? "inset " : "";
+      btn.innerHTML = `<div class="preset-box" style="box-shadow:${insetStr}${p.x}px ${p.y}px ${p.blur}px ${p.spread}px ${rgba}"></div><div class="preset-name">${p.name}</div>`;
+      btn.addEventListener("click", () => {
+        els.offsetX.value = p.x;
+        els.offsetY.value = p.y;
+        els.blur.value = p.blur;
+        els.spread.value = p.spread;
+        els.shadowColor.value = p.color;
+        els.shadowColorText.value = p.color;
+        els.opacity.value = p.opacity;
+        els.insetCheck.checked = p.inset;
+        update();
+      });
+      presetGrid.appendChild(btn);
+    });
+
+    // 事件绑定
+    [els.offsetX, els.offsetY, els.blur, els.spread, els.opacity].forEach(el => el.addEventListener("input", update));
+    els.insetCheck.addEventListener("change", update);
+    els.shadowColor.addEventListener("input", () => {
+      els.shadowColorText.value = els.shadowColor.value;
+      update();
+    });
+    els.shadowColorText.addEventListener("input", () => {
+      if (/^#[0-9a-fA-F]{6}$/.test(els.shadowColorText.value)) {
+        els.shadowColor.value = els.shadowColorText.value;
+        update();
+      }
+    });
+
+    // 复制
+    document.getElementById("copyBtn").addEventListener("click", () => {
+      copyToClipboard(els.codeText.textContent);
+      showToast("已复制到剪贴板");
+    });
+
+    update();
+  </script>
+</body>
+</html>

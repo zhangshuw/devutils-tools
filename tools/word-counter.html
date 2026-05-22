@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>字数统计工具 - 在线字符/词数/行数统计 | DevUtils</title>
+  <meta name="description" content="在线字数统计工具，实时统计字符数、词数、句数、段落数、阅读时间，支持中英文混排统计。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/word-counter.html">
+  <meta property="og:title" content="字数统计工具 - 在线字符/词数统计 | DevUtils">
+  <meta property="og:description" content="在线字数统计工具，实时统计字符数、词数、句数、阅读时间，支持中英文混排。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/word-counter.html">
+  <meta property="og:site_name" content="DevUtils">
+  <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="字数统计工具 - 在线字符/词数统计 | DevUtils">
+  <meta name="twitter:description" content="在线字数统计工具，实时统计字符数、词数、阅读时间，支持中英文混排。">
+  <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"字数统计工具","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:var(--space-lg)}
+    .stat-card{background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;text-align:center;transition:border-color .2s}
+    .stat-card:hover{border-color:var(--color-accent)}
+    .stat-value{font-size:2rem;font-weight:700;color:var(--color-accent);line-height:1.2}
+    .stat-label{font-size:var(--text-sm);color:var(--color-text-secondary);margin-top:4px}
+    .keyword-section{margin-top:var(--space-lg)}
+    .keyword-section h3{margin-bottom:var(--space-sm);font-size:1rem}
+    .keyword-list{display:flex;flex-wrap:wrap;gap:8px}
+    .keyword-item{background:var(--color-accent-subtle);color:var(--color-accent);padding:4px 12px;border-radius:16px;font-size:0.85rem}
+    .keyword-item span{font-weight:600;margin-left:4px}
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>字数统计</span></nav>
+    <h1>字数统计工具</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">实时统计字符数、词数、句数、阅读时间，支持中英文混排</p>
+
+    <div class="panel" style="margin-bottom:var(--space-lg)">
+      <div class="panel-header">
+        <span class="panel-title">输入文本</span>
+        <button class="btn btn-sm btn-ghost" id="clearBtn">清空</button>
+      </div>
+      <textarea class="textarea" id="inputText" placeholder="在此输入或粘贴文本，实时统计字数、词数、句数、段落数..." rows="10" spellcheck="false"></textarea>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card"><div class="stat-value" id="charCount">0</div><div class="stat-label">字符数</div></div>
+      <div class="stat-card"><div class="stat-value" id="charNoSpace">0</div><div class="stat-label">字符数（不含空格）</div></div>
+      <div class="stat-card"><div class="stat-value" id="wordCount">0</div><div class="stat-label">词数</div></div>
+      <div class="stat-card"><div class="stat-value" id="cnCount">0</div><div class="stat-label">中文字数</div></div>
+      <div class="stat-card"><div class="stat-value" id="enWordCount">0</div><div class="stat-label">英文词数</div></div>
+      <div class="stat-card"><div class="stat-value" id="sentenceCount">0</div><div class="stat-label">句子数</div></div>
+      <div class="stat-card"><div class="stat-value" id="paragraphCount">0</div><div class="stat-label">段落数</div></div>
+      <div class="stat-card"><div class="stat-value" id="lineCount">0</div><div class="stat-label">行数</div></div>
+      <div class="stat-card"><div class="stat-value" id="readTime">0 分</div><div class="stat-label">阅读时间</div></div>
+    </div>
+
+    <div class="keyword-section" id="keywordSection" style="display:none">
+      <h3>高频词（Top 10）</h3>
+      <div class="keyword-list" id="keywordList"></div>
+    </div>
+  </main>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout } from "../js/layout.js";
+    initLayout();
+
+    const input = document.getElementById("inputText");
+    const clearBtn = document.getElementById("clearBtn");
+
+    function analyze(text) {
+      if (!text.trim()) {
+        return { charCount: 0, charNoSpace: 0, wordCount: 0, cnCount: 0, enWordCount: 0, sentenceCount: 0, paragraphCount: 0, lineCount: 0, readTimeMin: 0, keywords: [] };
+      }
+
+      // 字符数
+      const charCount = text.length;
+      const charNoSpace = text.replace(/\s/g, "").length;
+
+      // 中文字数（CJK统一汉字范围）
+      const cnChars = text.match(/[一-鿿㐀-䶿]/g) || [];
+      const cnCount = cnChars.length;
+
+      // 英文词数
+      const enWords = text.match(/[a-zA-Z]+(?:['-][a-zA-Z]+)*/g) || [];
+      const enWordCount = enWords.length;
+
+      // 总词数 = 中文字数 + 英文词数
+      const wordCount = cnCount + enWordCount;
+
+      // 句子数（中英文句号、问号、叹号）
+      const sentenceCount = (text.match(/[。！？.!?]+/g) || []).length || (wordCount > 0 ? 1 : 0);
+
+      // 段落数
+      const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim());
+      const paragraphCount = paragraphs.length || (text.trim() ? 1 : 0);
+
+      // 行数
+      const lineCount = text.split("\n").length;
+
+      // 阅读时间（中文 400字/分钟，英文 200词/分钟）
+      const readTimeMin = Math.max(1, Math.ceil(cnCount / 400 + enWordCount / 200));
+
+      // 高频词
+      const freq = {};
+      enWords.forEach(w => {
+        const lw = w.toLowerCase();
+        if (lw.length > 1) freq[lw] = (freq[lw] || 0) + 1;
+      });
+      cnChars.forEach(c => {
+        freq[c] = (freq[c] || 0) + 1;
+      });
+      const keywords = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 10);
+
+      return { charCount, charNoSpace, wordCount, cnCount, enWordCount, sentenceCount, paragraphCount, lineCount, readTimeMin, keywords };
+    }
+
+    function update() {
+      const r = analyze(input.value);
+      document.getElementById("charCount").textContent = r.charCount;
+      document.getElementById("charNoSpace").textContent = r.charNoSpace;
+      document.getElementById("wordCount").textContent = r.wordCount;
+      document.getElementById("cnCount").textContent = r.cnCount;
+      document.getElementById("enWordCount").textContent = r.enWordCount;
+      document.getElementById("sentenceCount").textContent = r.sentenceCount;
+      document.getElementById("paragraphCount").textContent = r.paragraphCount;
+      document.getElementById("lineCount").textContent = r.lineCount;
+      document.getElementById("readTime").textContent = r.readTimeMin > 0 ? `${r.readTimeMin} 分` : "0 分";
+
+      const kwSection = document.getElementById("keywordSection");
+      const kwList = document.getElementById("keywordList");
+      if (r.keywords.length > 0) {
+        kwSection.style.display = "";
+        kwList.innerHTML = r.keywords.map(([w, c]) => `<div class="keyword-item">${w}<span>×${c}</span></div>`).join("");
+      } else {
+        kwSection.style.display = "none";
+      }
+    }
+
+    input.addEventListener("input", update);
+    clearBtn.addEventListener("click", () => { input.value = ""; update(); input.focus(); });
+  </script>
+</body>
+</html>

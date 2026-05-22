@@ -22,6 +22,8 @@ const TOOLS = [
   { id: "text-diff", name: "文本差异对比", desc: "逐行比较文本增删改", icon: "📊", cat: "encoding" },
   { id: "markdown-preview", name: "Markdown 预览", desc: "实时渲染Markdown为HTML", icon: "📝", cat: "encoding" },
   { id: "number-base", name: "数字进制转换", desc: "二进制/八进制/十进制/十六进制互转", icon: "🔢", cat: "encoding" },
+  { id: "word-counter", name: "字数统计", desc: "实时统计字符数、词数、句数、阅读时间", icon: "📊", cat: "encoding" },
+  { id: "box-shadow", name: "CSS Box Shadow", desc: "可视化生成CSS阴影效果", icon: "🔲", cat: "generate" },
 ];
 
 const CAT_NAMES = { encoding: "编码转换", generate: "生成器", security: "安全工具" };

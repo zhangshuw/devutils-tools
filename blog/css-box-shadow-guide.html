@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>CSS Box Shadow 完整指南：语法、示例与在线生成器 | DevUtils 博客</title>
+<meta name="description" content="CSS box-shadow 语法详解：偏移、模糊、扩散、内阴影，8种常见阴影效果示例，附在线阴影生成器。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/css-box-shadow-guide.html">
+<meta property="og:title" content="CSS Box Shadow 完整指南：语法、示例与在线生成器">
+<meta property="og:description" content="CSS box-shadow 语法详解与8种常见阴影效果示例">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/css-box-shadow-guide.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="CSS Box Shadow 完整指南：语法、示例与在线生成器">
+<meta name="twitter:description" content="CSS box-shadow 语法详解与常见阴影效果示例">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"CSS Box Shadow 完整指南","description":"CSS box-shadow 语法详解与常见阴影效果","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-22","dateModified":"2026-05-22"}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.post{max-width:760px;margin:0 auto;padding:20px}
+.post h1{font-size:2rem;margin:24px 0 8px}
+.post .meta{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:24px}
+.post h2{color:var(--color-accent);margin:32px 0 16px;font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
+.post p{color:var(--color-text-secondary);line-height:1.9;margin-bottom:18px}
+.post ul,.post ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:18px;line-height:1.8}
+.post li{margin:6px 0}
+.post code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
+.post pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
+.post table{width:100%;border-collapse:collapse;margin:16px 0}
+.post th,.post td{border:1px solid var(--color-border);padding:8px 12px;text-align:left}
+.post th{background:var(--color-bg-elevated);color:var(--color-accent);font-weight:600}
+.post td{color:var(--color-text-secondary)}
+.post a{color:var(--color-accent);text-decoration:underline}
+.shadow-demo{display:inline-block;width:120px;height:80px;background:var(--color-bg-surface);border-radius:8px;margin:8px;vertical-align:top}
+.shadow-item{display:flex;align-items:center;gap:16px;margin:12px 0;padding:16px;background:var(--color-bg-surface);border-radius:8px}
+.shadow-item .demo{flex-shrink:0}
+.shadow-item .code{font-family:"JetBrains Mono",monospace;font-size:0.85rem;color:var(--color-text-secondary);word-break:break-all}
+.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
+.tip p{color:var(--color-text-primary);margin:0}
+.cta{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+.cta h3{color:var(--color-accent);margin-bottom:8px}
+.cta p{color:var(--color-text-secondary);margin-bottom:16px}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="post">
+<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span><span>Box Shadow 指南</span></nav>
+
+<h1>CSS Box Shadow 完整指南：语法、示例与在线生成器</h1>
+<p class="meta">发布于 2026年5月22日 · 阅读时间约6分钟</p>
+
+<p>CSS <code>box-shadow</code> 是前端开发中使用最广泛的视觉效果之一。从柔和的卡片阴影到霓虹光效，一个属性就能实现。本文详解语法、常见效果和注意事项。</p>
+
+<h2>语法详解</h2>
+<p><code>box-shadow</code> 的完整语法：</p>
+<pre>box-shadow: [inset] offset-x offset-y blur-radius spread-radius color;</pre>
+
+<table>
+<tr><th>参数</th><th>必填</th><th>说明</th></tr>
+<tr><td><code>inset</code></td><td>否</td><td>内阴影，不加则为外阴影</td></tr>
+<tr><td><code>offset-x</code></td><td>是</td><td>水平偏移，正值向右，负值向左</td></tr>
+<tr><td><code>offset-y</code></td><td>是</td><td>垂直偏移，正值向下，负值向上</td></tr>
+<tr><td><code>blur-radius</code></td><td>否</td><td>模糊半径，0 为硬边，值越大越模糊</td></tr>
+<tr><td><code>spread-radius</code></td><td>否</td><td>扩散半径，正值扩大，负值收缩</td></tr>
+<tr><td><code>color</code></td><td>是</td><td>阴影颜色，建议用 rgba 控制透明度</td></tr>
+</table>
+
+<div class="tip"><p><strong>最佳实践：</strong>阴影颜色用 <code>rgba()</code> 而非 <code>#hex</code>，方便单独控制透明度。比如 <code>rgba(0,0,0,0.1)</code> 比 <code>#0000001a</code> 更直观。</p></div>
+
+<h2>8 种常见阴影效果</h2>
+
+<h3>1. 柔和阴影（最常用）</h3>
+<pre>box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);</pre>
+<p>卡片、弹窗的标准阴影。偏移小、模糊大、透明度低，看起来干净自然。</p>
+
+<h3>2. 浮起效果</h3>
+<pre>box-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.15);</pre>
+<p>用负的 <code>spread</code> 值让阴影更集中在底部，模拟物体离桌面更远的效果。常配合 <code>:hover</code> 使用。</p>
+
+<h3>3. 硬边阴影</h3>
+<pre>box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3);</pre>
+<p>模糊半径为 0，产生复古风格的硬边阴影。适合像素风格或粗野主义设计。</p>
+
+<h3>4. 内阴影</h3>
+<pre>box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);</pre>
+<p>凹陷效果，常用于输入框聚焦状态、按下状态的按钮。</p>
+
+<h3>5. 霓虹光效</h3>
+<pre>box-shadow: 0 0 20px 2px rgba(99, 102, 241, 0.6);</pre>
+<p>偏移为 0，模糊和扩散大，配合品牌色产生发光效果。暗色模式下特别好看。</p>
+
+<h3>6. 多层阴影</h3>
+<pre>box-shadow:
+  0 1px 2px rgba(0, 0, 0, 0.07),
+  0 4px 8px rgba(0, 0, 0, 0.05),
+  0 12px 24px rgba(0, 0, 0, 0.03);</pre>
+<p>多层阴影叠加，每层模糊递增、透明度递减。比单层阴影更自然，Material Design 推荐这种方式。</p>
+
+<h3>7. 边框模拟</h3>
+<pre>box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);</pre>
+<p>偏移和模糊都为 0，<code>spread</code> 为正值时等效于边框。优点是不占布局空间，适合聚焦状态。</p>
+
+<h3>8. 凹陷浮雕</h3>
+<pre>box-shadow:
+  inset 0 2px 4px rgba(0, 0, 0, 0.15),
+  inset 0 -1px 2px rgba(255, 255, 255, 0.1);</pre>
+<p>上方深色内阴影 + 下方亮色内阴影，模拟凹陷的浮雕效果。</p>
+
+<h2>常见问题</h2>
+
+<h3>box-shadow 和 filter: drop-shadow 有什么区别？</h3>
+<table>
+<tr><th>特性</th><th>box-shadow</th><th>filter: drop-shadow</th></tr>
+<tr><td>作用对象</td><td>元素的盒子模型</td><td>元素的实际可见形状</td></tr>
+<tr><td>透明区域</td><td>矩形阴影（含透明区）</td><td>只沿不透明区域投射</td></tr>
+<tr><td>内阴影</td><td>支持 <code>inset</code></td><td>不支持</td></tr>
+<tr><td>性能</td><td>更好</td><td>稍差（需要像素计算）</td></tr>
+</table>
+<p>大多数场景用 <code>box-shadow</code>。PNG 图标需要阴影贴合形状时用 <code>drop-shadow</code>。</p>
+
+<h3>阴影在移动端有性能问题吗？</h3>
+<p>大面积 <code>box-shadow</code> 会触发 GPU 合成层。在低端移动设备上，滚动包含多个阴影元素的长列表可能掉帧。优化建议：</p>
+<ul>
+<li>用 <code>will-change: box-shadow</code> 提示浏览器优化</li>
+<li>避免在动画中频繁改变阴影参数</li>
+<li>列表项用简单的阴影（小模糊半径），不要用多层阴影</li>
+</ul>
+
+<h3>如何让阴影在 hover 时平滑过渡？</h3>
+<pre>.card {
+  transition: box-shadow 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}</pre>
+
+<div class="cta">
+<h3>在线 Box Shadow 生成器</h3>
+<p>可视化调节偏移、模糊、扩散、颜色，8种预设一键应用</p>
+<a href="/tools/box-shadow.html" class="btn btn-primary" style="text-decoration:none">打开 Box Shadow 生成器</a>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+</body>
+</html>

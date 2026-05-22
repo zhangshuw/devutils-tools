@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>字数统计的正确方法：中英文混排怎么算字数？ | DevUtils 博客</title>
+<meta name="description" content="字数统计完整指南：中英文混排的字数怎么算、各平台统计规则差异、阅读时间估算方法、常见字数限制要求。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/word-count-guide.html">
+<meta property="og:title" content="字数统计的正确方法：中英文混排怎么算字数？">
+<meta property="og:description" content="字数统计指南：中英文混排字数计算、各平台规则差异、阅读时间估算">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/word-count-guide.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="字数统计的正确方法：中英文混排怎么算字数？">
+<meta name="twitter:description" content="字数统计指南：中英文混排字数计算与阅读时间估算">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"字数统计的正确方法","description":"中英文混排字数计算与阅读时间估算","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-22","dateModified":"2026-05-22"}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.post{max-width:760px;margin:0 auto;padding:20px}
+.post h1{font-size:2rem;margin:24px 0 8px}
+.post .meta{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:24px}
+.post h2{color:var(--color-accent);margin:32px 0 16px;font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
+.post p{color:var(--color-text-secondary);line-height:1.9;margin-bottom:18px}
+.post ul,.post ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:18px;line-height:1.8}
+.post li{margin:6px 0}
+.post code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
+.post pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
+.post table{width:100%;border-collapse:collapse;margin:16px 0}
+.post th,.post td{border:1px solid var(--color-border);padding:8px 12px;text-align:left}
+.post th{background:var(--color-bg-elevated);color:var(--color-accent);font-weight:600}
+.post td{color:var(--color-text-secondary)}
+.post a{color:var(--color-accent);text-decoration:underline}
+.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
+.tip p{color:var(--color-text-primary);margin:0}
+.cta{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
+.cta h3{color:var(--color-accent);margin-bottom:8px}
+.cta p{color:var(--color-text-secondary);margin-bottom:16px}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="post">
+<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span><span>字数统计指南</span></nav>
+
+<h1>字数统计的正确方法：中英文混排怎么算字数？</h1>
+<p class="meta">发布于 2026年5月22日 · 阅读时间约6分钟</p>
+
+<p>"我的文章到底多少字？"——这看似简单的问题，在中文混排场景下却很容易踩坑。Word、Markdown 编辑器、各平台算法给的数字都不一样。本文帮你理清字数统计的逻辑和各平台规则。</p>
+
+<h2>中文和英文的字数怎么算？</h2>
+<p>核心区别：</p>
+<ul>
+<li><strong>中文</strong>：一个汉字算一个"字"</li>
+<li><strong>英文</strong>：一个空格分隔的单词算一个"词"（word）</li>
+<li><strong>数字</strong>：连续数字算一个"词"（如 <code>2026</code> 算一个词）</li>
+</ul>
+
+<p>示例：<code>"DevUtils是2026年最好的工具箱"</code></p>
+<table>
+<tr><th>统计维度</th><th>值</th><th>说明</th></tr>
+<tr><td>中文字数</td><td>7</td><td>是、年、最、好、的、工、具、箱 → 8字（含"是"）</td></tr>
+<tr><td>英文词数</td><td>1</td><td>DevUtils</td></tr>
+<tr><td>数字词数</td><td>1</td><td>2026</td></tr>
+<tr><td>总"字数"</td><td>9</td><td>中文字 + 英文词 + 数字词</td></tr>
+<tr><td>字符数</td><td>17</td><td>所有字符，含英文字母</td></tr>
+</table>
+
+<div class="tip"><p><strong>关键原则：</strong>中文用"字"计量，英文用"词"计量。混排时，总字数 = 中文字数 + 英文词数（不是字符数）。</p></div>
+
+<h2>各平台的统计规则差异</h2>
+<p>不同平台对"字数"的定义不一样，这经常导致困惑：</p>
+<table>
+<tr><th>平台</th><th>中文统计方式</th><th>英文统计方式</th></tr>
+<tr><td>Microsoft Word</td><td>字数 = 中文字数 + 英文词数</td><td>词数</td></tr>
+<tr><td>微信公众号</td><td>含标点符号的字符数</td><td>单词数</td></tr>
+<tr><td>知乎</td><td>约等于 Word 的"字符数（不计空格）"</td><td>同左</td></tr>
+<tr><td>Typora</td><td>中文字 + 英文词</td><td>词数</td></tr>
+<tr><td>SEO 元描述</td><td>字符数（含空格）≤ 160</td><td>同左</td></tr>
+</table>
+
+<h2>阅读时间怎么估算？</h2>
+<p>常用估算公式：</p>
+<ul>
+<li><strong>中文阅读速度</strong>：约 400-600 字/分钟（取 500 作平均）</li>
+<li><strong>英文阅读速度</strong>：约 200-250 词/分钟（取 225 作平均）</li>
+</ul>
+
+<p>混排文章的阅读时间：</p>
+<pre>阅读时间(分钟) = 中文字数 ÷ 500 + 英文词数 ÷ 225</pre>
+
+<p>向上取整，不足1分钟显示"1 分钟"。</p>
+
+<div class="tip"><p><strong>注意：</strong>技术文章阅读速度通常更慢（代码、公式需要停顿思考），可以乘以 1.5 系数。即技术文章建议用 330 字/分钟（中文）、150 词/分钟（英文）来估算。</p></div>
+
+<h2>常见字数限制要求</h2>
+<table>
+<tr><th>场景</th><th>字数要求</th><th>统计方式</th></tr>
+<tr><td>SEO 标题</td><td>≤ 60 字符</td><td>字符数</td></tr>
+<tr><td>SEO 元描述</td><td>≤ 160 字符</td><td>字符数</td></tr>
+<tr><td>微信公众号摘要</td><td>≤ 120 字</td><td>字符数（含标点）</td></tr>
+<tr><td>小红书正文</td><td>≤ 1000 字</td><td>字符数</td></tr>
+<tr><td>学术论文摘要</td><td>200-500 字</td><td>中文字 + 英文词</td></tr>
+<tr><td>技术博客长文</td><td>1500-3000 字</td><td>中文字 + 英文词</td></tr>
+</table>
+
+<h2>各编程语言统计字数</h2>
+
+<h3>JavaScript</h3>
+<pre>// 中文字数
+const cnCount = (text.match(/[一-鿿]/g) || []).length;
+
+// 英文词数
+const enWordCount = (text.match(/[a-zA-Z]+(?:['-][a-zA-Z]+)*/g) || []).length;
+
+// 总字数
+const totalWords = cnCount + enWordCount;</pre>
+
+<h3>Python</h3>
+<pre>import re
+
+# 中文字数
+cn_count = len(re.findall(r'[一-鿿]', text))
+
+# 英文词数
+en_word_count = len(re.findall(r"[a-zA-Z]+(?:['-][a-zA-Z]+)*", text))
+
+# 总字数
+total = cn_count + en_word_count</pre>
+
+<h2>常见误区</h2>
+
+<h3>用字符串长度当中文字数？</h3>
+<p>错。<code>"Hello世界"</code> 的 <code>length</code> 在 JavaScript 中是 7（5个字母+2个汉字），但字数应该是 3（1个英文词+2个中文字）。JavaScript 的 <code>string.length</code> 对 emoji 和代理对还有额外问题。</p>
+
+<h3>空格和标点算不算？</h3>
+<p>取决于场景：SEO 字符数含空格；Word 字数不含空格；学术论文字数通常不含标点。统计时一定要明确标准。</p>
+
+<div class="cta">
+<h3>在线字数统计工具</h3>
+<p>粘贴文本即时统计：字符数、词数、中英文分别计数、阅读时间估算</p>
+<a href="/tools/word-counter.html" class="btn btn-primary" style="text-decoration:none">打开字数统计工具</a>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+</body>
+</html>
