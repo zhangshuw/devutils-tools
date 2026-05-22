@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>图片压缩工具 - 在线压缩PNG/JPG/WebP | DevUtils</title>
+<meta name="description" content="在线图片压缩工具，支持PNG、JPG、WebP格式，本地压缩无需上传，可调节质量参数，批量处理。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/tools/image-compressor.html">
+<meta property="og:title" content="图片压缩工具 - 在线压缩PNG/JPG/WebP | DevUtils">
+<meta property="og:description" content="在线图片压缩工具，本地压缩无需上传，支持PNG/JPG/WebP批量处理。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtool.blueblueliu.com/tools/image-compressor.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="图片压缩工具 - 在线压缩PNG/JPG/WebP | DevUtils">
+<meta name="twitter:description" content="在线图片压缩工具，本地压缩无需上传，支持批量处理。">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"图片压缩工具","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+</script>
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/reset.css">
+<link rel="stylesheet" href="../css/layout.css">
+<link rel="stylesheet" href="../css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.drop-zone{border:2px dashed var(--color-border);border-radius:var(--radius-lg);padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:var(--space-lg)}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--color-accent);background:var(--color-accent-subtle)}
+.drop-zone .icon{font-size:3rem;margin-bottom:var(--space-md)}
+.drop-zone p{color:var(--color-text-secondary);margin:var(--space-xs) 0}
+.drop-zone .hint{font-size:var(--text-sm);color:var(--color-text-muted)}
+.controls-bar{display:flex;align-items:center;gap:var(--space-md);flex-wrap:wrap;margin-bottom:var(--space-lg)}
+.controls-bar label{font-size:var(--text-sm);color:var(--color-text-secondary)}
+.controls-bar input[type="range"]{width:160px}
+.controls-bar .quality-val{font-family:monospace;color:var(--color-accent);min-width:36px}
+.controls-bar .format-select{padding:var(--space-xs) var(--space-sm);background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-sm);color:var(--color-text-primary);font-size:var(--text-sm)}
+.result-list{display:flex;flex-direction:column;gap:var(--space-md)}
+.result-item{display:grid;grid-template-columns:80px 1fr auto;gap:var(--space-md);align-items:center;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md)}
+.result-item .thumb{width:80px;height:80px;object-fit:cover;border-radius:var(--radius-sm);background:var(--color-bg-elevated)}
+.result-info{min-width:0}
+.result-info .file-name{font-weight:600;word-break:break-all;margin-bottom:4px}
+.result-info .file-meta{font-size:var(--text-sm);color:var(--color-text-secondary)}
+.result-info .savings{color:var(--color-success);font-weight:600;font-size:var(--text-sm)}
+.total-bar{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-md) var(--space-lg);display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg)}
+.total-bar .label{color:var(--color-text-secondary);font-size:var(--text-sm)}
+.total-bar .value{font-size:1.2rem;font-weight:700;color:var(--color-success)}
+@media(max-width:640px){.result-item{grid-template-columns:1fr;}.result-item .thumb{width:100%;height:auto;max-height:160px}}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="container">
+<nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>图片压缩</span></nav>
+<h1>图片压缩工具</h1>
+<p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">本地压缩，无需上传 — 支持 PNG / JPG / WebP，批量处理</p>
+
+<div class="drop-zone" id="dropZone">
+<div class="icon">📁</div>
+<p><strong>拖拽图片到此处</strong>，或点击选择文件</p>
+<p class="hint">支持 PNG、JPG、WebP，可同时选择多个文件</p>
+<input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp" multiple hidden>
+</div>
+
+<div class="controls-bar" id="controlsBar" style="display:none">
+<label>压缩质量：</label>
+<input type="range" id="quality" min="10" max="100" value="75">
+<span class="quality-val" id="qualityVal">75%</span>
+<label>输出格式：</label>
+<select id="outputFormat" class="format-select">
+<option value="auto">自动（保持原格式）</option>
+<option value="image/jpeg">JPEG</option>
+<option value="image/webp">WebP</option>
+<option value="image/png">PNG</option>
+</select>
+<button class="btn btn-primary" id="compressAllBtn">全部压缩</button>
+<button class="btn btn-ghost" id="clearAllBtn">清空全部</button>
+</div>
+
+<div class="total-bar" id="totalBar" style="display:none">
+<div>
+<div class="label">总计节省</div>
+<div class="value" id="totalSavings">0 KB</div>
+</div>
+<div>
+<div class="label">压缩比</div>
+<div class="value" id="totalRatio">0%</div>
+</div>
+</div>
+
+<div class="result-list" id="resultList"></div>
+</main>
+<div id="siteFooter"></div>
+<script type="module">
+import { initLayout, showToast } from "../js/layout.js";
+initLayout();
+
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+const controlsBar = document.getElementById("controlsBar");
+const qualitySlider = document.getElementById("quality");
+const qualityVal = document.getElementById("qualityVal");
+const outputFormat = document.getElementById("outputFormat");
+const resultList = document.getElementById("resultList");
+const totalBar = document.getElementById("totalBar");
+const totalSavings = document.getElementById("totalSavings");
+const totalRatio = document.getElementById("totalRatio");
+
+let files = [];
+
+dropZone.addEventListener("click", () => fileInput.click());
+dropZone.addEventListener("dragover", (e) => { e.preventDefault(); dropZone.classList.add("dragover"); });
+dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+dropZone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  dropZone.classList.remove("dragover");
+  addFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener("change", (e) => addFiles(e.target.files));
+qualitySlider.addEventListener("input", () => { qualityVal.textContent = qualitySlider.value + "%"; });
+
+function addFiles(fileList) {
+  for (const f of fileList) {
+    if (!f.type.startsWith("image/")) continue;
+    files.push({ file: f, compressed: null, blob: null });
+  }
+  if (files.length > 0) {
+    controlsBar.style.display = "flex";
+    dropZone.querySelector(".icon").textContent = "📁";
+    dropZone.querySelector("p").innerHTML = "<strong>继续拖拽添加更多图片</strong>";
+  }
+  renderList();
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + " B";
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+  return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+}
+
+function renderList() {
+  resultList.innerHTML = "";
+  let totalOriginal = 0, totalCompressed = 0;
+  files.forEach((item, i) => {
+    const origSize = item.file.size;
+    totalOriginal += origSize;
+    let savingsHtml = `<span style="color:var(--color-text-muted)">等待压缩</span>`;
+    let dlBtn = "";
+    if (item.blob) {
+      const compSize = item.blob.size;
+      totalCompressed += compSize;
+      const saved = origSize - compSize;
+      const ratio = ((saved / origSize) * 100).toFixed(1);
+      const cls = saved > 0 ? "savings" : "";
+      savingsHtml = `<span class="${cls}">${saved > 0 ? "节省 " + formatSize(saved) + " (" + ratio + "%)" : "无法进一步压缩"}</span>`;
+      const ext = item.blob.type === "image/webp" ? "webp" : item.blob.type === "image/png" ? "png" : "jpg";
+      const url = URL.createObjectURL(item.blob);
+      dlBtn = `<a href="${url}" download="${item.file.name.replace(/\.\w+$/, '')}_compressed.${ext}" class="btn btn-sm btn-primary" style="text-decoration:none">下载</a>`;
+    }
+    const el = document.createElement("div");
+    el.className = "result-item";
+    el.innerHTML = `
+      <img class="thumb" src="${URL.createObjectURL(item.file)}" alt="${item.file.name}">
+      <div class="result-info">
+        <div class="file-name">${item.file.name}</div>
+        <div class="file-meta">${formatSize(origSize)} → ${item.blob ? formatSize(item.blob.size) : "—"}</div>
+        <div>${savingsHtml}</div>
+      </div>
+      ${dlBtn}`;
+    resultList.appendChild(el);
+  });
+  if (files.some(f => f.blob)) {
+    totalBar.style.display = "flex";
+    const totalSaved = totalOriginal - totalCompressed;
+    totalSavings.textContent = totalSaved > 0 ? formatSize(totalSaved) : "0 KB";
+    totalRatio.textContent = totalOriginal > 0 ? ((totalSaved / totalOriginal) * 100).toFixed(1) + "%" : "0%";
+  }
+}
+
+async function compressOne(item) {
+  const q = qualitySlider.value / 100;
+  let format = outputFormat.value;
+  if (format === "auto") {
+    format = item.file.type === "image/png" ? "image/png" : "image/jpeg";
+  }
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob((blob) => {
+        item.blob = blob;
+        resolve();
+      }, format, q);
+    };
+    img.src = URL.createObjectURL(item.file);
+  });
+}
+
+document.getElementById("compressAllBtn").addEventListener("click", async () => {
+  if (files.length === 0) { showToast("请先选择图片", true); return; }
+  showToast("压缩中…");
+  for (const item of files) {
+    await compressOne(item);
+  }
+  renderList();
+  showToast("压缩完成！");
+});
+
+document.getElementById("clearAllBtn").addEventListener("click", () => {
+  files = [];
+  resultList.innerHTML = "";
+  controlsBar.style.display = "none";
+  totalBar.style.display = "none";
+  dropZone.querySelector(".icon").textContent = "📁";
+  dropZone.querySelector("p").innerHTML = "<strong>拖拽图片到此处</strong>，或点击选择文件";
+  fileInput.value = "";
+});
+</script>
+</body>
+</html>

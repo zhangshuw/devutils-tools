@@ -24,6 +24,8 @@ const TOOLS = [
   { id: "number-base", name: "数字进制转换", desc: "二进制/八进制/十进制/十六进制互转", icon: "🔢", cat: "encoding" },
   { id: "word-counter", name: "字数统计", desc: "实时统计字符数、词数、句数、阅读时间", icon: "📊", cat: "encoding" },
   { id: "box-shadow", name: "CSS Box Shadow", desc: "可视化生成CSS阴影效果", icon: "🔲", cat: "generate" },
+  { id: "sql-formatter", name: "SQL 格式化", desc: "美化/压缩/验证SQL，支持多种方言", icon: "🗃️", cat: "encoding" },
+  { id: "image-compressor", name: "图片压缩", desc: "本地压缩PNG/JPG/WebP，批量处理", icon: "🖼️", cat: "generate" },
 ];
 
 const CAT_NAMES = { encoding: "编码转换", generate: "生成器", security: "安全工具" };

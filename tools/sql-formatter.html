@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>SQL 格式化工具 - 在线SQL美化/压缩/验证 | DevUtils</title>
+<meta name="description" content="在线SQL格式化工具，支持MySQL、PostgreSQL、SQL Server、Oracle等多种方言，一键美化、压缩、验证SQL语句。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/tools/sql-formatter.html">
+<meta property="og:title" content="SQL 格式化工具 - 在线SQL美化/压缩/验证 | DevUtils">
+<meta property="og:description" content="在线SQL格式化工具，支持多种SQL方言，一键美化、压缩、验证。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtool.blueblueliu.com/tools/sql-formatter.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SQL 格式化工具 - 在线SQL美化/压缩/验证 | DevUtils">
+<meta name="twitter:description" content="在线SQL格式化工具，支持多种SQL方言，一键美化、压缩、验证。">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"SoftwareApplication","name":"SQL 格式化工具","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+</script>
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/reset.css">
+<link rel="stylesheet" href="../css/layout.css">
+<link rel="stylesheet" href="../css/components.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+<style>
+.sql-layout{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);min-height:400px}
+@media(max-width:768px){.sql-layout{grid-template-columns:1fr}}
+.sql-panel{display:flex;flex-direction:column}
+.sql-panel textarea{flex:1;min-height:350px;font-family:"JetBrains Mono","Fira Code",monospace;font-size:.9rem;resize:vertical}
+.toolbar{display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-bottom:var(--space-md);align-items:center}
+.toolbar .spacer{flex:1}
+.dialect-select{padding:var(--space-xs) var(--space-sm);background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-sm);color:var(--color-text-primary);font-size:var(--text-sm)}
+.error-msg{color:var(--color-error);font-size:var(--text-sm);margin-top:var(--space-sm)}
+.success-msg{color:var(--color-success);font-size:var(--text-sm);margin-top:var(--space-sm)}
+.output-area{flex:1;position:relative}
+.output-area .code-block{height:100%;min-height:350px;overflow:auto;margin:0}
+.output-area .copy-btn{position:absolute;top:var(--space-sm);right:var(--space-sm);z-index:1}
+</style>
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="container">
+<nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>SQL 格式化</span></nav>
+<h1>SQL 格式化工具</h1>
+<p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg)">美化、压缩、验证 SQL 语句，支持 MySQL / PostgreSQL / SQL Server / Oracle 等方言</p>
+
+<div class="toolbar">
+<select id="dialect" class="dialect-select">
+<option value="sql">通用 SQL</option>
+<option value="mysql">MySQL</option>
+<option value="postgresql">PostgreSQL</option>
+<option value="mariadb">MariaDB</option>
+<option value="sqlite">SQLite</option>
+<option value="transactsql">SQL Server</option>
+<option value="plsql">Oracle PL/SQL</option>
+<option value="bigquery">BigQuery</option>
+<option value="hive">Hive</option>
+</select>
+<button class="btn btn-primary" id="formatBtn">美化格式化</button>
+<button class="btn" id="minifyBtn">压缩</button>
+<button class="btn" id="validateBtn">验证语法</button>
+<button class="btn btn-ghost" id="clearBtn">清空</button>
+<button class="btn btn-ghost" id="sampleBtn">示例 SQL</button>
+</div>
+
+<div class="sql-layout">
+<div class="sql-panel">
+<div class="panel-header"><span class="panel-title">输入 SQL</span></div>
+<textarea class="textarea" id="inputSql" placeholder="在此粘贴或输入 SQL 语句，例如：SELECT * FROM users WHERE id = 1 AND status = 'active'" spellcheck="false"></textarea>
+</div>
+<div class="sql-panel output-area">
+<div class="panel-header"><span class="panel-title">格式化结果</span></div>
+<div class="code-block" id="outputSql"></div>
+<button class="btn btn-sm btn-ghost copy-btn" id="copyBtn">复制</button>
+<div id="msgArea"></div>
+</div>
+</div>
+</main>
+<div id="siteFooter"></div>
+<script src="https://unpkg.com/sql-formatter@15.4.0/dist/sql-formatter.min.js"></script>
+<script type="module">
+import { initLayout, copyToClipboard, showToast } from "../js/layout.js";
+initLayout();
+
+const inputEl = document.getElementById("inputSql");
+const outputEl = document.getElementById("outputSql");
+const dialectEl = document.getElementById("dialect");
+const msgArea = document.getElementById("msgArea");
+
+const SAMPLE = `SELECT u.id, u.name, u.email, o.order_id, o.total
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+WHERE u.status = 'active' AND o.created_at > '2026-01-01'
+GROUP BY u.id, u.name, u.email, o.order_id, o.total
+HAVING o.total > 100
+ORDER BY o.total DESC
+LIMIT 50`;
+
+function getDialect() {
+  return dialectEl.value;
+}
+
+function showMsg(text, isError) {
+  msgArea.innerHTML = `<div class="${isError ? 'error-msg' : 'success-msg'}">${text}</div>`;
+  setTimeout(() => { msgArea.innerHTML = ''; }, 4000);
+}
+
+function formatSql() {
+  const sql = inputEl.value.trim();
+  if (!sql) { showMsg('请输入 SQL 语句', true); return; }
+  try {
+    const result = sqlFormatter.format(sql, { language: getDialect(), tabWidth: 2, keywordCase: 'upper' });
+    outputEl.textContent = result;
+    showMsg('格式化成功', false);
+  } catch (e) {
+    outputEl.textContent = '';
+    showMsg('格式化失败：' + e.message, true);
+  }
+}
+
+function minifySql() {
+  const sql = inputEl.value.trim();
+  if (!sql) { showMsg('请输入 SQL 语句', true); return; }
+  try {
+    const formatted = sqlFormatter.format(sql, { language: getDialect(), tabWidth: 0, compact: true });
+    const minified = formatted.replace(/\s+/g, ' ').replace(/\s*([,()])\s*/g, '$1').trim();
+    outputEl.textContent = minified;
+    showMsg('压缩成功', false);
+  } catch (e) {
+    outputEl.textContent = '';
+    showMsg('压缩失败：' + e.message, true);
+  }
+}
+
+function validateSql() {
+  const sql = inputEl.value.trim();
+  if (!sql) { showMsg('请输入 SQL 语句', true); return; }
+  try {
+    sqlFormatter.format(sql, { language: getDialect() });
+    showMsg('✓ SQL 语法验证通过', false);
+  } catch (e) {
+    showMsg('✗ 语法错误：' + e.message, true);
+  }
+}
+
+document.getElementById("formatBtn").addEventListener("click", formatSql);
+document.getElementById("minifyBtn").addEventListener("click", minifySql);
+document.getElementById("validateBtn").addEventListener("click", validateSql);
+document.getElementById("clearBtn").addEventListener("click", () => {
+  inputEl.value = '';
+  outputEl.textContent = '';
+  msgArea.innerHTML = '';
+  inputEl.focus();
+});
+document.getElementById("sampleBtn").addEventListener("click", () => {
+  inputEl.value = SAMPLE;
+  formatSql();
+});
+document.getElementById("copyBtn").addEventListener("click", () => {
+  const text = outputEl.textContent;
+  if (!text) { showToast('没有可复制的内容', true); return; }
+  copyToClipboard(text);
+});
+
+// Ctrl+Enter 快捷键格式化
+inputEl.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    e.preventDefault();
+    formatSql();
+  }
+});
+</script>
+</body>
+</html>

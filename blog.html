@@ -25,23 +25,8 @@
 <link rel="stylesheet" href="/css/reset.css">
 <link rel="stylesheet" href="/css/layout.css">
 <link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
-<style>
-.blog-page{max-width:860px;margin:0 auto;padding:20px}
-.blog-page h1{font-size:2rem;margin:24px 0 8px}
-.blog-page .subtitle{color:var(--color-text-secondary);margin-bottom:32px}
-.blog-grid{display:grid;gap:20px}
-.blog-card{display:grid;grid-template-columns:auto 1fr;gap:20px;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:24px;transition:all .2s}
-.blog-card:hover{border-color:var(--color-accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
-.blog-card .date{color:var(--color-text-muted);font-size:var(--text-sm);white-space:nowrap}
-.blog-card h3{margin-bottom:8px}
-.blog-card h3 a{color:var(--color-text-primary);text-decoration:none}
-.blog-card h3 a:hover{color:var(--color-accent)}
-.blog-card .excerpt{color:var(--color-text-secondary);font-size:var(--text-sm);line-height:1.6}
-.blog-card .tags{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
-.tag{background:var(--color-accent-subtle);color:var(--color-accent);padding:2px 10px;border-radius:12px;font-size:.75rem}
-.no-posts{text-align:center;color:var(--color-text-muted);padding:60px 0}
-</style>
 </head>
 <body>
 <div id="siteHeader"></div>
@@ -49,79 +34,15 @@
 <h1>开发者博客</h1>
 <p class="subtitle">分享编程技巧、效率提升和工具使用指南</p>
 
+<div class="blog-hero">
+<div class="blog-hero-icon">💡</div>
+<div>
+<h2>实用工具推荐</h2>
+<p>JSON 格式化、Base64 编解码、正则测试……<a href="/">20+ 在线工具</a>即开即用，提升开发效率。</p>
+</div>
+</div>
+
 <div class="blog-grid" id="blogGrid">
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/dev-efficiency-tools.html">提升开发效率的必备在线工具（2026版）</a></h3>
-<p class="excerpt">介绍 JSON 格式化、Base64 编解码、正则测试等日常开发中最常用的在线工具，让你的工作效率翻倍。</p>
-<div class="tags"><span class="tag">效率提升</span><span class="tag">开发工具</span></div>
-</div>
-</div>
-
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/json-tips.html">JSON 开发中的 10 个实用技巧</a></h3>
-<p class="excerpt">从格式化、验证到常见错误排查，分享 JSON 开发中的实用技巧，告别手动检查 JSON 的低效方式。</p>
-<div class="tags"><span class="tag">JSON</span><span class="tag">技巧</span></div>
-</div>
-</div>
-
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/choose-password-generator.html">如何选择安全的在线密码生成器？</a></h3>
-<p class="excerpt">密码安全的基础知识、在线密码生成器的选择标准，以及如何生成真正安全的随机密码。</p>
-<div class="tags"><span class="tag">安全</span><span class="tag">密码</span></div>
-</div>
-</div>
-
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/regex-common-patterns.html">10 个最常用的正则表达式模式</a></h3>
-<p class="excerpt">整理了邮箱、手机号、URL、身份证等 10 个开发中最常用的正则表达式，可直接复制使用。</p>
-<div class="tags"><span class="tag">正则表达式</span><span class="tag">速查</span></div>
-</div>
-</div>
-
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/frontend-dev-tools.html">前端开发必备的10个在线工具推荐（2026最新）</a></h3>
-<p class="excerpt">JSON格式化、Base64编解码、正则测试、时间戳转换……前端日常开发最高频使用的10个在线工具推荐。</p>
-<div class="tags"><span class="tag">前端开发</span><span class="tag">工具推荐</span></div>
-</div>
-</div>
-
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/hash-algorithm-guide.html">MD5、SHA-1、SHA-256有什么区别？哈希算法选择指南</a></h3>
-<p class="excerpt">哈希算法对比：MD5/SHA-1/SHA-256/SHA-512的区别、安全性和使用场景，附各语言计算示例。</p>
-<div class="tags"><span class="tag">安全</span><span class="tag">哈希算法</span></div>
-</div>
-</div>
-
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/url-encoding-guide.html">URL编码是什么？为什么要对URL进行编码？</a></h3>
-<p class="excerpt">URL编码原理、哪些字符需要编码、和Base64的区别、各语言编解码示例与常见问题。</p>
-<div class="tags"><span class="tag">URL编码</span><span class="tag">编码转换</span></div>
-</div>
-</div>
-
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/timestamp-guide.html">时间戳转换详解：Unix时间戳与各语言获取方法</a></h3>
-<p class="excerpt">秒级vs毫秒级时间戳区别、各语言获取方法、前后端对接常见坑与在线转换工具。</p>
-<div class="tags"><span class="tag">时间戳</span><span class="tag">开发技巧</span></div>
-</div>
-</div>
-
 <div class="blog-card">
 <div class="date">2026-05-22</div>
 <div>
@@ -137,6 +58,78 @@
 <h3><a href="/blog/word-count-guide.html">字数统计的正确方法：中英文混排怎么算字数？</a></h3>
 <p class="excerpt">中英文混排字数计算规则、各平台统计差异、阅读时间估算、常见字数限制要求与代码实现。</p>
 <div class="tags"><span class="tag">字数统计</span><span class="tag">写作技巧</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="date">2026-05-21</div>
+<div>
+<h3><a href="/blog/timestamp-guide.html">时间戳转换详解：Unix时间戳与各语言获取方法</a></h3>
+<p class="excerpt">秒级vs毫秒级时间戳区别、各语言获取方法、前后端对接常见坑与在线转换工具。</p>
+<div class="tags"><span class="tag">时间戳</span><span class="tag">开发技巧</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="date">2026-05-21</div>
+<div>
+<h3><a href="/blog/url-encoding-guide.html">URL编码是什么？为什么要对URL进行编码？</a></h3>
+<p class="excerpt">URL编码原理、哪些字符需要编码、和Base64的区别、各语言编解码示例与常见问题。</p>
+<div class="tags"><span class="tag">URL编码</span><span class="tag">编码转换</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="date">2026-05-21</div>
+<div>
+<h3><a href="/blog/hash-algorithm-guide.html">MD5、SHA-1、SHA-256有什么区别？哈希算法选择指南</a></h3>
+<p class="excerpt">哈希算法对比：MD5/SHA-1/SHA-256/SHA-512的区别、安全性和使用场景，附各语言计算示例。</p>
+<div class="tags"><span class="tag">安全</span><span class="tag">哈希算法</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="date">2026-05-21</div>
+<div>
+<h3><a href="/blog/frontend-dev-tools.html">前端开发必备的10个在线工具推荐（2026最新）</a></h3>
+<p class="excerpt">JSON格式化、Base64编解码、正则测试、时间戳转换……前端日常开发最高频使用的10个在线工具推荐。</p>
+<div class="tags"><span class="tag">前端开发</span><span class="tag">工具推荐</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="date">2026-05-21</div>
+<div>
+<h3><a href="/blog/regex-common-patterns.html">10 个最常用的正则表达式模式</a></h3>
+<p class="excerpt">整理了邮箱、手机号、URL、身份证等 10 个开发中最常用的正则表达式，可直接复制使用。</p>
+<div class="tags"><span class="tag">正则表达式</span><span class="tag">速查</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="date">2026-05-21</div>
+<div>
+<h3><a href="/blog/choose-password-generator.html">如何选择安全的在线密码生成器？</a></h3>
+<p class="excerpt">密码安全的基础知识、在线密码生成器的选择标准，以及如何生成真正安全的随机密码。</p>
+<div class="tags"><span class="tag">安全</span><span class="tag">密码</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="date">2026-05-21</div>
+<div>
+<h3><a href="/blog/json-tips.html">JSON 开发中的 10 个实用技巧</a></h3>
+<p class="excerpt">从格式化、验证到常见错误排查，分享 JSON 开发中的实用技巧，告别手动检查 JSON 的低效方式。</p>
+<div class="tags"><span class="tag">JSON</span><span class="tag">技巧</span></div>
+</div>
+</div>
+
+<div class="blog-card">
+<div class="date">2026-05-21</div>
+<div>
+<h3><a href="/blog/dev-efficiency-tools.html">提升开发效率的必备在线工具（2026版）</a></h3>
+<p class="excerpt">介绍 JSON 格式化、Base64 编解码、正则测试等日常开发中最常用的在线工具，让你的工作效率翻倍。</p>
+<div class="tags"><span class="tag">效率提升</span><span class="tag">开发工具</span></div>
 </div>
 </div>
 </div>
