@@ -19,7 +19,7 @@
 <meta name="twitter:description" content="encodeURI vs encodeURIComponent、+ vs %20">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","headline":"URL 编码：那些 %E4%B8%AD 后面藏着的坑","author":{"@type":"Person","name":"swzhang"},"datePublished":"2026-05-21","dateModified":"2026-05-23","publisher":{"@type":"Organization","name":"DevUtils"}}
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"URL 编码：那些 %E4%B8%AD 后面藏着的坑","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-21","dateModified":"2026-05-23","publisher":{"@type":"Organization","name":"DevUtils"}}
 </script>
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/reset.css">
@@ -48,8 +48,6 @@
       <h1>URL 编码：那些 %E4%B8%AD 后面藏着的坑</h1>
       <p class="lede">"URL 编码就是把汉字变 % 加十六进制"——对，但每次写代码还是会卡在 encodeURI 还是 encodeURIComponent、用 + 还是 %20、Java 怎么传字符集这些细节上。这篇按真实踩坑场景列。</p>
       <div class="post-meta">
-        <span class="author-mini"><span class="avatar">SW</span> swzhang</span>
-        <span class="sep">·</span>
         <span>2026-05-21</span>
         <span class="sep">·</span>
         <span>约 6 分钟阅读</span>
@@ -204,13 +202,6 @@ decodeURIComponent(decodeURIComponent("%25E4%25BD%25A0"));
       <button class="share-btn" data-share="weibo">📱 微博</button>
     </div>
 
-    <div class="author-card">
-      <div class="author-avatar">SW</div>
-      <div class="author-info">
-        <p class="author-name">swzhang</p>
-        <p class="author-bio">在线工具站 DevUtils 维护者。每次写 encodeURI 还是 encodeURIComponent 都要犹豫一下——写下来给自己当备忘。</p>
-      </div>
-    </div>
 
     <div class="related-posts">
       <div class="section-title">继续阅读</div>

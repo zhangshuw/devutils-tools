@@ -19,7 +19,7 @@
 <meta name="twitter:description" content="秒级 vs 毫秒级 vs ISO 8601">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","headline":"Unix 时间戳：秒级还是毫秒级——前后端各踩各的坑","author":{"@type":"Person","name":"swzhang"},"datePublished":"2026-05-21","dateModified":"2026-05-23","publisher":{"@type":"Organization","name":"DevUtils"}}
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"Unix 时间戳：秒级还是毫秒级——前后端各踩各的坑","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-21","dateModified":"2026-05-23","publisher":{"@type":"Organization","name":"DevUtils"}}
 </script>
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/reset.css">
@@ -48,8 +48,6 @@
       <h1>Unix 时间戳：秒级还是毫秒级——前后端各踩各的坑</h1>
       <p class="lede">时间戳长得都差不多——一串数字。但前端默认毫秒、后端 Go 默认秒、MySQL 默认秒、Java 默认毫秒——每次联调都得对一次格式。这篇按踩过的坑列：怎么判断精度、各语言怎么取、时区坑在哪。</p>
       <div class="post-meta">
-        <span class="author-mini"><span class="avatar">SW</span> swzhang</span>
-        <span class="sep">·</span>
         <span>2026-05-21</span>
         <span class="sep">·</span>
         <span>约 6 分钟阅读</span>
@@ -206,13 +204,6 @@ new Date("2026/06/22").toISOString();   // 比上面晚 8 小时（中国时区�
       <button class="share-btn" data-share="weibo">📱 微博</button>
     </div>
 
-    <div class="author-card">
-      <div class="author-avatar">SW</div>
-      <div class="author-info">
-        <p class="author-name">swzhang</p>
-        <p class="author-bio">在线工具站 DevUtils 维护者。被时区 bug 折磨过太多次，把规则写下来当 SOP。</p>
-      </div>
-    </div>
 
     <div class="related-posts">
       <div class="section-title">继续阅读</div>
