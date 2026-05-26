@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>cURL 转换器 — fetch / axios / Python / Go 代码生成 | DevUtils</title>
+  <meta name="description" content="粘贴 cURL 命令一键转成 fetch、axios、Python requests、Go net/http 代码。支持 DevTools 复制出的完整命令——headers、body、auth、cookies 全部识别。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/curl-converter.html">
+  <meta property="og:title" content="cURL 转 fetch / axios / Python / Go 代码">
+  <meta property="og:description" content="DevTools 复制 cURL，一键转 4 种语言代码">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/curl-converter.html">
+  <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="cURL 转换器">
+  <meta name="twitter:description" content="DevTools 复制 cURL，一键转 4 种语言代码">
+  <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"cURL 转换器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .lang-tabs{display:flex;gap:4px;border-bottom:1px solid var(--color-border);margin-bottom:0;flex-wrap:wrap}
+    .lang-tab{padding:10px 18px;font-size:.88rem;background:transparent;border:none;color:var(--color-text-secondary);cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:8px}
+    .lang-tab:hover{color:var(--color-text-primary)}
+    .lang-tab.active{color:var(--color-accent);border-bottom-color:var(--color-accent)}
+    .lang-tab .icon{font-size:1rem;opacity:.85}
+    .code-wrap{background:#0c0e15;border:1px solid var(--color-border);border-top:none;border-radius:0 0 var(--radius-md) var(--radius-md);overflow:hidden;display:flex;flex-direction:column;min-height:380px}
+    .code-wrap-header{display:flex;align-items:center;padding:8px 14px;background:linear-gradient(180deg,#1a1d27,#15171f);border-bottom:1px solid var(--color-border);font-size:.72rem;color:var(--color-text-muted);gap:6px}
+    .code-wrap-header .dots{display:flex;gap:6px}
+    .code-wrap-header .dot{width:10px;height:10px;border-radius:50%}
+    .code-wrap-header .dot.r{background:#ff5f57}.code-wrap-header .dot.y{background:#febc2e}.code-wrap-header .dot.g{background:#28c840}
+    .code-wrap-header .filename{margin-left:14px;font-family:"JetBrains Mono",monospace}
+    .code-wrap-header .copy-btn{margin-left:auto;background:transparent;border:1px solid var(--color-border);color:var(--color-text-muted);padding:3px 12px;border-radius:6px;font-size:.72rem;cursor:pointer;font-family:inherit;transition:all .15s}
+    .code-wrap-header .copy-btn:hover{color:var(--color-accent);border-color:var(--color-accent)}
+    .code-wrap-header .copy-btn.copied{color:var(--color-success);border-color:var(--color-success)}
+    .code-body{padding:18px 20px;flex:1;font-family:"JetBrains Mono","Fira Code",monospace;font-size:.84rem;line-height:1.65;color:#d4d4d4;overflow:auto;white-space:pre;tab-size:2}
+    .code-body .kw{color:#c792ea}
+    .code-body .id{color:#82aaff}
+    .code-body .ty{color:#ffcb6b}
+    .code-body .str{color:#a5d6a7}
+    .code-body .num{color:#f78c6c}
+    .code-body .com{color:#6b7080;font-style:italic}
+    .code-body .pun{color:#89ddff}
+    .panel-curl{display:flex;flex-direction:column;gap:10px}
+    .panel-curl textarea{min-height:200px;font-size:.82rem;line-height:1.6}
+    .parse-info{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px 14px;font-size:.82rem;color:var(--color-text-secondary)}
+    .parse-info-row{display:grid;grid-template-columns:80px 1fr;gap:12px;padding:5px 0;border-bottom:1px solid var(--color-border)}
+    .parse-info-row:last-child{border-bottom:none}
+    .parse-info-row .lbl{color:var(--color-text-muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;padding-top:3px}
+    .parse-info-row .val{font-family:"JetBrains Mono",monospace;color:var(--color-text-primary);font-size:.82rem;word-break:break-all}
+    .parse-info-row .method{display:inline-block;padding:2px 10px;background:var(--color-accent-subtle);color:var(--color-accent);border-radius:4px;font-weight:600;font-size:.78rem}
+    .parse-info-row .method.get{background:rgba(34,197,94,.12);color:#22c55e}
+    .parse-info-row .method.delete{background:rgba(239,68,68,.12);color:#ef4444}
+    .parse-info-row .method.put{background:rgba(245,158,11,.12);color:#f59e0b}
+    .empty-msg{color:var(--color-text-muted);padding:18px 20px}
+    .err-msg{color:#f87171;padding:18px 20px;font-family:"JetBrains Mono",monospace;font-size:.85rem}
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>cURL 转换器</span></nav>
+    <h1>cURL 转 fetch / axios / Python / Go</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg);max-width:680px">从 DevTools 复制的 cURL 命令，直接粘进来生成对应语言的代码。<code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.9em">-H</code>、<code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.9em">--data-raw</code>、<code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.9em">-u</code>、<code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.9em">-b</code> 等参数都识别。</p>
+
+    <div class="tool-layout">
+      <div class="panel panel-curl">
+        <div class="panel-header">
+          <span class="panel-title">cURL 命令</span>
+          <div class="panel-actions">
+            <button class="btn btn-sm" id="btnExample">示例</button>
+            <button class="btn btn-sm" id="btnClear">清空</button>
+          </div>
+        </div>
+        <textarea class="textarea" id="curlInput" placeholder="粘贴 cURL 命令...&#10;&#10;从 Chrome DevTools → Network → 右键请求 → Copy → Copy as cURL"></textarea>
+        <div class="parse-info" id="parseInfo">
+          <div class="empty-msg" style="padding:6px 0">粘贴 cURL 后会自动解析为结构化请求</div>
+        </div>
+      </div>
+
+      <div class="panel" style="padding:0;background:transparent;border:none">
+        <div class="lang-tabs" id="langTabs">
+          <button class="lang-tab active" data-lang="fetch"><span class="icon">🟨</span>fetch</button>
+          <button class="lang-tab" data-lang="axios"><span class="icon">🟦</span>axios</button>
+          <button class="lang-tab" data-lang="python"><span class="icon">🐍</span>Python</button>
+          <button class="lang-tab" data-lang="go"><span class="icon">🔵</span>Go</button>
+          <button class="lang-tab" data-lang="node"><span class="icon">🟢</span>Node http</button>
+        </div>
+        <div class="code-wrap">
+          <div class="code-wrap-header">
+            <span class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>
+            <span class="filename" id="outFilename">request.js</span>
+            <button class="copy-btn" id="btnCopy">复制</button>
+          </div>
+          <div class="code-body" id="codeOut"><span style="color:var(--color-text-muted)">// 粘贴 cURL 命令后这里会生成代码...</span></div>
+        </div>
+      </div>
+    </div>
+
+    <section style="margin-top:48px;color:var(--color-text-secondary);font-size:.95rem;line-height:1.8;max-width:760px">
+      <h2 style="color:var(--color-text-primary);font-size:1.3rem;margin-bottom:12px">支持的 cURL 参数</h2>
+      <ul style="padding-left:22px">
+        <li><code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace">-X / --request</code> — HTTP method</li>
+        <li><code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace">-H / --header</code> — 请求头</li>
+        <li><code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace">-d / --data / --data-raw / --data-binary</code> — 请求体（隐式 POST）</li>
+        <li><code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace">-u / --user</code> — Basic Auth</li>
+        <li><code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace">-b / --cookie</code> — Cookie</li>
+        <li><code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace">-F / --form</code> — multipart 字段</li>
+        <li><code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace">-G / --get</code> — 把 data 转 query string</li>
+        <li><code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace">--compressed / --insecure / -k</code> — 各语言对应配置</li>
+      </ul>
+      <p style="margin-top:14px;color:var(--color-text-muted);font-size:.88rem">解析在浏览器本地完成，cURL 内容（包括 token / cookie）不会上传任何服务器。</p>
+    </section>
+  </main>
+  <div id="siteFooter"></div>
+
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    // ============================================
+    // 1. cURL 词法切分（带引号处理）
+    // ============================================
+    function tokenize(input) {
+      // 去掉行尾续行符
+      let s = input.replace(/\\\r?\n/g, " ").replace(/\s+/g, " ").trim();
+      if (s.startsWith("curl ")) s = s.slice(5);
+      else if (s === "curl") s = "";
+
+      const tokens = [];
+      let i = 0;
+      while (i < s.length) {
+        // 跳空格
+        while (i < s.length && s[i] === " ") i++;
+        if (i >= s.length) break;
+
+        const c = s[i];
+        if (c === '"' || c === "'") {
+          const q = c;
+          let buf = "";
+          i++;
+          while (i < s.length && s[i] !== q) {
+            if (s[i] === "\\" && i + 1 < s.length) {
+              const n = s[i + 1];
+              if (q === '"' && (n === '"' || n === '\\' || n === '$' || n === '`')) { buf += n; i += 2; continue; }
+              buf += s[i]; i++; continue;
+            }
+            buf += s[i]; i++;
+          }
+          if (i < s.length) i++; // 跳过结束引号
+          tokens.push(buf);
+        } else {
+          let buf = "";
+          while (i < s.length && s[i] !== " ") {
+            if (s[i] === "\\" && i + 1 < s.length) { buf += s[i + 1]; i += 2; continue; }
+            buf += s[i]; i++;
+          }
+          tokens.push(buf);
+        }
+      }
+      return tokens;
+    }
+
+    // ============================================
+    // 2. 解析 tokens 成 Request 对象
+    // ============================================
+    function parse(input) {
+      const tokens = tokenize(input);
+      const req = {
+        url: "",
+        method: null,
+        headers: [],
+        cookies: [],
+        body: null,
+        bodyType: null, // 'raw' | 'form' | 'urlencoded' | 'multipart'
+        auth: null,
+        query: [],
+        insecure: false,
+        compressed: false,
+        followRedirect: false,
+        flagsExtra: []
+      };
+
+      let getMode = false;
+      const formFields = [];
+
+      for (let i = 0; i < tokens.length; i++) {
+        const t = tokens[i];
+        const next = () => tokens[++i];
+
+        if (t === "-X" || t === "--request") req.method = (next() || "").toUpperCase();
+        else if (t === "-H" || t === "--header") {
+          const h = next() || "";
+          const idx = h.indexOf(":");
+          if (idx > 0) req.headers.push({ name: h.slice(0, idx).trim(), value: h.slice(idx + 1).trim() });
+        }
+        else if (t === "-d" || t === "--data" || t === "--data-ascii" || t === "--data-raw" || t === "--data-binary") {
+          const v = next() || "";
+          req.body = (req.body || "") + (req.body ? "&" : "") + v;
+          req.bodyType = req.bodyType || "raw";
+        }
+        else if (t === "--data-urlencode") {
+          const v = next() || "";
+          req.body = (req.body || "") + (req.body ? "&" : "") + v;
+          req.bodyType = req.bodyType || "urlencoded";
+        }
+        else if (t === "-F" || t === "--form") {
+          formFields.push(next() || "");
+          req.bodyType = "multipart";
+        }
+        else if (t === "-u" || t === "--user") {
+          const v = next() || "";
+          const idx = v.indexOf(":");
+          req.auth = { user: idx >= 0 ? v.slice(0, idx) : v, pass: idx >= 0 ? v.slice(idx + 1) : "" };
+        }
+        else if (t === "-b" || t === "--cookie") {
+          const v = next() || "";
+          v.split(/;\s*/).forEach(p => {
+            const eq = p.indexOf("=");
+            if (eq > 0) req.cookies.push({ name: p.slice(0, eq).trim(), value: p.slice(eq + 1).trim() });
+          });
+        }
+        else if (t === "-G" || t === "--get") getMode = true;
+        else if (t === "-k" || t === "--insecure") req.insecure = true;
+        else if (t === "--compressed") req.compressed = true;
+        else if (t === "-L" || t === "--location") req.followRedirect = true;
+        else if (t === "-A" || t === "--user-agent") req.headers.push({ name: "User-Agent", value: next() || "" });
+        else if (t === "-e" || t === "--referer") req.headers.push({ name: "Referer", value: next() || "" });
+        else if (t === "--url") req.url = next() || "";
+        else if (t.startsWith("--") || (t.startsWith("-") && t.length === 2)) {
+          // 未知 short/long 标志，可能后面还跟参数——保守地跳过
+          if (["-o","--output","-T","--upload-file","--cacert","--cert","--key"].includes(t)) next();
+          else req.flagsExtra.push(t);
+        }
+        else if (!req.url) req.url = t;
+      }
+
+      if (req.bodyType === "multipart") {
+        req.formFields = formFields.map(f => {
+          const eq = f.indexOf("=");
+          return { name: eq >= 0 ? f.slice(0, eq) : f, value: eq >= 0 ? f.slice(eq + 1) : "" };
+        });
+      }
+
+      // body 类型推断
+      if (req.bodyType === "raw" && req.body) {
+        const contentType = (req.headers.find(h => h.name.toLowerCase() === "content-type") || {}).value || "";
+        if (contentType.includes("application/x-www-form-urlencoded")) req.bodyType = "urlencoded";
+        else if (contentType.includes("application/json")) req.bodyType = "json";
+      }
+
+      // method 推断
+      if (!req.method) {
+        if (req.body || formFields.length) req.method = "POST";
+        else req.method = "GET";
+      }
+
+      // -G 模式：把 body 转 query
+      if (getMode && req.body) {
+        const u = new URL(req.url, "http://x");
+        const params = new URLSearchParams(u.search);
+        new URLSearchParams(req.body).forEach((v, k) => params.append(k, v));
+        u.search = params.toString();
+        req.url = req.url.includes("?") ? req.url.split("?")[0] + "?" + params.toString() : (u.pathname.startsWith("/x") ? req.url + "?" + params.toString() : u.toString().replace(/^http:\/\/x/, ""));
+        req.body = null;
+        req.method = "GET";
+      }
+
+      return req;
+    }
+
+    // ============================================
+    // 3. 代码生成器
+    // ============================================
+
+    function quoteJS(s) {
+      return JSON.stringify(s);
+    }
+    function quotePY(s) {
+      return JSON.stringify(s).replace(/\$/g, "\\$");
+    }
+    function quoteGo(s) {
+      return JSON.stringify(s);
+    }
+
+    function headersToObj(headers, cookies) {
+      const out = {};
+      headers.forEach(h => out[h.name] = h.value);
+      if (cookies.length) out["Cookie"] = cookies.map(c => `${c.name}=${c.value}`).join("; ");
+      return out;
+    }
+
+    function genFetch(req) {
+      const lines = [];
+      const opts = [];
+      opts.push(`  method: ${quoteJS(req.method)}`);
+
+      const headersObj = headersToObj(req.headers, req.cookies);
+      if (req.auth) {
+        headersObj["Authorization"] = "Basic " + btoa(`${req.auth.user}:${req.auth.pass}`);
+      }
+      const hKeys = Object.keys(headersObj);
+      if (hKeys.length) {
+        opts.push("  headers: {\n" + hKeys.map(k => `    ${quoteJS(k)}: ${quoteJS(headersObj[k])}`).join(",\n") + "\n  }");
+      }
+
+      if (req.body) {
+        if (req.bodyType === "json") {
+          // 尝试解析后用 JSON.stringify 让它看上去更整洁
+          try {
+            const parsed = JSON.parse(req.body);
+            opts.push("  body: JSON.stringify(" + JSON.stringify(parsed, null, 2).split("\n").map((l,i) => i===0?l:"  "+l).join("\n") + ")");
+          } catch { opts.push(`  body: ${quoteJS(req.body)}`); }
+        } else if (req.bodyType === "urlencoded") {
+          opts.push(`  body: new URLSearchParams(${quoteJS(req.body)})`);
+        } else {
+          opts.push(`  body: ${quoteJS(req.body)}`);
+        }
+      } else if (req.formFields && req.formFields.length) {
+        lines.push("const form = new FormData();");
+        req.formFields.forEach(f => lines.push(`form.append(${quoteJS(f.name)}, ${quoteJS(f.value)});`));
+        opts.push("  body: form");
+      }
+
+      const code = `${lines.length ? lines.join("\n") + "\n\n" : ""}const response = await fetch(${quoteJS(req.url)}, {\n${opts.join(",\n")}\n});\n\nconst data = await response.json();\nconsole.log(data);`;
+      return code;
+    }
+
+    function genAxios(req) {
+      const cfg = [];
+      cfg.push(`  method: ${quoteJS(req.method.toLowerCase())}`);
+      cfg.push(`  url: ${quoteJS(req.url)}`);
+
+      const headersObj = headersToObj(req.headers, req.cookies);
+      const hKeys = Object.keys(headersObj);
+      if (hKeys.length) {
+        cfg.push("  headers: {\n" + hKeys.map(k => `    ${quoteJS(k)}: ${quoteJS(headersObj[k])}`).join(",\n") + "\n  }");
+      }
+
+      if (req.auth) {
+        cfg.push(`  auth: { username: ${quoteJS(req.auth.user)}, password: ${quoteJS(req.auth.pass)} }`);
+      }
+
+      if (req.body) {
+        if (req.bodyType === "json") {
+          try {
+            const parsed = JSON.parse(req.body);
+            cfg.push("  data: " + JSON.stringify(parsed, null, 2).split("\n").map((l,i) => i===0?l:"  "+l).join("\n"));
+          } catch { cfg.push(`  data: ${quoteJS(req.body)}`); }
+        } else {
+          cfg.push(`  data: ${quoteJS(req.body)}`);
+        }
+      } else if (req.formFields && req.formFields.length) {
+        const lines = ["const form = new FormData();"];
+        req.formFields.forEach(f => lines.push(`form.append(${quoteJS(f.name)}, ${quoteJS(f.value)});`));
+        cfg.push("  data: form");
+        return `import axios from "axios";\n\n${lines.join("\n")}\n\nconst { data } = await axios({\n${cfg.join(",\n")}\n});\nconsole.log(data);`;
+      }
+
+      return `import axios from "axios";\n\nconst { data } = await axios({\n${cfg.join(",\n")}\n});\nconsole.log(data);`;
+    }
+
+    function genPython(req) {
+      const lines = ["import requests", ""];
+      const args = [`${quotePY(req.method)}`, `${quotePY(req.url)}`];
+
+      const headersObj = headersToObj(req.headers, req.cookies);
+      const hKeys = Object.keys(headersObj);
+      if (hKeys.length) {
+        lines.push("headers = {");
+        hKeys.forEach((k, i) => lines.push(`    ${quotePY(k)}: ${quotePY(headersObj[k])}${i === hKeys.length - 1 ? "" : ","}`));
+        lines.push("}");
+        args.push("headers=headers");
+      }
+
+      if (req.auth) args.push(`auth=(${quotePY(req.auth.user)}, ${quotePY(req.auth.pass)})`);
+
+      if (req.body) {
+        if (req.bodyType === "json") {
+          try {
+            const parsed = JSON.parse(req.body);
+            lines.push("payload = " + pyRepr(parsed));
+            args.push("json=payload");
+          } catch {
+            lines.push(`payload = ${quotePY(req.body)}`);
+            args.push("data=payload");
+          }
+        } else if (req.bodyType === "urlencoded") {
+          lines.push(`payload = ${quotePY(req.body)}`);
+          args.push("data=payload");
+        } else {
+          lines.push(`payload = ${quotePY(req.body)}`);
+          args.push("data=payload");
+        }
+      } else if (req.formFields && req.formFields.length) {
+        lines.push("files = {");
+        req.formFields.forEach((f, i) => lines.push(`    ${quotePY(f.name)}: (None, ${quotePY(f.value)})${i === req.formFields.length - 1 ? "" : ","}`));
+        lines.push("}");
+        args.push("files=files");
+      }
+
+      if (req.insecure) args.push("verify=False");
+
+      lines.push("");
+      lines.push(`response = requests.request(${args.join(", ")})`);
+      lines.push("print(response.json())");
+
+      return lines.join("\n");
+    }
+
+    function pyRepr(v, indent = "") {
+      if (v === null) return "None";
+      if (typeof v === "boolean") return v ? "True" : "False";
+      if (typeof v === "number") return String(v);
+      if (typeof v === "string") return quotePY(v);
+      if (Array.isArray(v)) {
+        if (v.length === 0) return "[]";
+        const inner = v.map(x => indent + "    " + pyRepr(x, indent + "    "));
+        return "[\n" + inner.join(",\n") + "\n" + indent + "]";
+      }
+      const keys = Object.keys(v);
+      if (keys.length === 0) return "{}";
+      const inner = keys.map(k => indent + "    " + quotePY(k) + ": " + pyRepr(v[k], indent + "    "));
+      return "{\n" + inner.join(",\n") + "\n" + indent + "}";
+    }
+
+    function genGo(req) {
+      const lines = [
+        'package main',
+        '',
+        'import (',
+        '    "fmt"',
+        '    "io"',
+        '    "net/http"'
+      ];
+      const hasBody = req.body || (req.formFields && req.formFields.length);
+      if (hasBody) lines.push('    "strings"');
+      if (req.insecure) {
+        lines.push('    "crypto/tls"');
+      }
+      lines.push(')');
+      lines.push('');
+      lines.push('func main() {');
+
+      if (hasBody) {
+        const body = req.body || "";
+        lines.push(`    body := strings.NewReader(${quoteGo(body)})`);
+        lines.push(`    req, err := http.NewRequest(${quoteGo(req.method)}, ${quoteGo(req.url)}, body)`);
+      } else {
+        lines.push(`    req, err := http.NewRequest(${quoteGo(req.method)}, ${quoteGo(req.url)}, nil)`);
+      }
+      lines.push('    if err != nil { panic(err) }');
+
+      const headersObj = headersToObj(req.headers, req.cookies);
+      Object.keys(headersObj).forEach(k => {
+        lines.push(`    req.Header.Set(${quoteGo(k)}, ${quoteGo(headersObj[k])})`);
+      });
+      if (req.auth) {
+        lines.push(`    req.SetBasicAuth(${quoteGo(req.auth.user)}, ${quoteGo(req.auth.pass)})`);
+      }
+
+      if (req.insecure) {
+        lines.push('    tr := &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}');
+        lines.push('    client := &http.Client{Transport: tr}');
+      } else {
+        lines.push('    client := &http.Client{}');
+      }
+
+      lines.push('    resp, err := client.Do(req)');
+      lines.push('    if err != nil { panic(err) }');
+      lines.push('    defer resp.Body.Close()');
+      lines.push('    data, _ := io.ReadAll(resp.Body)');
+      lines.push('    fmt.Println(string(data))');
+      lines.push('}');
+      return lines.join("\n");
+    }
+
+    function genNode(req) {
+      // Node 内置 https/http 不带 body 简单形式
+      const isHttps = req.url.startsWith("https:");
+      const mod = isHttps ? "https" : "http";
+      const headersObj = headersToObj(req.headers, req.cookies);
+      if (req.auth) headersObj["Authorization"] = "Basic " + btoa(`${req.auth.user}:${req.auth.pass}`);
+
+      const lines = [`const ${mod} = require("${mod}");`, "", `const url = new URL(${quoteJS(req.url)});`, "", "const options = {"];
+      lines.push(`  hostname: url.hostname,`);
+      lines.push(`  port: url.port || (url.protocol === "https:" ? 443 : 80),`);
+      lines.push(`  path: url.pathname + url.search,`);
+      lines.push(`  method: ${quoteJS(req.method)},`);
+      const hKeys = Object.keys(headersObj);
+      if (hKeys.length) {
+        lines.push(`  headers: {`);
+        hKeys.forEach((k, i) => lines.push(`    ${quoteJS(k)}: ${quoteJS(headersObj[k])}${i === hKeys.length - 1 ? "" : ","}`));
+        lines.push(`  },`);
+      }
+      lines.push(`};`);
+      lines.push("");
+      lines.push(`const req = ${mod}.request(options, res => {`);
+      lines.push(`  let data = "";`);
+      lines.push(`  res.on("data", chunk => data += chunk);`);
+      lines.push(`  res.on("end", () => console.log(data));`);
+      lines.push(`});`);
+      lines.push(`req.on("error", err => console.error(err));`);
+      if (req.body) {
+        lines.push(`req.write(${quoteJS(req.body)});`);
+      }
+      lines.push(`req.end();`);
+      return lines.join("\n");
+    }
+
+    // ============================================
+    // 4. 简易高亮
+    // ============================================
+    function escapeHTML(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+    const HL = {
+      js: { kw: /\b(const|let|var|function|return|if|else|new|import|from|export|async|await|require|true|false|null|undefined)\b/g, ty: /\b(URLSearchParams|FormData|fetch|Promise|JSON|console)\b/g },
+      python: { kw: /\b(import|from|as|def|class|if|else|elif|return|True|False|None|with|for|in|not|and|or)\b/g, ty: /\b(requests|print)\b/g },
+      go: { kw: /\b(package|import|func|return|var|const|if|else|nil|true|false|panic|defer)\b/g, ty: /\b(string|int|error|http|strings|tls|fmt|io)\b/g }
+    };
+
+    function highlight(code, lang) {
+      let h = escapeHTML(code);
+      // 顺序很关键：先字符串后注释。否则字符串里的 // 会被注释规则吞掉
+      const placeholders = [];
+      const place = (s) => { placeholders.push(s); return "@@PH" + (placeholders.length - 1) + "PH@@"; };
+
+      // 字符串先（不允许跨行：把 . / [^...] 限制为同一行）
+      h = h.replace(/("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*')/g, m => place(`<span class="str">${m}</span>`));
+
+      // 再注释
+      if (lang === "python" || lang === "go") {
+        h = h.replace(/(#[^\n]*|\/\/[^\n]*|\/\*[\s\S]*?\*\/)/g, m => place(`<span class="com">${m}</span>`));
+      } else {
+        h = h.replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)/g, m => place(`<span class="com">${m}</span>`));
+      }
+
+      const rules = HL[lang] || HL.js;
+      if (rules.kw) h = h.replace(rules.kw, '<span class="kw">$1</span>');
+      if (rules.ty) h = h.replace(rules.ty, '<span class="ty">$1</span>');
+      h = h.replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>');
+
+      // 还原占位符
+      h = h.replace(/@@PH(\d+)PH@@/g, (_, i) => placeholders[+i]);
+      return h;
+    }
+
+    // ============================================
+    // 5. UI 接线
+    // ============================================
+    const inputEl = document.getElementById("curlInput");
+    const codeOut = document.getElementById("codeOut");
+    const parseInfoEl = document.getElementById("parseInfo");
+    const tabs = document.getElementById("langTabs");
+    const filenameEl = document.getElementById("outFilename");
+
+    let currentLang = "fetch";
+    let currentReq = null;
+    let currentCode = "";
+
+    const EXAMPLE = `curl 'https://api.github.com/repos/anthropics/claude-code/issues' \\
+  -H 'Accept: application/vnd.github+json' \\
+  -H 'Authorization: Bearer ghp_xxxxxxxxxxxxxxxxxx' \\
+  -H 'X-GitHub-Api-Version: 2022-11-28' \\
+  --data-raw '{"title":"Bug report","body":"Something broke","labels":["bug"]}' \\
+  --compressed`;
+
+    const GEN = { fetch: genFetch, axios: genAxios, python: genPython, go: genGo, node: genNode };
+    const LANG_FILE = { fetch: "request.js", axios: "request-axios.js", python: "request.py", go: "main.go", node: "request-node.js" };
+    const LANG_HL = { fetch: "js", axios: "js", python: "python", go: "go", node: "js" };
+
+    function renderParseInfo(req) {
+      if (!req || !req.url) {
+        parseInfoEl.innerHTML = '<div class="empty-msg" style="padding:6px 0">粘贴 cURL 后会自动解析为结构化请求</div>';
+        return;
+      }
+      const rows = [];
+      const mClass = req.method.toLowerCase();
+      rows.push(`<div class="parse-info-row"><span class="lbl">Method</span><span class="val"><span class="method ${mClass}">${req.method}</span></span></div>`);
+      rows.push(`<div class="parse-info-row"><span class="lbl">URL</span><span class="val">${escapeHTML(req.url)}</span></div>`);
+      if (req.headers.length) {
+        rows.push(`<div class="parse-info-row"><span class="lbl">Headers</span><span class="val">${req.headers.map(h => `<div>${escapeHTML(h.name)}: ${escapeHTML(h.value)}</div>`).join("")}</span></div>`);
+      }
+      if (req.cookies.length) {
+        rows.push(`<div class="parse-info-row"><span class="lbl">Cookies</span><span class="val">${req.cookies.length} 个</span></div>`);
+      }
+      if (req.auth) {
+        rows.push(`<div class="parse-info-row"><span class="lbl">Basic Auth</span><span class="val">${escapeHTML(req.auth.user)}:••••</span></div>`);
+      }
+      if (req.body) {
+        const preview = req.body.length > 200 ? req.body.slice(0, 200) + "..." : req.body;
+        rows.push(`<div class="parse-info-row"><span class="lbl">Body (${req.bodyType})</span><span class="val">${escapeHTML(preview)}</span></div>`);
+      }
+      if (req.formFields && req.formFields.length) {
+        rows.push(`<div class="parse-info-row"><span class="lbl">Form</span><span class="val">${req.formFields.length} 个字段</span></div>`);
+      }
+      parseInfoEl.innerHTML = rows.join("");
+    }
+
+    function render() {
+      const raw = inputEl.value.trim();
+      if (!raw) {
+        codeOut.innerHTML = '<span style="color:var(--color-text-muted)">// 粘贴 cURL 命令后这里会生成代码...</span>';
+        renderParseInfo(null);
+        currentReq = null; currentCode = "";
+        return;
+      }
+      try {
+        currentReq = parse(raw);
+        renderParseInfo(currentReq);
+        if (!currentReq.url) {
+          codeOut.innerHTML = '<div class="err-msg">// 没有识别到 URL\n// 请确认 cURL 命令完整</div>';
+          currentCode = "";
+          return;
+        }
+        currentCode = GEN[currentLang](currentReq);
+        codeOut.innerHTML = highlight(currentCode, LANG_HL[currentLang]);
+        filenameEl.textContent = LANG_FILE[currentLang];
+      } catch (e) {
+        codeOut.innerHTML = `<div class="err-msg">// 解析失败：${escapeHTML(e.message)}</div>`;
+      }
+    }
+
+    let debounce;
+    inputEl.addEventListener("input", () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(render, 150);
+    });
+
+    tabs.addEventListener("click", e => {
+      const btn = e.target.closest(".lang-tab");
+      if (!btn) return;
+      tabs.querySelectorAll(".lang-tab").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentLang = btn.dataset.lang;
+      render();
+    });
+
+    document.getElementById("btnExample").addEventListener("click", () => {
+      inputEl.value = EXAMPLE;
+      render();
+    });
+    document.getElementById("btnClear").addEventListener("click", () => {
+      inputEl.value = "";
+      render();
+    });
+    document.getElementById("btnCopy").addEventListener("click", () => {
+      if (!currentCode) { showToast("没有可复制的内容", true); return; }
+      copyToClipboard(currentCode);
+      const btn = document.getElementById("btnCopy");
+      btn.textContent = "已复制";
+      btn.classList.add("copied");
+      setTimeout(() => { btn.textContent = "复制"; btn.classList.remove("copied"); }, 1500);
+    });
+  </script>
+</body>
+</html>

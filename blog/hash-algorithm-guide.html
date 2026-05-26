@@ -5,168 +5,224 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#6366f1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<title>在线哈希计算工具使用指南：MD5、SHA-1、SHA-256 有什么区别？ | DevUtils 博客</title>
-<meta name="description" content="MD5、SHA-1、SHA-256哈希算法有什么区别？哪种最安全？在线哈希计算工具怎么选？本文带你彻底搞懂哈希算法。">
+<title>MD5、SHA-1、SHA-256：到 2026 年了，到底该用哪个 | DevUtils</title>
+<meta name="description" content="不是又一篇哈希算法对比——是按你要解决的问题来选算法。文件校验、密码存储、缓存键、数字签名各自该用什么，2026 年还能用 MD5/SHA-1 吗？">
 <link rel="canonical" href="https://devtool.blueblueliu.com/blog/hash-algorithm-guide.html">
-<meta property="og:title" content="MD5、SHA-1、SHA-256有什么区别？哈希算法选择指南">
-<meta property="og:description" content="哈希算法对比：MD5/SHA-1/SHA-256区别与安全选择指南">
+<meta property="og:title" content="MD5、SHA-1、SHA-256：到 2026 年了，到底该用哪个">
+<meta property="og:description" content="按使用场景选哈希算法的实战指南">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://devtool.blueblueliu.com/blog/hash-algorithm-guide.html">
 <meta property="og:site_name" content="DevUtils">
 <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="MD5、SHA-1、SHA-256有什么区别？哈希算法选择指南">
-<meta name="twitter:description" content="哈希算法对比与安全选择指南">
+<meta name="twitter:title" content="MD5、SHA-1、SHA-256 怎么选">
+<meta name="twitter:description" content="按使用场景选算法">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","headline":"在线哈希计算工具使用指南","description":"MD5、SHA-1、SHA-256哈希算法区别与选择","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-21","dateModified":"2026-05-21"}
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"MD5、SHA-1、SHA-256：到 2026 年了，到底该用哪个","author":{"@type":"Person","name":"swzhang"},"datePublished":"2026-05-21","dateModified":"2026-05-23","publisher":{"@type":"Organization","name":"DevUtils"}}
 </script>
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/reset.css">
 <link rel="stylesheet" href="/css/layout.css">
 <link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
-<style>
-.post{max-width:760px;margin:0 auto;padding:20px}
-.post h1{font-size:2rem;margin:24px 0 8px}
-.post .meta{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:24px}
-.post h2{color:var(--color-accent);margin:32px 0 16px;font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
-.post p{color:var(--color-text-secondary);line-height:1.9;margin-bottom:18px}
-.post ul,.post ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:18px;line-height:1.8}
-.post li{margin:6px 0}
-.post code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
-.post pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
-.post table{width:100%;border-collapse:collapse;margin:16px 0}
-.post th,.post td{border:1px solid var(--color-border);padding:8px 12px;text-align:left}
-.post th{background:var(--color-bg-elevated);color:var(--color-accent);font-weight:600}
-.post td{color:var(--color-text-secondary)}
-.post a{color:var(--color-accent);text-decoration:underline}
-.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
-.tip p{color:var(--color-text-primary);margin:0}
-.warning{background:#fff3cd;border-left:3px solid #ffc107;padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
-.warning p{color:#856404;margin:0}
-.cta{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
-.cta h3{color:var(--color-accent);margin-bottom:8px}
-.cta p{color:var(--color-text-secondary);margin-bottom:16px}
-</style>
 </head>
 <body>
 <div id="siteHeader"></div>
-<main class="post">
-<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span><span>哈希算法指南</span></nav>
 
-<h1>MD5、SHA-1、SHA-256 有什么区别？哈希算法选择指南</h1>
-<p class="meta">发布于 2026年5月21日 · 阅读时间约8分钟</p>
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
 
-<p>开发中经常需要计算文件的哈希值——验证下载完整性、存储密码、生成唯一标识……但 MD5、SHA-1、SHA-256、SHA-512 这些算法有什么区别？应该选哪个？这篇文章给你讲清楚。</p>
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>哈希算法选择</span>
+    </nav>
 
-<h2>什么是哈希？</h2>
-<p>哈希（Hash）是一种单向函数：把任意长度的输入变成固定长度的输出。就像指纹一样——不同的人有不同的指纹，同一个人的指纹永远相同。</p>
-<p>关键特性：</p>
-<ul>
-<li><strong>确定性</strong>：相同输入永远产生相同输出</li>
-<li><strong>不可逆</strong>：从哈希值无法推算原始数据</li>
-<li><strong>雪崩效应</strong>：输入微小变化，输出完全不同</li>
-<li><strong>抗碰撞</strong>：很难找到两个不同输入产生相同输出</li>
-</ul>
+    <header class="post-header">
+      <span class="category">安全 · 哈希</span>
+      <h1>MD5、SHA-1、SHA-256：到 2026 年了，到底该用哪个</h1>
+      <p class="lede">网上 90% 的哈希对比文章告诉你"SHA-256 比 MD5 更安全"——这是废话。真正的问题是：<em>你要解决什么</em>。给文件算指纹和给密码加盐用的根本不是同一类东西。这篇按场景倒推该用哪个。</p>
+      <div class="post-meta">
+        <span class="author-mini"><span class="avatar">SW</span> swzhang</span>
+        <span class="sep">·</span>
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>约 7 分钟阅读</span>
+      </div>
+    </header>
 
-<h2>常见哈希算法对比</h2>
-<table>
-<tr><th>算法</th><th>输出长度</th><th>安全性</th><th>速度</th><th>典型用途</th></tr>
-<tr><td><strong>MD5</strong></td><td>128 位（32 字符）</td><td>❌ 已破解</td><td>很快</td><td>文件校验、缓存键</td></tr>
-<tr><td><strong>SHA-1</strong></td><td>160 位（40 字符）</td><td>❌ 已破解</td><td>快</td><td>Git 提交哈希（历史遗留）</td></tr>
-<tr><td><strong>SHA-256</strong></td><td>256 位（64 字符）</td><td>✅ 安全</td><td>中等</td><td>数字签名、区块链、密码存储</td></tr>
-<tr><td><strong>SHA-512</strong></td><td>512 位（128 字符）</td><td>✅ 安全</td><td>较慢</td><td>高安全场景、大文件校验</td></tr>
-</table>
+    <h2>先看场景表</h2>
+    <p>不想看推理过程？直接对号入座：</p>
+    <table>
+      <thead><tr><th>你要干什么</th><th>用什么</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td>存用户密码</td><td><code>bcrypt</code> / <code>Argon2</code></td><td>SHA-256 都不行——见下文</td></tr>
+        <tr><td>文件下载校验</td><td>SHA-256</td><td>抗碰撞 + 广泛工具支持</td></tr>
+        <tr><td>API 请求签名（HMAC）</td><td>HS256 / HS512</td><td>HMAC 的 H 就是 hash，外加 secret</td></tr>
+        <tr><td>缓存键 / 数据去重</td><td>MD5 也行</td><td>不需要安全性，要的是快</td></tr>
+        <tr><td>Git 内部对象</td><td>SHA-1（在迁 SHA-256）</td><td>历史包袱，自己写代码别用</td></tr>
+        <tr><td>区块链 / 加密货币</td><td>SHA-256 / Keccak-256</td><td>抗 collision 关键</td></tr>
+        <tr><td>JWT 签名</td><td>HS256 / RS256</td><td>HMAC 或非对称</td></tr>
+      </tbody>
+    </table>
 
-<h2>MD5：已不安全但仍在用</h2>
-<p>MD5 是最古老的哈希算法之一，输出 32 个十六进制字符：</p>
-<pre>MD5("hello") = 5d41402abc4b2a76b9719d911017c592</pre>
-<p>MD5 的致命问题：</p>
-<ul>
-<li>2004 年被发现存在<strong>碰撞攻击</strong>——可以人为构造两个不同文件具有相同 MD5</li>
-<li>彩虹表攻击可在秒级破解常见密码的 MD5</li>
-</ul>
-<div class="warning"><p><strong>不要用 MD5 存密码！</strong>MD5 只适合非安全场景：文件去重、缓存键、调试日志指纹。</p></div>
+    <div class="callout callout-danger">
+      <span class="ic">🚫</span>
+      <div class="body"><p><strong>密码存储</strong>用 <code>SHA-256(password + salt)</code> 是常见错误。SHA-256 设计目标是<em>快</em>，但密码哈希要的是<em>慢</em>——慢到攻击者暴力破解算不起。<code>bcrypt</code> / <code>Argon2</code> 的 cost factor 让你能调节这个慢度。</p></div>
+    </div>
 
-<h2>SHA-1：正在被淘汰</h2>
-<p>SHA-1 输出 40 个十六进制字符，比 MD5 安全但已在 2017 年被攻破：</p>
-<pre>SHA1("hello") = aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d</pre>
-<p>SHA-1 的使用场景正在快速减少：</p>
-<ul>
-<li>Git 正在迁移到 SHA-256</li>
-<li>SSL 证书已停止使用 SHA-1 签名</li>
-<li>Chrome 等浏览器会标记 SHA-1 证书为不安全</li>
-</ul>
+    <h2>什么是哈希——一句话</h2>
+    <p>把任意长度的输入压成固定长度的"指纹"。两个不同输入得到相同输出叫"碰撞"，理论上不可避免（鸽笼原理），但好的哈希算法让构造碰撞变得<strong>实际上不可行</strong>。</p>
+    <p>四个核心属性：</p>
+    <ul>
+      <li><strong>确定性</strong> — 相同输入永远相同输出</li>
+      <li><strong>不可逆</strong> — 从输出反推输入要算上亿年</li>
+      <li><strong>雪崩</strong> — 改 1 比特，输出至少一半比特不同</li>
+      <li><strong>抗碰撞</strong> — 找两个不同输入 → 相同输出，应该极难</li>
+    </ul>
+    <p>不同算法的差异主要在第 4 点上。</p>
 
-<h2>SHA-256：当前推荐</h2>
-<p>SHA-256 是 SHA-2 家族中最常用的算法，输出 64 个十六进制字符：</p>
-<pre>SHA256("hello") = 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824</pre>
-<p><strong>你应该在以下场景优先选择 SHA-256：</strong></p>
-<ul>
-<li>文件完整性校验（下载验证）</li>
-<li>数字签名</li>
-<li>密码存储（配合 salt 和迭代次数）</li>
-<li>API 签名验证</li>
-<li>区块链数据哈希</li>
-</ul>
+    <h2>MD5：2026 年还能用，但要小心</h2>
+    <p>1992 年发布，128 位（32 个 hex 字符）。</p>
+    <pre data-lang="bash"><code class="language-bash">echo -n "hello" | md5sum
+# 5d41402abc4b2a76b9719d911017c592  -</code></pre>
+    <p><strong>现状</strong>：2004 年王小云团队公布碰撞攻击，2008 年实战级 collision 出现。现在用 GPU 几秒就能构造两个 MD5 相同的不同文件。</p>
+    <p>但 MD5 没死透——以下场景仍合理：</p>
+    <ul>
+      <li><strong>缓存键</strong>：<code>md5(query_params)</code> 当 Redis key 完全 OK</li>
+      <li><strong>非对抗性去重</strong>：图床判断同一张图被传了两次</li>
+      <li><strong>大文件分块标记</strong>：rsync 用过 MD5（已替换为更现代算法）</li>
+    </ul>
+    <p>规则：只要<strong>不是对手能控制输入</strong>的场景，MD5 还能凑活用。</p>
 
-<h2>密码存储的正确方式</h2>
-<p>直接用 SHA-256 存密码仍然不够安全（彩虹表攻击）。正确做法是：</p>
-<ol>
-<li>生成随机盐值（salt），每个用户不同</li>
-<li>使用 <code>bcrypt</code>、<code>scrypt</code> 或 <code>Argon2</code> 代替 SHA-256</li>
-<li>这些算法内置盐值和迭代，专门设计用于密码存储</li>
-</ol>
-<pre>// Node.js 密码存储示例（bcrypt）
-const bcrypt = require('bcrypt');
-const hash = await bcrypt.hash(password, 10);  // 10 = cost factor
-const match = await bcrypt.compare(inputPassword, hash);</pre>
+    <h2>SHA-1：基本上别用</h2>
+    <p>1995 年发布，160 位。Git 现在还在用——但 Git 也在迁。</p>
+    <pre data-lang="bash"><code class="language-bash">echo -n "hello" | sha1sum
+# aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d  -</code></pre>
+    <p><strong>2017 年 Google 公布 SHAttered 攻击</strong>，用 9.2 万亿亿次哈希计算找到了第一个 SHA-1 碰撞。当时算力还很贵；2026 年的今天，AWS 上跑一周就能搞出来。</p>
+    <p>Git 2.43+ 已经支持 SHA-256 作为对象哈希，但生态还在迁移中。如果你自己写代码：<strong>跳过 SHA-1，直接 SHA-256</strong>。</p>
 
-<div class="tip"><p>需要快速计算文本或文件的哈希值？试试 <a href="/tools/hash-generator.html">在线哈希生成器</a>，支持 MD5/SHA-1/SHA-256/SHA-512。</p></div>
+    <h2>SHA-256：现在的默认</h2>
+    <p>2001 年作为 SHA-2 家族成员发布。256 位。在可预见的将来（至少十年）安全性没问题。</p>
+    <pre data-lang="bash"><code class="language-bash">echo -n "hello" | sha256sum
+# 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824  -</code></pre>
+    <p>什么时候用 SHA-512 而不是 SHA-256？64 位机器上 SHA-512 在某些场景<em>更快</em>（因为 64 位字操作更适合 64 位 CPU）。但输出长度翻倍带来传输/存储开销。一般默认 SHA-256。</p>
 
-<h2>各语言计算哈希示例</h2>
+    <h2>密码存储为什么不用 SHA-256</h2>
+    <p>这是新人最常错的地方。看到 SHA-256 标"安全"，就拿来存密码：</p>
+    <pre data-lang="js"><code class="language-js">// ❌ 错误示范
+const hash = sha256(password + salt);
+// 现代 GPU 每秒能算 100 亿次 SHA-256
+// 8 位密码空间 ~10 万亿，几小时就能爆破</code></pre>
+    <p>正确做法用为密码场景设计的算法：</p>
+    <pre data-lang="js"><code class="language-js">// ✅ Node.js / bcrypt
+import bcrypt from "bcrypt";
+const hash = await bcrypt.hash(password, 12);  // cost=12 大约 0.5 秒/次
+// 攻击者爆破 1 个密码要算几小时，整库爆破不可行
 
-<h3>JavaScript（浏览器）</h3>
-<pre>const text = "hello";
-const buffer = new TextEncoder().encode(text);
-const hash = await crypto.subtle.digest('SHA-256', buffer);
-const hex = Array.from(new Uint8Array(hash))
-  .map(b => b.toString(16).padStart(2, '0'))
-  .join('');
-console.log(hex);</pre>
+// ✅ 更现代的选择：Argon2 (2015 PHC 比赛冠军)
+import argon2 from "argon2";
+const hash = await argon2.hash(password);</code></pre>
+    <p>关键区别：<strong>cost factor</strong>。bcrypt cost=12 比 cost=10 慢 4 倍；硬件升级了你就 cost+=1，让攻击者也得跟着付出更多算力。SHA-256 没有这个参数。</p>
 
-<h3>Python</h3>
-<pre>import hashlib
-text = "hello"
-sha256 = hashlib.sha256(text.encode()).hexdigest()
-print(sha256)</pre>
+    <div class="callout callout-warn">
+      <span class="ic">⚠️</span>
+      <div class="body"><p><strong>"我们公司还在用 MD5 存密码"</strong>——这不是末日，但确实是技术债。迁移方案：用户下次登录时校验旧 MD5 通过后，重新用 bcrypt 哈希存进库，旧 MD5 字段清空。逐步替换，不影响存量用户。</p></div>
+    </div>
 
-<h3>命令行</h3>
-<pre># macOS / Linux
-echo -n "hello" | shasum -a 256
+    <h2>各语言怎么算</h2>
+    <h3>JavaScript (浏览器)</h3>
+    <pre data-lang="js"><code class="language-js">async function sha256(text) {
+  const buf = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hash))
+    .map(b =&gt; b.toString(16).padStart(2, "0"))
+    .join("");
+}
+await sha256("hello");
+// "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"</code></pre>
 
-# 使用 OpenSSL
-echo -n "hello" | openssl dgst -sha256</pre>
+    <h3>Python</h3>
+    <pre data-lang="python"><code class="language-python">import hashlib
+hashlib.sha256(b"hello").hexdigest()
+# '2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824'</code></pre>
 
-<h2>如何选择哈希算法？</h2>
-<table>
-<tr><th>场景</th><th>推荐算法</th><th>原因</th></tr>
-<tr><td>密码存储</td><td>bcrypt / Argon2</td><td>内置盐值和迭代，抗暴力破解</td></tr>
-<tr><td>文件完整性</td><td>SHA-256</td><td>安全、广泛支持</td></tr>
-<tr><td>数据去重</td><td>MD5 或 SHA-256</td><td>MD5 速度快、碰撞概率极低</td></tr>
-<tr><td>数字签名</td><td>SHA-256 或 SHA-512</td><td>安全性有保障</td></tr>
-<tr><td>缓存键</td><td>MD5</td><td>速度快、不需要安全性</td></tr>
-<tr><td>Git 提交</td><td>SHA-1（默认）/ SHA-256</td><td>Git 正在过渡到 SHA-256</td></tr>
-</table>
+    <h3>命令行</h3>
+    <pre data-lang="bash"><code class="language-bash"># macOS / Linux
+echo -n "hello" | sha256sum
 
-<div class="cta">
-<h3>在线哈希生成器</h3>
-<p>输入文本即可计算 MD5、SHA-1、SHA-256、SHA-512，支持文件上传</p>
-<a href="/tools/hash-generator.html" class="btn btn-primary" style="text-decoration:none">打开哈希生成器</a>
+# openssl 各平台都有
+openssl dgst -sha256 file.txt
+
+# 看大文件别 cat | sha256sum（多一次复制），直接：
+sha256sum bigfile.iso</code></pre>
+
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p>需要在浏览器里算文件/文本哈希，直接用 <a href="/tools/hash-generator.html">在线哈希生成器</a>，所有算法本地计算不上传。HMAC 签名场景去看 <a href="/tools/jwt-editor.html">JWT 编辑器</a>。</p></div>
+    </div>
+
+    <h2>关于"算力涨了所以哈希都会被破"</h2>
+    <p>常见的误解。哈希算法不是简单的"更长更安全"。SHA-256 的安全性建立在<strong>找碰撞需要尝试 2<sup>128</sup> 次</strong>这个数学难度上。摩尔定律就算继续 50 年，也不到这个数量级。</p>
+    <p>真正的威胁是<strong>数学突破</strong>——比如 SHA-1 被破是因为有人找到了构造碰撞的捷径。SHA-256 至今没有被发现这种捷径。但万一明天有人发现了——届时再换 SHA-3 或量子抗性算法。<strong>对工程来说，今天用 SHA-256 是对的决定</strong>。</p>
+
+    <div class="cta">
+      <h3>在线哈希工具</h3>
+      <p>MD5 / SHA-1 / SHA-256 / SHA-512，文本和文件都支持，全本地计算</p>
+      <a href="/tools/hash-generator.html" class="btn btn-primary">打开哈希生成器</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="author-card">
+      <div class="author-avatar">SW</div>
+      <div class="author-info">
+        <p class="author-name">swzhang</p>
+        <p class="author-bio">在线工具站 DevUtils 维护者。后端居多。哈希这事被新人问过太多次，记下来当 FAQ。</p>
+      </div>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/json-tips.html" class="related-card">
+          <div class="related-cat">后端 · 数据格式</div>
+          <div class="related-title">JSON 的 10 个坑：生产环境会咬你的事</div>
+          <p class="related-desc">大整数精度、循环引用、jq 实战。</p>
+        </a>
+        <a href="/blog/choose-password-generator.html" class="related-card">
+          <div class="related-cat">安全 · 密码</div>
+          <div class="related-title">怎么挑一个真正安全的密码生成器</div>
+          <p class="related-desc">随机源、熵评估、本地 vs 远程。</p>
+        </a>
+        <a href="/blog/regex-common-patterns.html" class="related-card">
+          <div class="related-cat">速查表</div>
+          <div class="related-title">10 个能直接用的正则</div>
+          <p class="related-desc">附 ✓/✗ 测试样例。</p>
+        </a>
+        <a href="/blog/frontend-dev-tools.html" class="related-card">
+          <div class="related-cat">工具推荐</div>
+          <div class="related-title">前端日常的 10 个在线工具</div>
+          <p class="related-desc">每天都打开的工具清单。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
 </div>
-</main>
+
 <div id="siteFooter"></div>
-<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+<script type="module" src="/js/blog-post.js?v=2"></script>
 </body>
 </html>

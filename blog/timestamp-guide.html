@@ -5,170 +5,246 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#6366f1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<title>时间戳转换详解：Unix时间戳、毫秒时间戳与各语言获取方法 | DevUtils 博客</title>
-<meta name="description" content="时间戳转换完整指南：什么是Unix时间戳、秒级和毫秒级的区别、各编程语言获取当前时间戳的方法、常见时间戳问题与在线转换工具。">
+<title>Unix 时间戳：秒级还是毫秒级——前后端各踩各的坑 | DevUtils</title>
+<meta name="description" content="前后端联调里最高频的踩坑点：时间戳精度不一致。13 位 vs 10 位 vs ISO 8601 vs 时区——按真实事故倒推怎么避坑。各语言代码示例齐全。">
 <link rel="canonical" href="https://devtool.blueblueliu.com/blog/timestamp-guide.html">
-<meta property="og:title" content="时间戳转换详解：Unix时间戳与各语言获取方法">
-<meta property="og:description" content="时间戳完整指南：Unix时间戳原理、各语言获取方法与在线转换">
+<meta property="og:title" content="Unix 时间戳：秒级还是毫秒级——前后端各踩各的坑">
+<meta property="og:description" content="时间戳常见踩坑实战指南">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://devtool.blueblueliu.com/blog/timestamp-guide.html">
 <meta property="og:site_name" content="DevUtils">
 <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="时间戳转换详解：Unix时间戳与各语言获取方法">
-<meta name="twitter:description" content="时间戳完整指南：原理、各语言获取与在线转换">
+<meta name="twitter:title" content="Unix 时间戳常见踩坑">
+<meta name="twitter:description" content="秒级 vs 毫秒级 vs ISO 8601">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","headline":"时间戳转换详解","description":"Unix时间戳完整指南","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-21","dateModified":"2026-05-21"}
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"Unix 时间戳：秒级还是毫秒级——前后端各踩各的坑","author":{"@type":"Person","name":"swzhang"},"datePublished":"2026-05-21","dateModified":"2026-05-23","publisher":{"@type":"Organization","name":"DevUtils"}}
 </script>
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/reset.css">
 <link rel="stylesheet" href="/css/layout.css">
 <link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
-<style>
-.post{max-width:760px;margin:0 auto;padding:20px}
-.post h1{font-size:2rem;margin:24px 0 8px}
-.post .meta{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:24px}
-.post h2{color:var(--color-accent);margin:32px 0 16px;font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
-.post p{color:var(--color-text-secondary);line-height:1.9;margin-bottom:18px}
-.post ul,.post ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:18px;line-height:1.8}
-.post li{margin:6px 0}
-.post code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
-.post pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
-.post table{width:100%;border-collapse:collapse;margin:16px 0}
-.post th,.post td{border:1px solid var(--color-border);padding:8px 12px;text-align:left}
-.post th{background:var(--color-bg-elevated);color:var(--color-accent);font-weight:600}
-.post td{color:var(--color-text-secondary)}
-.post a{color:var(--color-accent);text-decoration:underline}
-.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
-.tip p{color:var(--color-text-primary);margin:0}
-.cta{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
-.cta h3{color:var(--color-accent);margin-bottom:8px}
-.cta p{color:var(--color-text-secondary);margin-bottom:16px}
-</style>
 </head>
 <body>
 <div id="siteHeader"></div>
-<main class="post">
-<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span><span>时间戳指南</span></nav>
 
-<h1>时间戳转换详解：Unix 时间戳、毫秒时间戳与各语言获取方法</h1>
-<p class="meta">发布于 2026年5月21日 · 阅读时间约8分钟</p>
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
 
-<p>前后端对接时，时间戳是最容易出问题的地方之一。秒级还是毫秒级？13 位还是 10 位？时区怎么处理？本文帮你彻底搞懂时间戳。</p>
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>Unix 时间戳</span>
+    </nav>
 
-<h2>什么是 Unix 时间戳？</h2>
-<p>Unix 时间戳是从 <strong>1970年1月1日 00:00:00 UTC</strong> 到指定时间所经过的秒数。也叫 Epoch time 或 POSIX time。</p>
-<p>例如：</p>
-<table>
-<tr><th>时间</th><th>时间戳（秒）</th><th>时间戳（毫秒）</th></tr>
-<tr><td>1970-01-01 00:00:00 UTC</td><td><code>0</code></td><td><code>0</code></td></tr>
-<tr><td>2000-01-01 00:00:00 UTC</td><td><code>946684800</code></td><td><code>946684800000</code></td></tr>
-<tr><td>2026-01-01 00:00:00 UTC</td><td><code>1767225600</code></td><td><code>1767225600000</code></td></tr>
-</table>
+    <header class="post-header">
+      <span class="category">后端 · 时间</span>
+      <h1>Unix 时间戳：秒级还是毫秒级——前后端各踩各的坑</h1>
+      <p class="lede">时间戳长得都差不多——一串数字。但前端默认毫秒、后端 Go 默认秒、MySQL 默认秒、Java 默认毫秒——每次联调都得对一次格式。这篇按踩过的坑列：怎么判断精度、各语言怎么取、时区坑在哪。</p>
+      <div class="post-meta">
+        <span class="author-mini"><span class="avatar">SW</span> swzhang</span>
+        <span class="sep">·</span>
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>约 6 分钟阅读</span>
+      </div>
+    </header>
 
-<h2>秒级 vs 毫秒级</h2>
-<p>最常见的坑就是搞混秒级和毫秒级：</p>
-<ul>
-<li><strong>秒级</strong>（10 位）：Unix 原始定义，大多数后端语言默认</li>
-<li><strong>毫秒级</strong>（13 位）：JavaScript 默认，Java 常用</li>
-</ul>
-<table>
-<tr><th>语言/平台</th><th>默认精度</th><th>位数</th></tr>
-<tr><td>JavaScript</td><td>毫秒</td><td>13 位</td></tr>
-<tr><td>Python</td><td>秒（float 含微秒）</td><td>10 位</td></tr>
-<tr><td>Java</td><td>毫秒</td><td>13 位</td></tr>
-<tr><td>Go</td><td>秒</td><td>10 位</td></tr>
-<tr><td>MySQL</td><td>秒</td><td>10 位</td></tr>
-<tr><td>PHP</td><td>秒</td><td>10 位</td></tr>
-</table>
+    <div class="callout callout-warn">
+      <span class="ic">⚠️</span>
+      <div class="body"><p><strong>真实事故</strong>：订单 API 后端返回秒级时间戳 <code>1716340000</code>，前端直接 <code>new Date(1716340000)</code> 渲染。结果显示 <strong>1970-01-21</strong>。bug 出现在大版本上线两小时后才被用户发现——是因为 JS 把这个当成毫秒了。一个 <code>* 1000</code> 就能避免。</p></div>
+    </div>
 
-<div class="tip"><p><strong>前后端对接时务必统一！</strong>最常见的问题是前端 JS 传 13 位毫秒时间戳，后端期望 10 位秒级时间戳。建议：API 文档中明确标注时间戳精度。</p></div>
+    <h2>一分钟判断你拿到的是秒还是毫秒</h2>
+    <p>看长度：</p>
+    <ul>
+      <li><strong>10 位</strong>（如 <code>1716340000</code>）→ 秒级</li>
+      <li><strong>13 位</strong>（如 <code>1716340000000</code>）→ 毫秒级</li>
+      <li><strong>16 / 19 位</strong> → 微秒 / 纳秒（少见，但 Go <code>time.Now().UnixNano()</code> 会给）</li>
+    </ul>
+    <p>不靠数位数？看年份：</p>
+    <pre data-lang="js"><code class="language-js">// 一个数字 ts，是秒还是毫秒？
+const year = new Date(ts).getFullYear();
+// 如果是合理年份（2000-2100）→ 当前用的是正确精度
+// 如果年份是 1970 → 你把秒当毫秒用了，乘 1000
+// 如果年份很离谱（几万年后）→ 你把毫秒当秒用了，除 1000</code></pre>
 
-<h2>各语言获取当前时间戳</h2>
+    <h2>各语言/平台默认精度对照表</h2>
+    <table>
+      <thead><tr><th>语言/平台</th><th>默认</th><th>取当前时间戳</th></tr></thead>
+      <tbody>
+        <tr><td>JavaScript</td><td><strong>毫秒</strong></td><td><code>Date.now()</code></td></tr>
+        <tr><td>Java</td><td><strong>毫秒</strong></td><td><code>System.currentTimeMillis()</code></td></tr>
+        <tr><td>Python</td><td>秒（float）</td><td><code>time.time()</code></td></tr>
+        <tr><td>Go</td><td>秒</td><td><code>time.Now().Unix()</code></td></tr>
+        <tr><td>PHP</td><td>秒</td><td><code>time()</code></td></tr>
+        <tr><td>Rust</td><td>秒</td><td><code>SystemTime::now().duration_since(UNIX_EPOCH)</code></td></tr>
+        <tr><td>MySQL</td><td>秒</td><td><code>UNIX_TIMESTAMP()</code></td></tr>
+        <tr><td>PostgreSQL</td><td>秒</td><td><code>EXTRACT(EPOCH FROM NOW())</code></td></tr>
+        <tr><td>Redis</td><td>秒</td><td><code>TIME</code> 命令</td></tr>
+      </tbody>
+    </table>
+    <p>结论：<strong>JS 和 Java 是异类</strong>。其他大多数语言/数据库都秒。前后端联调最常见的坑就是 JS（前端）和 Go/Python（后端）对接。</p>
 
-<h3>JavaScript</h3>
-<pre>// 毫秒级
-Date.now()                        // 1779354362058
-new Date().getTime()               // 同上
+    <h2>各语言的取法</h2>
+    <h3>JavaScript</h3>
+    <pre data-lang="js"><code class="language-js">// 毫秒
+Date.now();                  // 1716340000000
+new Date().getTime();        // 同上
 
-// 秒级
-Math.floor(Date.now() / 1000)      // 1779354362</pre>
+// 秒（要除）
+Math.floor(Date.now() / 1000);
 
-<h3>Python</h3>
-<pre>import time
+// 高精度（性能埋点用，不是 epoch）
+performance.now();           // 浏览器开页以来的毫秒</code></pre>
 
-# 秒级
-int(time.time())                   # 1779354362
+    <h3>Python</h3>
+    <pre data-lang="python"><code class="language-python">import time
 
-# 毫秒级
-int(time.time() * 1000)            # 1779354362058</pre>
+time.time()                    # 1716340000.123  (float, 秒)
+int(time.time())               # 1716340000      (整数秒)
+int(time.time() * 1000)        # 1716340000123   (毫秒)
 
-<h3>Java</h3>
-<pre>// 毫秒级
-System.currentTimeMillis()         // 1779354362058
+# 高精度计时器（非 epoch）
+time.perf_counter()            # 纳秒级，但起点不固定</code></pre>
 
-// 秒级
-System.currentTimeMillis() / 1000  // 1779354362</pre>
+    <h3>Go</h3>
+    <pre data-lang="go"><code class="language-go">import "time"
 
-<h3>Go</h3>
-<pre>import "time"
+time.Now().Unix()              // 1716340000      (秒, int64)
+time.Now().UnixMilli()         // 1716340000123   (毫秒)
+time.Now().UnixMicro()         // 1716340000123456 (微秒)
+time.Now().UnixNano()          // 1716340000123456789 (纳秒)</code></pre>
 
-// 秒级
-time.Now().Unix()                  // 1779354362
+    <h3>Java</h3>
+    <pre data-lang="java"><code class="language-java">// 老 API
+System.currentTimeMillis();              // 毫秒
 
-// 毫秒级
-time.Now().UnixMilli()             // 1779354362058</pre>
+// Java 8+
+java.time.Instant.now().getEpochSecond(); // 秒
+java.time.Instant.now().toEpochMilli();   // 毫秒</code></pre>
 
-<h3>MySQL</h3>
-<pre>-- 秒级
-SELECT UNIX_TIMESTAMP();           -- 1779354362
+    <h2>转日期 / 解析 ISO 8601</h2>
+    <p>时间戳转可读时间，几个语言对比：</p>
+    <pre data-lang="js"><code class="language-js">// JavaScript：传毫秒时间戳到 Date
+new Date(1716340000000).toISOString();
+// "2026-05-22T01:46:40.000Z"
+new Date(1716340000000).toLocaleString();
+// "2026/5/22 上午9:46:40"  (本地时区)</code></pre>
 
--- 毫秒级
-SELECT UNIX_TIMESTAMP(NOW(3)) * 1000;</pre>
+    <pre data-lang="python"><code class="language-python">from datetime import datetime, timezone
 
-<h3>命令行</h3>
-<pre># macOS / Linux
-date +%s                          # 秒级
-date +%s%3N                       # 毫秒级</pre>
+# 秒级时间戳
+datetime.fromtimestamp(1716340000, tz=timezone.utc)
+# datetime(2026, 5, 22, 1, 46, 40, tzinfo=timezone.utc)
 
-<h2>时间戳与日期互转</h2>
+datetime.fromtimestamp(1716340000).isoformat()
+# '2026-05-22T09:46:40'  (本地时区)</code></pre>
 
-<h3>JavaScript</h3>
-<pre>// 时间戳 → 日期
-new Date(1779354362000).toISOString()  // "2026-05-21T08:26:02.000Z"
+    <pre data-lang="go"><code class="language-go">t := time.Unix(1716340000, 0)
+t.Format(time.RFC3339)  // "2026-05-22T09:46:40+08:00"</code></pre>
 
-// 日期 → 时间戳
-new Date("2026-05-21").getTime()       // 1779283200000</pre>
+    <div class="callout callout-note">
+      <span class="ic">📌</span>
+      <div class="body"><p>跨时区场景<strong>永远</strong>传 UTC 时间戳（Unix epoch 本来就是 UTC）。展示时再按用户时区格式化。在数据库存"本地时间字符串"是日后所有时区相关 bug 的根源。</p></div>
+    </div>
 
-<h3>Python</h3>
-<pre>from datetime import datetime
+    <h2>时区相关的坑</h2>
+    <ul>
+      <li><strong>Unix 时间戳本身没有时区</strong>——它表示 UTC 起点到现在的秒数，是全球同步的</li>
+      <li><strong>问题出在解析和展示</strong>。同一个 timestamp，在中国服务器 <code>localtime()</code> 显示 +08:00，在 AWS us-east-1 显示 -05:00</li>
+      <li><strong>数据库里存时间戳</strong>就行，不要存 <code>"2026-05-22 09:46:40"</code> 这种本地字符串——丢了时区信息</li>
+      <li><strong>JS Date 对象内部是 UTC 毫秒</strong>，<code>.getDate()</code> / <code>.getHours()</code> 返回的是<em>本地</em>时区。这两点搞清楚能省 80% 的时区 bug</li>
+    </ul>
 
-# 时间戳 → 日期
-datetime.fromtimestamp(1779354362)  # datetime(2026, 5, 21, 16, 26, 2)
+    <h2>2038 年问题</h2>
+    <p>32 位有符号整数能表示的最大 Unix 时间戳是 <code>2147483647</code>，对应 <strong>2038-01-19 03:14:07 UTC</strong>。再加 1 秒，溢出变成 1901 年。</p>
+    <p>这是新版 Y2K 问题，但只影响：</p>
+    <ul>
+      <li>遗留 C 代码用 <code>time_t</code> 且是 32 位的</li>
+      <li>32 位嵌入式系统</li>
+      <li>MySQL 早期版本的 <code>TIMESTAMP</code> 类型（5.6.4 之前）</li>
+    </ul>
+    <p>现代语言/系统基本都用 64 位时间戳，可以撑到几千亿年。不用慌。</p>
 
-# 日期 → 时间戳
-datetime(2026, 5, 21).timestamp()   # 1779283200.0</pre>
+    <h2>JS 里 Date 类的怪行为</h2>
+    <p>JS Date 有几个反直觉的设计：</p>
+    <pre data-lang="js"><code class="language-js">// 月份是 0-based！
+new Date(2026, 5, 22);   // 实际是 6 月 22 日
+new Date(2026, 0, 1);    // 1 月 1 日（这种 API 设计也是没谁了）
 
-<h2>常见问题</h2>
+// 但用 ISO 字符串就正常
+new Date("2026-06-22");  // 6 月 22 日
 
-<h3>时间戳为什么是 1970 年开始？</h3>
-<p>Unix 系统诞生于 1969-1970 年间，开发者选择 1970-01-01 作为起点（Unix Epoch），方便计算。这个约定延续至今。</p>
+// 解析格式不一致：YYYY-MM-DD 按 UTC，YYYY/MM/DD 按本地
+new Date("2026-06-22").toISOString();   // "2026-06-22T00:00:00.000Z"
+new Date("2026/06/22").toISOString();   // 比上面晚 8 小时（中国时区）
 
-<h3>2038 年问题是什么？</h3>
-<p>32 位有符号整数最大值是 <code>2147483647</code>，对应 2038-01-19 03:14:07 UTC。超过这个时间，32 位系统的 Unix 时间戳会溢出。现代 64 位系统不受影响。</p>
+// 现代项目推荐用 date-fns 或 dayjs，原生 Date 坑太多</code></pre>
 
-<h3>时区对时间戳有影响吗？</h3>
-<p><strong>没有。</strong>时间戳是基于 UTC 的绝对值，不受时区影响。但将时间戳转换为日期字符串时，需要考虑时区。同一个时间戳在北京显示为 16:00，在伦敦显示为 08:00。</p>
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p>需要在浏览器里互转时间戳和日期？粘到 <a href="/tools/timestamp-converter.html">时间戳转换工具</a>，自动识别秒/毫秒，同时显示 UTC 和本地两个时区。</p></div>
+    </div>
 
-<div class="cta">
-<h3>在线时间戳转换工具</h3>
-<p>时间戳与日期互转，支持秒级和毫秒级，一键获取当前时间戳</p>
-<a href="/tools/timestamp-converter.html" class="btn btn-primary" style="text-decoration:none">打开时间戳转换器</a>
+    <div class="cta">
+      <h3>在线时间戳转换</h3>
+      <p>自动识别精度、双时区对照、一键复制当前时间戳</p>
+      <a href="/tools/timestamp-converter.html" class="btn btn-primary">打开时间戳工具</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="author-card">
+      <div class="author-avatar">SW</div>
+      <div class="author-info">
+        <p class="author-name">swzhang</p>
+        <p class="author-bio">在线工具站 DevUtils 维护者。被时区 bug 折磨过太多次，把规则写下来当 SOP。</p>
+      </div>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/json-tips.html" class="related-card">
+          <div class="related-cat">后端 · 数据格式</div>
+          <div class="related-title">JSON 的 10 个坑</div>
+          <p class="related-desc">大整数精度、循环引用——JSON 工程实战。</p>
+        </a>
+        <a href="/blog/hash-algorithm-guide.html" class="related-card">
+          <div class="related-cat">安全</div>
+          <div class="related-title">MD5、SHA-1、SHA-256 怎么选</div>
+          <p class="related-desc">按场景选算法的实战指南。</p>
+        </a>
+        <a href="/blog/url-encoding-guide.html" class="related-card">
+          <div class="related-cat">编码</div>
+          <div class="related-title">URL 编码：哪些字符需要编码</div>
+          <p class="related-desc">URL 编码原理 + 各语言实现差异。</p>
+        </a>
+        <a href="/blog/regex-common-patterns.html" class="related-card">
+          <div class="related-cat">速查表</div>
+          <div class="related-title">10 个能直接用的正则</div>
+          <p class="related-desc">附 ✓/✗ 测试样例。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
 </div>
-</main>
+
 <div id="siteFooter"></div>
-<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+<script type="module" src="/js/blog-post.js?v=2"></script>
 </body>
 </html>

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>JSON 转 TypeScript 类型 — 自动推导 interface / type | DevUtils</title>
+  <meta name="description" content="粘贴 JSON 自动生成 TypeScript interface：嵌套对象拆分、可选字段识别、union 合并、命名风格切换。纯前端运行，数据不上传。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/json-to-typescript.html">
+  <meta property="og:title" content="JSON 转 TypeScript 类型生成器">
+  <meta property="og:description" content="粘贴 JSON 自动生成 TS interface，支持嵌套拆分、可选字段、union 合并">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/json-to-typescript.html">
+  <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="JSON 转 TypeScript 类型生成器">
+  <meta name="twitter:description" content="粘贴 JSON 自动生成 TS interface">
+  <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"JSON 转 TypeScript","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .opt-bar{display:flex;gap:var(--space-md);flex-wrap:wrap;align-items:center;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:12px 16px;margin-bottom:var(--space-md)}
+    .opt-group{display:flex;align-items:center;gap:6px;font-size:var(--text-sm);color:var(--color-text-secondary)}
+    .opt-group label{color:var(--color-text-secondary);user-select:none;cursor:pointer}
+    .opt-group input[type=text]{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:6px;padding:4px 10px;color:var(--color-text-primary);font-size:var(--text-sm);width:120px;font-family:"JetBrains Mono",monospace}
+    .opt-group input[type=text]:focus{outline:none;border-color:var(--color-accent)}
+    .opt-group select{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:6px;padding:4px 10px;color:var(--color-text-primary);font-size:var(--text-sm);font-family:inherit;cursor:pointer}
+    .opt-group select:focus{outline:none;border-color:var(--color-accent)}
+    .opt-sep{width:1px;height:16px;background:var(--color-border)}
+    .ts-output{background:#0c0e15;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:0;min-height:300px;overflow:hidden;position:relative;display:flex;flex-direction:column}
+    .ts-output-header{display:flex;align-items:center;padding:0 14px;height:34px;background:linear-gradient(180deg,#1a1d27,#15171f);border-bottom:1px solid var(--color-border);font-size:.72rem;color:var(--color-text-muted);gap:6px}
+    .ts-output-header .dots{display:flex;gap:6px}
+    .ts-output-header .dot{width:10px;height:10px;border-radius:50%}
+    .ts-output-header .dot.r{background:#ff5f57}.ts-output-header .dot.y{background:#febc2e}.ts-output-header .dot.g{background:#28c840}
+    .ts-output-header .filename{margin-left:14px;font-family:"JetBrains Mono",monospace}
+    .ts-output-body{padding:18px 20px;overflow:auto;flex:1;font-family:"JetBrains Mono","Fira Code",monospace;font-size:.86rem;line-height:1.7;color:#d4d4d4;white-space:pre;tab-size:2}
+    .ts-output-body .kw{color:#c792ea}
+    .ts-output-body .id{color:#82aaff}
+    .ts-output-body .ty{color:#ffcb6b}
+    .ts-output-body .str{color:#a5d6a7}
+    .ts-output-body .com{color:#6b7080;font-style:italic}
+    .ts-stats{display:flex;gap:18px;color:var(--color-text-muted);font-size:var(--text-xs);margin-top:8px;flex-wrap:wrap}
+    .ts-stats span strong{color:var(--color-accent)}
+    .error-msg{color:#f87171;font-family:"JetBrains Mono",monospace;font-size:.85rem;padding:18px 20px}
+    .quick-samples{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .quick-samples button{background:transparent;border:1px solid var(--color-border);color:var(--color-text-muted);padding:4px 10px;border-radius:999px;font-size:.75rem;cursor:pointer;transition:all .15s;font-family:inherit}
+    .quick-samples button:hover{border-color:var(--color-accent);color:var(--color-accent)}
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>JSON 转 TypeScript</span></nav>
+    <h1>JSON 转 TypeScript 类型生成器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg);max-width:680px">粘贴 JSON 自动生成 TS <code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.9em">interface</code>——嵌套对象会拆成多个独立接口，数组里的不同 shape 会合并成 union，前端工程里很常见但手写很烦。</p>
+
+    <div class="opt-bar">
+      <div class="opt-group">
+        <label for="rootName">根类型名</label>
+        <input type="text" id="rootName" value="Root" maxlength="40">
+      </div>
+      <div class="opt-sep"></div>
+      <div class="opt-group">
+        <label for="declType">声明形式</label>
+        <select id="declType">
+          <option value="interface">interface</option>
+          <option value="type">type</option>
+        </select>
+      </div>
+      <div class="opt-sep"></div>
+      <div class="opt-group">
+        <input type="checkbox" id="optNullable" checked>
+        <label for="optNullable">null 字段标 <code style="color:var(--color-accent);font-family:'JetBrains Mono',monospace;font-size:.85em">| null</code></label>
+      </div>
+      <div class="opt-group">
+        <input type="checkbox" id="optReadonly">
+        <label for="optReadonly">所有字段 readonly</label>
+      </div>
+      <div class="opt-group">
+        <input type="checkbox" id="optExport" checked>
+        <label for="optExport">添加 export</label>
+      </div>
+    </div>
+
+    <div class="tool-layout">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">JSON 输入</span>
+          <div class="panel-actions">
+            <button class="btn btn-sm" id="btnExample">示例</button>
+            <button class="btn btn-sm" id="btnClear">清空</button>
+          </div>
+        </div>
+        <textarea class="textarea" id="jsonInput" placeholder='粘贴 JSON 数据...&#10;&#10;例：&#10;{&#10;  "id": 123,&#10;  "user": {"name": "Tom", "age": 28}&#10;}'></textarea>
+        <div class="quick-samples">
+          <button data-sample="api">API 响应</button>
+          <button data-sample="nested">深度嵌套</button>
+          <button data-sample="union">数组 union</button>
+          <button data-sample="optional">可选字段</button>
+        </div>
+      </div>
+
+      <div class="panel" style="padding:0;background:transparent;border:none">
+        <div class="panel-header" style="padding:0 0 12px">
+          <span class="panel-title">TypeScript 输出</span>
+          <div class="panel-actions">
+            <button class="btn btn-sm" id="btnCopy">复制全部</button>
+            <button class="btn btn-sm" id="btnDownload">下载 .ts</button>
+          </div>
+        </div>
+        <div class="ts-output">
+          <div class="ts-output-header">
+            <span class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>
+            <span class="filename" id="outFilename">types.ts</span>
+          </div>
+          <div class="ts-output-body" id="tsOutput"><span style="color:var(--color-text-muted)">// 粘贴 JSON 后会自动生成 TypeScript 类型...</span></div>
+        </div>
+        <div class="ts-stats" id="tsStats"></div>
+      </div>
+    </div>
+
+    <section style="margin-top:48px;color:var(--color-text-secondary);font-size:.95rem;line-height:1.8;max-width:760px">
+      <h2 style="color:var(--color-text-primary);font-size:1.3rem;margin-bottom:12px">这个工具能识别什么</h2>
+      <ul style="padding-left:22px">
+        <li><strong>嵌套对象</strong> — 自动提取成独立 interface，按字段名 PascalCase 命名（<code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px">user → User</code>），重名加数字后缀</li>
+        <li><strong>数组元素类型</strong> — 同 shape 合并；不同 shape 自动 union（<code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px">(Cat | Dog)[]</code>）</li>
+        <li><strong>可选字段</strong> — 数组对象里某 key 只在部分元素里出现，标 <code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px">?:</code></li>
+        <li><strong>null 值</strong> — 默认标 <code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px">| null</code>，可关闭</li>
+        <li><strong>大整数</strong> — 超过 <code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px">Number.MAX_SAFE_INTEGER</code> 的字段会标注 <code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px">// possibly precision loss</code></li>
+        <li><strong>非法 key</strong> — 含特殊字符或以数字开头的键会用 <code style="color:var(--color-accent);background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px">"key": Type</code> 引号包裹</li>
+      </ul>
+      <p style="margin-top:14px;color:var(--color-text-muted);font-size:.88rem">所有处理在浏览器本地完成，JSON 数据不会上传任何服务器。</p>
+    </section>
+  </main>
+  <div id="siteFooter"></div>
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    // ============================================
+    // 类型推导核心
+    // ============================================
+
+    const PRIMITIVE = "primitive";
+    const OBJECT = "object";
+    const ARRAY = "array";
+    const NULL = "null";
+
+    // 将 JSON 值转成内部类型描述
+    function inferShape(v) {
+      if (v === null) return { kind: NULL };
+      if (Array.isArray(v)) return { kind: ARRAY, items: v.map(inferShape) };
+      const t = typeof v;
+      if (t === "object") {
+        const fields = {};
+        for (const k of Object.keys(v)) fields[k] = inferShape(v[k]);
+        return { kind: OBJECT, fields };
+      }
+      // primitive
+      let prim;
+      if (t === "number") {
+        if (Number.isInteger(v) && Math.abs(v) > Number.MAX_SAFE_INTEGER) {
+          prim = "number /* possibly precision loss */";
+        } else {
+          prim = "number";
+        }
+      } else if (t === "string") prim = "string";
+      else if (t === "boolean") prim = "boolean";
+      else prim = "unknown";
+      return { kind: PRIMITIVE, type: prim };
+    }
+
+    // 合并两个 shape（用于数组中不同元素的合并 / 可选字段检测）
+    function mergeShapes(shapes) {
+      // 全 null
+      if (shapes.every(s => s.kind === NULL)) return { kind: NULL };
+
+      const nonNull = shapes.filter(s => s.kind !== NULL);
+      const hasNull = shapes.length !== nonNull.length;
+
+      // 分组：按 kind 聚类
+      const kinds = new Set(nonNull.map(s => s.kind));
+
+      if (kinds.size > 1) {
+        // 混合类型，生成 union（不深度合并）
+        return { kind: "union", members: nonNull, nullable: hasNull };
+      }
+      const kind = [...kinds][0];
+
+      if (kind === PRIMITIVE) {
+        const types = [...new Set(nonNull.map(s => s.type))];
+        if (types.length === 1) return { kind: PRIMITIVE, type: types[0], nullable: hasNull };
+        return { kind: "union", members: types.map(t => ({ kind: PRIMITIVE, type: t })), nullable: hasNull };
+      }
+
+      if (kind === OBJECT) {
+        // 合并所有字段，记录每个字段在多少个对象中出现以判断 optional
+        const total = nonNull.length;
+        const fieldCounts = {};
+        const fieldShapes = {};
+        for (const s of nonNull) {
+          for (const k of Object.keys(s.fields)) {
+            fieldCounts[k] = (fieldCounts[k] || 0) + 1;
+            (fieldShapes[k] = fieldShapes[k] || []).push(s.fields[k]);
+          }
+        }
+        const merged = {};
+        for (const k of Object.keys(fieldShapes)) {
+          const sub = mergeShapes(fieldShapes[k]);
+          sub.optional = fieldCounts[k] < total;
+          merged[k] = sub;
+        }
+        return { kind: OBJECT, fields: merged, nullable: hasNull };
+      }
+
+      if (kind === ARRAY) {
+        // 把所有数组的 items 合并
+        const allItems = [];
+        for (const s of nonNull) for (const it of s.items) allItems.push(it);
+        const itemShape = allItems.length === 0 ? { kind: PRIMITIVE, type: "unknown" } : mergeShapes(allItems);
+        return { kind: ARRAY, item: itemShape, nullable: hasNull };
+      }
+
+      return { kind: PRIMITIVE, type: "unknown" };
+    }
+
+    // 把数组 items 已经合并好，转成"含 item 字段"的 array 节点
+    function normalizeArray(shape) {
+      if (shape.kind !== ARRAY || shape.item) return shape;
+      const item = shape.items.length === 0 ? { kind: PRIMITIVE, type: "unknown" } : mergeShapes(shape.items);
+      return { kind: ARRAY, item, nullable: shape.nullable };
+    }
+
+    // 递归"规范化"：让每个 ARRAY 都有 item 字段
+    function normalize(shape) {
+      if (shape.kind === ARRAY) {
+        shape = normalizeArray(shape);
+        shape.item = normalize(shape.item);
+      } else if (shape.kind === OBJECT) {
+        for (const k of Object.keys(shape.fields)) shape.fields[k] = normalize(shape.fields[k]);
+      } else if (shape.kind === "union") {
+        shape.members = shape.members.map(normalize);
+      }
+      return shape;
+    }
+
+    // ============================================
+    // 代码生成
+    // ============================================
+
+    function pascalCase(s) {
+      const cleaned = s.replace(/[^a-zA-Z0-9]+/g, " ").trim();
+      if (!cleaned) return "Anonymous";
+      return cleaned.split(/\s+/).map(p => p[0].toUpperCase() + p.slice(1)).join("");
+    }
+
+    function singularize(s) {
+      if (s.endsWith("ies")) return s.slice(0, -3) + "y";
+      if (s.endsWith("ses") || s.endsWith("xes")) return s.slice(0, -2);
+      if (s.endsWith("s") && !s.endsWith("ss")) return s.slice(0, -1);
+      return s;
+    }
+
+    const KEY_LEGAL = /^[a-zA-Z_$][a-zA-Z0-9_$]*$/;
+
+    function renderKey(k) {
+      return KEY_LEGAL.test(k) ? k : JSON.stringify(k);
+    }
+
+    function generate(rootShape, opts) {
+      const interfaces = []; // { name, body: array of {key, type, optional, comment} }
+      const nameUsed = new Map(); // name -> count
+
+      function uniqueName(base) {
+        const n = pascalCase(base);
+        const c = nameUsed.get(n) || 0;
+        nameUsed.set(n, c + 1);
+        return c === 0 ? n : n + (c + 1);
+      }
+
+      // 把 shape 转成 TS 类型字符串，可能会注册新 interface
+      function typeOf(shape, hintName) {
+        if (shape.kind === NULL) return "null";
+        const nullable = shape.nullable;
+        let core;
+        if (shape.kind === PRIMITIVE) {
+          core = shape.type;
+        } else if (shape.kind === "union") {
+          const inner = shape.members.map(m => typeOf(m, hintName)).join(" | ");
+          core = shape.members.length > 1 ? "(" + inner + ")" : inner;
+        } else if (shape.kind === ARRAY) {
+          const itemHint = singularize(hintName || "Item");
+          const it = typeOf(shape.item, itemHint);
+          core = it.includes(" | ") || it.includes("?") ? "(" + it + ")[]" : it + "[]";
+        } else if (shape.kind === OBJECT) {
+          // 注册新 interface
+          const name = uniqueName(hintName || "Object");
+          const body = [];
+          for (const k of Object.keys(shape.fields)) {
+            const f = shape.fields[k];
+            const subHint = pascalCase(k);
+            body.push({
+              key: k,
+              type: typeOf(f, subHint),
+              optional: !!f.optional
+            });
+          }
+          interfaces.push({ name, body });
+          core = name;
+        } else {
+          core = "unknown";
+        }
+
+        if (opts.nullable && nullable) {
+          return core.includes(" | ") ? "(" + core + ") | null" : core + " | null";
+        }
+        return core;
+      }
+
+      const rootType = typeOf(rootShape, opts.rootName);
+
+      // 生成代码
+      const lines = [];
+      const prefix = opts.export ? "export " : "";
+      const ro = opts.readonly ? "readonly " : "";
+
+      // 顺序：root 最后输出（让被引用的接口先出现）
+      // interfaces 数组里 push 顺序是"嵌套先 push 父子顺序"，root 是最后那个
+      // 但我们想让 root 出现在最上面，于是反转：把 root（最后一个）放第一
+      let rootInterface = null;
+      const rest = [];
+      for (let i = 0; i < interfaces.length; i++) {
+        if (i === interfaces.length - 1) rootInterface = interfaces[i];
+        else rest.push(interfaces[i]);
+      }
+      const ordered = rootInterface ? [rootInterface, ...rest] : interfaces;
+
+      if (rootShape.kind !== OBJECT) {
+        // 顶层不是对象，直接 type 别名
+        lines.push(`${prefix}type ${opts.rootName} = ${rootType};`);
+      } else {
+        for (const iface of ordered) {
+          if (opts.declType === "type") {
+            lines.push(`${prefix}type ${iface.name} = {`);
+          } else {
+            lines.push(`${prefix}interface ${iface.name} {`);
+          }
+          for (const f of iface.body) {
+            lines.push(`  ${ro}${renderKey(f.key)}${f.optional ? "?" : ""}: ${f.type};`);
+          }
+          lines.push(opts.declType === "type" ? "};" : "}");
+          lines.push("");
+        }
+      }
+      return { code: lines.join("\n").trimEnd(), interfaceCount: ordered.length };
+    }
+
+    // ============================================
+    // 简易高亮
+    // ============================================
+    function escapeHTML(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+    function highlightTS(code) {
+      let h = escapeHTML(code);
+      h = h.replace(/(\/\/[^\n]*)/g, '<span class="com">$1</span>');
+      h = h.replace(/(\/\*[^*]*\*\/)/g, '<span class="com">$1</span>');
+      h = h.replace(/\b(export|interface|type|readonly)\b/g, '<span class="kw">$1</span>');
+      h = h.replace(/\b(string|number|boolean|null|undefined|unknown|any)\b/g, '<span class="ty">$1</span>');
+      // interface/type 后的标识符
+      h = h.replace(/(<span class="kw">(?:interface|type)<\/span>)\s+([A-Z][\w]*)/g, '$1 <span class="id">$2</span>');
+      return h;
+    }
+
+    // ============================================
+    // UI 接线
+    // ============================================
+    const inputEl = document.getElementById("jsonInput");
+    const outEl = document.getElementById("tsOutput");
+    const statsEl = document.getElementById("tsStats");
+    let currentCode = "";
+
+    const SAMPLES = {
+      api: `{
+  "code": 0,
+  "message": "ok",
+  "data": {
+    "user": {
+      "id": 12345,
+      "username": "alice",
+      "email": "alice@example.com",
+      "verified": true,
+      "createdAt": "2026-01-01T00:00:00Z",
+      "profile": {
+        "avatar": "https://example.com/a.png",
+        "bio": null
+      }
+    },
+    "tokens": {
+      "access": "eyJ...",
+      "refresh": "rT...",
+      "expiresIn": 3600
+    }
+  }
+}`,
+      nested: `{
+  "company": {
+    "name": "Acme",
+    "address": {
+      "country": "CN",
+      "city": "Shanghai",
+      "geo": {"lat": 31.23, "lng": 121.47}
+    },
+    "departments": [
+      {
+        "name": "Eng",
+        "head": {"name": "Tom", "level": "L7"},
+        "members": 42
+      }
+    ]
+  }
+}`,
+      union: `{
+  "events": [
+    {"type": "click", "x": 100, "y": 200},
+    {"type": "scroll", "deltaY": 50},
+    {"type": "key", "code": "Enter", "ctrl": true}
+  ]
+}`,
+      optional: `{
+  "users": [
+    {"id": 1, "name": "Alice", "email": "a@x.com"},
+    {"id": 2, "name": "Bob"},
+    {"id": 3, "name": "Carol", "email": "c@x.com", "phone": "1234"}
+  ]
+}`
+    };
+
+    function render() {
+      const raw = inputEl.value.trim();
+      if (!raw) {
+        outEl.innerHTML = '<span style="color:var(--color-text-muted)">// 粘贴 JSON 后会自动生成 TypeScript 类型...</span>';
+        statsEl.innerHTML = "";
+        currentCode = "";
+        return;
+      }
+      let parsed;
+      try { parsed = JSON.parse(raw); }
+      catch (e) {
+        outEl.innerHTML = `<div class="error-msg">// JSON 解析错误\n// ${escapeHTML(e.message)}</div>`;
+        statsEl.innerHTML = "";
+        currentCode = "";
+        return;
+      }
+      const opts = {
+        rootName: pascalCase(document.getElementById("rootName").value || "Root"),
+        declType: document.getElementById("declType").value,
+        nullable: document.getElementById("optNullable").checked,
+        readonly: document.getElementById("optReadonly").checked,
+        export: document.getElementById("optExport").checked,
+      };
+      const shape = normalize(inferShape(parsed));
+      const { code, interfaceCount } = generate(shape, opts);
+      currentCode = code;
+      outEl.innerHTML = highlightTS(code);
+      // 统计
+      const lines = code.split("\n").length;
+      const chars = code.length;
+      statsEl.innerHTML = `<span><strong>${interfaceCount}</strong> 个类型</span><span><strong>${lines}</strong> 行</span><span><strong>${chars.toLocaleString()}</strong> 字符</span>`;
+      document.getElementById("outFilename").textContent = opts.rootName.replace(/[A-Z]/g, (c,i)=> i===0?c.toLowerCase():"-"+c.toLowerCase()) + ".ts";
+    }
+
+    // 触发
+    let debounce;
+    function trigger() {
+      clearTimeout(debounce);
+      debounce = setTimeout(render, 120);
+    }
+    inputEl.addEventListener("input", trigger);
+    document.querySelectorAll(".opt-bar input, .opt-bar select").forEach(el => {
+      el.addEventListener("input", trigger);
+      el.addEventListener("change", trigger);
+    });
+
+    document.getElementById("btnExample").addEventListener("click", () => {
+      inputEl.value = SAMPLES.api;
+      render();
+    });
+    document.getElementById("btnClear").addEventListener("click", () => {
+      inputEl.value = "";
+      render();
+    });
+    document.querySelectorAll(".quick-samples button").forEach(b => {
+      b.addEventListener("click", () => {
+        inputEl.value = SAMPLES[b.dataset.sample] || SAMPLES.api;
+        render();
+      });
+    });
+
+    document.getElementById("btnCopy").addEventListener("click", () => {
+      if (!currentCode) { showToast("没有可复制的内容", true); return; }
+      copyToClipboard(currentCode);
+    });
+    document.getElementById("btnDownload").addEventListener("click", () => {
+      if (!currentCode) { showToast("没有可下载的内容", true); return; }
+      const blob = new Blob([currentCode], { type: "text/typescript" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = document.getElementById("outFilename").textContent;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast("已下载");
+    });
+  </script>
+</body>
+</html>

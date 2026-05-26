@@ -5,183 +5,238 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#6366f1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<title>前端开发必备的10个在线工具推荐（2026最新） | DevUtils 博客</title>
-<meta name="description" content="2026年前端开发必备在线工具推荐：JSON格式化、Base64编解码、正则测试、时间戳转换等，免费无需安装。">
+<title>前端日常的 10 个在线工具——能省下装一堆 App 的麻烦 | DevUtils</title>
+<meta name="description" content="不是新手教程。前端写久了你会发现：JSON 格式化、Base64、JWT 解码这些事每天要做几十遍。这是我自己每天打开的那批在线工具。">
 <link rel="canonical" href="https://devtool.blueblueliu.com/blog/frontend-dev-tools.html">
-<meta property="og:title" content="前端开发必备的10个在线工具推荐（2026最新）">
-<meta property="og:description" content="2026年前端开发必备在线工具推荐，免费无需安装">
+<meta property="og:title" content="前端日常的 10 个在线工具">
+<meta property="og:description" content="前端每天都要用的那批小工具，省掉装一堆 App 的麻烦">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://devtool.blueblueliu.com/blog/frontend-dev-tools.html">
 <meta property="og:site_name" content="DevUtils">
 <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="前端开发必备的10个在线工具推荐（2026最新）">
-<meta name="twitter:description" content="2026年前端开发必备在线工具推荐">
+<meta name="twitter:title" content="前端日常的 10 个在线工具">
+<meta name="twitter:description" content="每天都要用的那批小工具">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","headline":"前端开发必备的10个在线工具推荐（2026最新）","description":"前端开发必备在线工具推荐","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-21","dateModified":"2026-05-21"}
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"前端日常的 10 个在线工具","description":"每天都要用的工具清单","author":{"@type":"Person","name":"swzhang"},"datePublished":"2026-05-21","dateModified":"2026-05-23","publisher":{"@type":"Organization","name":"DevUtils"}}
 </script>
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/reset.css">
 <link rel="stylesheet" href="/css/layout.css">
 <link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
 <style>
-.post{max-width:760px;margin:0 auto;padding:20px}
-.post h1{font-size:2rem;margin:24px 0 8px}
-.post .meta{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:24px}
-.post h2{color:var(--color-accent);margin:32px 0 16px;font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
-.post p{color:var(--color-text-secondary);line-height:1.9;margin-bottom:18px}
-.post ul,.post ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:18px;line-height:1.8}
-.post li{margin:6px 0}
-.post code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
-.post a{color:var(--color-accent);text-decoration:underline}
-.cta{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
-.cta h3{color:var(--color-accent);margin-bottom:8px}
-.cta p{color:var(--color-text-secondary);margin-bottom:16px}
-.tool-card{display:flex;gap:16px;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;margin:16px 0;align-items:center}
-.tool-card .tool-icon{font-size:2rem;min-width:40px;text-align:center}
-.tool-card .tool-info h3{margin:0 0 4px;font-size:1rem}
-.tool-card .tool-info h3 a{color:var(--color-text-primary);text-decoration:none}
-.tool-card .tool-info h3 a:hover{color:var(--color-accent)}
-.tool-card .tool-info p{margin:0;font-size:var(--text-sm);color:var(--color-text-secondary)}
+.tool-row{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:flex-start;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:10px;padding:18px 22px;margin:18px 0}
+.tool-row .icon{width:42px;height:42px;border-radius:8px;background:var(--color-accent-subtle);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0;color:var(--color-accent)}
+.tool-row .body h3{margin:0 0 4px;font-size:1.05rem;color:var(--color-text-primary)}
+.tool-row .body h3 a{color:inherit;text-decoration:none;border:none;padding:0}
+.tool-row .body h3 a:hover{color:var(--color-accent)}
+.tool-row .body .why{font-size:.82rem;color:var(--color-text-muted);margin:0 0 8px;font-style:italic}
+.tool-row .body p{margin:0;line-height:1.7;font-size:.95rem}
 </style>
 </head>
 <body>
 <div id="siteHeader"></div>
-<main class="post">
-<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span><span>前端开发工具推荐</span></nav>
 
-<h1>前端开发必备的 10 个在线工具推荐（2026 最新）</h1>
-<p class="meta">发布于 2026年5月21日 · 阅读时间约6分钟</p>
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
 
-<p>作为前端开发者，每天都要处理各种格式转换、调试、测试等琐事。安装一堆桌面软件太重，浏览器插件又容易冲突。最好的方案是<strong>在线工具</strong>——打开即用，不占空间，跨平台通用。</p>
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>前端工具推荐</span>
+    </nav>
 
-<p>以下是我日常开发中最常用的 10 个在线工具，全部免费，且数据在本地处理不上传服务器。</p>
+    <header class="post-header">
+      <span class="category">工具推荐 · 前端</span>
+      <h1>前端日常的 10 个在线工具——能省下装一堆 App 的麻烦</h1>
+      <p class="lede">不是"2026 你必须知道的 10 个工具"那种水文。是我自己——一个写了几年前端的人——每天在浏览器里反复打开的那批东西。每个都说清楚<em>什么时候</em>用它最划算。</p>
+      <div class="post-meta">
+        <span class="author-mini"><span class="avatar">SW</span> swzhang</span>
+        <span class="sep">·</span>
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>约 6 分钟阅读</span>
+      </div>
+    </header>
 
-<div class="tool-card">
-<div class="tool-icon">{}</div>
-<div class="tool-info">
-<h3><a href="/tools/json-formatter.html">JSON 格式化工具</a></h3>
-<p>粘贴压缩 JSON 一键美化，自动检测语法错误并定位行号，支持压缩/格式化切换</p>
+    <p>前端这行的怪现状：你电脑里装的桌面工具一年用不到三次，但浏览器里一直开着的几个标签倒是从 9 点用到 9 点。我整理了下自己最近一个月使用频率最高的 10 个在线工具——按真实场景排序，不按字母。</p>
+
+    <div class="callout callout-note">
+      <span class="ic">📌</span>
+      <div class="body"><p>所有工具都在 <a href="/">DevUtils</a> 上有现成版本，纯浏览器运行，数据不上传。不喜欢这个站换别家也行，反正常识是<strong>不要在线上传敏感 JSON / 密码</strong>到来历不明的工具站。</p></div>
+    </div>
+
+    <h2>1. JSON 格式化（一天用 20 次）</h2>
+    <div class="tool-row">
+      <span class="icon">{ }</span>
+      <div class="body">
+        <h3><a href="/tools/json-formatter.html">JSON 格式化</a></h3>
+        <p class="why">最常见场景：后端返回的压缩 JSON，肉眼根本读不了。</p>
+        <p>调接口排错的核心工具。除了基本格式化，重点看错误定位——好工具会精确告诉你 <code>Unexpected token at line 23, col 7</code>。如果你经常被大整数精度坑过，配合读 <a href="/blog/json-tips.html">JSON 的 10 个坑</a>。</p>
+      </div>
+    </div>
+
+    <h2>2. Base64 编解码</h2>
+    <div class="tool-row">
+      <span class="icon">🔤</span>
+      <div class="body">
+        <h3><a href="/tools/base64.html">Base64 编解码</a></h3>
+        <p class="why">JWT、Data URL、API 认证头——绕不开的 33% 体积膨胀。</p>
+        <p>不要在控制台手敲 <code>btoa()</code> / <code>atob()</code>——它们处理 Unicode 字符会报 <code>InvalidCharacterError</code>。在线工具会自动 UTF-8 编码。原理细节看 <a href="/base64-tutorial.html">Base64 教程</a>。</p>
+      </div>
+    </div>
+
+    <h2>3. JWT 解码器</h2>
+    <div class="tool-row">
+      <span class="icon">🔐</span>
+      <div class="body">
+        <h3><a href="/tools/jwt-decoder.html">JWT 解码</a></h3>
+        <p class="why">调登录/权限接口的标配。</p>
+        <p>JWT 是三段 base64 用点拼起来。这工具会把 header / payload / signature 拆开高亮显示，<code>exp</code> / <code>iat</code> 这种时间戳字段会自动转人话日期。<strong>提醒</strong>：不要把生产 token 贴到不明工具站——可以本地解码的就别上传。</p>
+      </div>
+    </div>
+
+    <h2>4. 正则测试器</h2>
+    <div class="tool-row">
+      <span class="icon">🔍</span>
+      <div class="body">
+        <h3><a href="/tools/regex-tester.html">正则测试</a></h3>
+        <p class="why">写正则的人都懂——肉眼调试基本等于赌博。</p>
+        <p>实时匹配高亮 + 捕获组单独显示是底线功能。再进阶就是支持 lookahead/lookbehind 切换、标注 <code>/g</code> <code>/i</code> 修饰符。<a href="/blog/regex-common-patterns.html">常用正则速查表</a> 收藏一份省得每次现写。</p>
+      </div>
+    </div>
+
+    <h2>5. 时间戳转换</h2>
+    <div class="tool-row">
+      <span class="icon">🕐</span>
+      <div class="body">
+        <h3><a href="/tools/timestamp-converter.html">时间戳转换</a></h3>
+        <p class="why">前后端联调的高频痛点：你毫秒级我秒级。</p>
+        <p><code>1716340000</code> 到底是秒还是毫秒？看长度——10 位就是秒，13 位就是毫秒。在线工具会两个都给你转出来对照看。Java 后端默认 <code>System.currentTimeMillis()</code> 返毫秒，Go 默认 <code>time.Now().Unix()</code> 返秒——这就是事故源头。</p>
+      </div>
+    </div>
+
+    <h2>6. URL 编解码</h2>
+    <div class="tool-row">
+      <span class="icon">🔗</span>
+      <div class="body">
+        <h3><a href="/tools/url-encode.html">URL 编解码</a></h3>
+        <p class="why">中文参数 + 重定向 URL 永远的痛。</p>
+        <p>容易踩的坑：<code>encodeURI</code> 和 <code>encodeURIComponent</code> 不一样——前者不会 encode <code>:/?#</code>，所以 URL 参数得用后者。还有些后端把 <code>+</code> 当空格解析，所以 <code>%2B</code> 才是字面的加号。</p>
+      </div>
+    </div>
+
+    <h2>7. JSON 转 TypeScript</h2>
+    <div class="tool-row">
+      <span class="icon">📘</span>
+      <div class="body">
+        <h3><a href="/tools/json-to-typescript.html">JSON → TS 类型</a></h3>
+        <p class="why">接到新接口 → 复制响应样例 → 一秒生成 interface。</p>
+        <p>本站新增的工具。粘贴一段 JSON 响应，自动推导嵌套 interface、识别可选字段、合并数组里不同 shape 的元素为 union。手写这些 type 太累，但又不能不写——TS 项目 typo 一个字段名能让你少睡两小时。</p>
+      </div>
+    </div>
+
+    <h2>8. 颜色转换器</h2>
+    <div class="tool-row">
+      <span class="icon">🎨</span>
+      <div class="body">
+        <h3><a href="/tools/color-converter.html">HEX / RGB / HSL 互转</a></h3>
+        <p class="why">设计稿给的 HEX，CSS 里要写 HSL，Canvas 又只认 RGB。</p>
+        <p>除了三种格式互转，好的工具会显示对比度（WCAG AA / AAA），帮你判断这个色是否能用在文字上。</p>
+      </div>
+    </div>
+
+    <h2>9. 文本差异对比</h2>
+    <div class="tool-row">
+      <span class="icon">📊</span>
+      <div class="body">
+        <h3><a href="/tools/text-diff.html">文本对比</a></h3>
+        <p class="why">"昨天好好的接口今天怎么挂了" 五分钟定位法。</p>
+        <p>把昨天和今天的接口响应分别贴进去——逐行高亮差异。比眼花的看强 100 倍。也适合对比配置文件改动。</p>
+      </div>
+    </div>
+
+    <h2>10. CSS 渐变 / Box Shadow 可视化</h2>
+    <div class="tool-row">
+      <span class="icon">🌈</span>
+      <div class="body">
+        <h3><a href="/tools/css-gradient.html">CSS 渐变</a> · <a href="/tools/box-shadow.html">Box Shadow</a></h3>
+        <p class="why">写 CSS 不如调 CSS——调到合适就复制走。</p>
+        <p>渐变要调角度、color stop 位置、是否 conic-gradient；阴影要调 offset、blur、spread、inset。这些都是肉眼盯着改一个参数 看一次效果的事——可视化工具直接拖滑块，比反复保存刷新快得多。</p>
+      </div>
+    </div>
+
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p>个人偏好：用<strong>不上传服务器</strong>的在线工具。所有的 JSON / Base64 / 哈希 / JWT 操作完全可以在浏览器本地用 JS 完成，没有任何必要把数据传到后端。DevUtils 上的工具都是这么做的。</p></div>
+    </div>
+
+    <h2>顺手买不上的几个</h2>
+    <p>有些场景在线工具不够好用，还是得装本地：</p>
+    <ul>
+      <li><strong>大文件 JSON</strong>（&gt;50MB）：用 <code>jq</code> 命令行，浏览器会卡死</li>
+      <li><strong>正则进阶</strong>：复杂 PCRE 正则用 <a href="https://regex101.com" target="_blank" rel="noopener">regex101</a>，提供详细分解说明</li>
+      <li><strong>抓包/Mock</strong>：Charles、Proxyman、mitmproxy——在线工具替代不了</li>
+    </ul>
+
+    <div class="cta">
+      <h3>DevUtils — 25+ 浏览器本地运行的开发工具</h3>
+      <p>JSON / Base64 / JWT / 正则 / 时间戳 / 颜色 / 差异对比……都在这</p>
+      <a href="/" class="btn btn-primary">查看全部工具</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="author-card">
+      <div class="author-avatar">SW</div>
+      <div class="author-info">
+        <p class="author-name">swzhang</p>
+        <p class="author-bio">在线工具站 DevUtils 维护者。前端写得多一点，后端略懂。把日常踩过的坑写成博客避免下次再踩。</p>
+      </div>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/json-tips.html" class="related-card">
+          <div class="related-cat">后端 · 数据格式</div>
+          <div class="related-title">JSON 的 10 个坑：生产环境会咬你的事</div>
+          <p class="related-desc">大整数精度、循环引用、jq 实战——已经写过 JSON 的人也容易踩。</p>
+        </a>
+        <a href="/blog/regex-common-patterns.html" class="related-card">
+          <div class="related-cat">速查表</div>
+          <div class="related-title">10 个最常用的正则表达式</div>
+          <p class="related-desc">邮箱、手机号、URL、身份证——复制即用。</p>
+        </a>
+        <a href="/blog/hash-algorithm-guide.html" class="related-card">
+          <div class="related-cat">安全</div>
+          <div class="related-title">MD5、SHA-1、SHA-256 怎么选</div>
+          <p class="related-desc">哈希算法对比与典型使用场景。</p>
+        </a>
+        <a href="/blog/css-box-shadow-guide.html" class="related-card">
+          <div class="related-cat">前端 · CSS</div>
+          <div class="related-title">CSS Box Shadow 完整指南</div>
+          <p class="related-desc">语法、8 种常见阴影、移动端性能坑。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
 </div>
-</div>
 
-<p>后端返回的 JSON 经常是一行几千字符的压缩数据，肉眼根本没法读。JSON 格式化工具是前端开发中使用频率最高的工具之一。</p>
-<p>使用场景：</p>
-<ul>
-<li>调试 API 返回数据，快速定位嵌套层级</li>
-<li>排查 JSON 语法错误（尾部逗号、单引号等）</li>
-<li>压缩 JSON 数据减小传输体积</li>
-</ul>
-
-<div class="tool-card">
-<div class="tool-icon">🔤</div>
-<div class="tool-info">
-<h3><a href="/tools/base64.html">Base64 编解码</a></h3>
-<p>文本与 Base64 互转，支持文件上传，编码解码一键切换</p>
-</div>
-</div>
-
-<p>JWT Token 解析、Data URL 图片嵌入、API 认证头……Base64 编解码几乎是前端开发日常。详细了解原理可以看这篇 <a href="/base64-tutorial.html">Base64 编解码教程</a>。</p>
-
-<div class="tool-card">
-<div class="tool-icon">🔍</div>
-<div class="tool-info">
-<h3><a href="/tools/regex-tester.html">正则表达式测试器</a></h3>
-<p>实时匹配高亮，支持捕获组显示，多行匹配模式</p>
-</div>
-</div>
-
-<p>写正则最烦的就是来回调试。<a href="/tools/regex-tester.html">正则测试器</a> 输入正则和文本实时匹配，捕获组一目了然。推荐收藏这份 <a href="/blog/regex-common-patterns.html">常用正则表达式速查表</a>。</p>
-
-<div class="tool-card">
-<div class="tool-icon">🕐</div>
-<div class="tool-info">
-<h3><a href="/tools/timestamp-converter.html">时间戳转换器</a></h3>
-<p>时间戳与日期互转，支持秒级/毫秒级，一键获取当前时间戳</p>
-</div>
-</div>
-
-<p>前后端对接时，时间戳格式不一致是常见问题。这个工具支持秒级和毫秒级互转，还能一键复制当前时间戳。</p>
-
-<div class="tool-card">
-<div class="tool-icon">🔐</div>
-<div class="tool-info">
-<h3><a href="/tools/jwt-decoder.html">JWT 解码器</a></h3>
-<p>解析 JWT Token 的 Header 和 Payload，自动转换时间戳字段</p>
-</div>
-</div>
-
-<p>调试登录、权限相关接口时，经常需要查看 JWT Token 里的内容。<a href="/tools/jwt-decoder.html">JWT 解码器</a> 直接粘贴 Token 就能看到 payload，比在控制台写 <code>atob()</code> 方便多了。</p>
-
-<div class="tool-card">
-<div class="tool-icon">🔗</div>
-<div class="tool-info">
-<h3><a href="/tools/url-encode.html">URL 编解码</a></h3>
-<p>URL 编码与解码转换，处理中文、特殊字符</p>
-</div>
-</div>
-
-<p>处理 URL 参数中的中文或特殊字符时，URL 编解码是刚需。尤其是在调试 <code>window.location.search</code> 或处理重定向 URL 时。</p>
-
-<div class="tool-card">
-<div class="tool-icon">🎨</div>
-<div class="tool-info">
-<h3><a href="/tools/color-converter.html">颜色转换器</a></h3>
-<p>HEX、RGB、HSL 颜色格式互转，实时预览</p>
-</div>
-</div>
-
-<p>设计稿用 HEX，CSS 有时用 HSL，Canvas 需要 RGB……颜色格式转换虽然不难但很繁琐。</p>
-
-<div class="tool-card">
-<div class="tool-icon">📊</div>
-<div class="tool-info">
-<h3><a href="/tools/text-diff.html">文本差异对比</a></h3>
-<p>逐行对比两段文本，高亮增删改</p>
-</div>
-</div>
-
-<p>对比接口返回的差异、排查配置文件变更、比较代码版本——文本对比工具能精确到每个字符的增删改。</p>
-
-<div class="tool-card">
-<div class="tool-icon">🔒</div>
-<div class="tool-info">
-<h3><a href="/tools/password-generator.html">密码生成器</a></h3>
-<p>生成高强度随机密码，自定义长度和字符类型，显示密码强度</p>
-</div>
-</div>
-
-<p>注册测试账号、配置数据库密码时都需要强密码。详见 <a href="/blog/choose-password-generator.html">如何选择安全的在线密码生成器</a>。</p>
-
-<div class="tool-card">
-<div class="tool-icon">📦</div>
-<div class="tool-info">
-<h3><a href="/tools/code-minifier.html">代码压缩器</a></h3>
-<p>CSS/JS/HTML 代码压缩与美化，显示压缩比</p>
-</div>
-</div>
-
-<p>上线前压缩 CSS/JS 减小文件体积，调试时美化压缩过的代码便于阅读。</p>
-
-<div class="cta">
-<h3>DevUtils — 20+ 免费在线开发工具</h3>
-<p>所有工具在浏览器本地运行，数据不上传，保护隐私</p>
-<a href="/" class="btn btn-primary" style="text-decoration:none">查看全部工具</a>
-</div>
-
-<h2>为什么选择在线工具？</h2>
-<ul>
-<li><strong>零安装</strong>：浏览器打开即用，不占硬盘空间</li>
-<li><strong>跨平台</strong>：Mac、Windows、Linux、手机都能用</li>
-<li><strong>隐私安全</strong>：DevUtils 所有数据在浏览器本地处理，不发送到服务器</li>
-<li><strong>即时分享</strong>：发链接给同事，对方打开就能用</li>
-</ul>
-
-<p>如果你也在找好用的在线开发工具，收藏 <a href="/">DevUtils</a> 就够了。</p>
-</main>
 <div id="siteFooter"></div>
-<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+<script type="module" src="/js/blog-post.js?v=2"></script>
 </body>
 </html>

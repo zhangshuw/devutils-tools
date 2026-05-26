@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>JSONPath 查询器 — 实时筛选 JSON 数据 | DevUtils</title>
+  <meta name="description" content="粘贴 JSON + JSONPath 表达式实时筛选嵌套数据。支持 $ . [] [*] [n:m] [?(@.x>10)] 等全套语法，附表达式备忘表。纯前端，数据不上传。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/jsonpath-query.html">
+  <meta property="og:title" content="JSONPath 查询器">
+  <meta property="og:description" content="实时筛选 JSON 数据，支持完整 JSONPath 语法">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/jsonpath-query.html">
+  <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="JSONPath 查询器">
+  <meta name="twitter:description" content="实时筛选 JSON 数据">
+  <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"JSONPath 查询器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .jp-path-bar{display:flex;gap:10px;align-items:center;background:#0c0e15;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:8px 14px;margin-bottom:var(--space-md);font-family:"JetBrains Mono",monospace}
+    .jp-path-bar .prompt{color:var(--color-accent);font-weight:600;font-size:1.05rem}
+    .jp-path-bar input{flex:1;background:transparent;border:none;color:#d4d4d4;font-family:inherit;font-size:.95rem;outline:none}
+    .jp-path-bar input::placeholder{color:var(--color-text-muted)}
+    .jp-result-meta{display:flex;gap:14px;color:var(--color-text-muted);font-size:.8rem;margin-bottom:6px}
+    .jp-result-meta strong{color:var(--color-accent)}
+    .jp-out{background:#0c0e15;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;display:flex;flex-direction:column;min-height:300px}
+    .jp-out-head{padding:8px 14px;background:linear-gradient(180deg,#1a1d27,#15171f);border-bottom:1px solid var(--color-border);font-size:.72rem;color:var(--color-text-muted);display:flex;align-items:center;gap:6px}
+    .jp-out-head .dots{display:flex;gap:6px}
+    .jp-out-head .dot{width:10px;height:10px;border-radius:50%}
+    .jp-out-head .dot.r{background:#ff5f57}.jp-out-head .dot.y{background:#febc2e}.jp-out-head .dot.g{background:#28c840}
+    .jp-out-head .copy-btn{margin-left:auto;background:transparent;border:1px solid var(--color-border);color:var(--color-text-muted);padding:3px 12px;border-radius:6px;font-size:.72rem;cursor:pointer;font-family:inherit;transition:all .15s}
+    .jp-out-head .copy-btn:hover{color:var(--color-accent);border-color:var(--color-accent)}
+    .jp-out-body{padding:14px 16px;flex:1;font-family:"JetBrains Mono",monospace;font-size:.84rem;line-height:1.65;color:#d4d4d4;overflow:auto;white-space:pre;tab-size:2}
+    .jp-out-body .k{color:#ffcb6b}
+    .jp-out-body .s{color:#a5d6a7}
+    .jp-out-body .n{color:#82aaff}
+    .jp-out-body .b{color:#c792ea}
+    .jp-out-body .nl{color:#9ca0ab}
+    .jp-out-body .pth{color:#6b7080;font-style:italic;font-size:.78rem}
+    .jp-err{color:#f87171;padding:14px 16px;font-family:"JetBrains Mono",monospace;font-size:.85rem}
+
+    .preset-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .preset-row button{background:transparent;border:1px solid var(--color-border);color:var(--color-text-muted);padding:5px 12px;border-radius:999px;font-size:.75rem;cursor:pointer;font-family:"JetBrains Mono",monospace;transition:all .15s}
+    .preset-row button:hover{border-color:var(--color-accent);color:var(--color-accent)}
+
+    .cheatsheet{margin-top:48px;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:24px 28px}
+    .cheatsheet h2{color:var(--color-text-primary);font-size:1.3rem;margin:0 0 18px}
+    .cheat-table{width:100%;border-collapse:collapse;font-size:.88rem}
+    .cheat-table th{text-align:left;color:var(--color-text-muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600;padding:8px 12px;border-bottom:1px solid var(--color-border)}
+    .cheat-table td{padding:9px 12px;border-bottom:1px solid var(--color-border);color:var(--color-text-secondary);vertical-align:top}
+    .cheat-table tr:last-child td{border-bottom:none}
+    .cheat-table td:first-child{font-family:"JetBrains Mono",monospace;color:var(--color-accent);white-space:nowrap}
+    .cheat-table td:last-child code{background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:"JetBrains Mono",monospace;color:#a5d6a7;font-size:.85em}
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>JSONPath 查询器</span></nav>
+    <h1>JSONPath 查询器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg);max-width:720px">粘贴 JSON + JSONPath 表达式，实时返回所有匹配的节点和它们的路径。支持递归下钻 <code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--color-accent)">..</code>、通配符 <code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--color-accent)">[*]</code>、切片 <code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--color-accent)">[2:5]</code>、过滤 <code style="background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.9em;color:var(--color-accent)">[?(@.price&lt;10)]</code> 等核心语法。</p>
+
+    <!-- 表达式输入 -->
+    <div class="jp-path-bar">
+      <span class="prompt">$</span>
+      <input id="pathInput" type="text" value="$.store.book[*].title" placeholder="输入 JSONPath，如 $..price 或 $.store.book[?(@.price&lt;15)]" spellcheck="false">
+    </div>
+    <div class="preset-row" id="presetRow">
+      <button data-q="$">$ (整个 JSON)</button>
+      <button data-q="$..price">$..price (所有价格)</button>
+      <button data-q="$.store.book[*].title">$.store.book[*].title</button>
+      <button data-q="$.store.book[0,2]">$.store.book[0,2]</button>
+      <button data-q="$.store.book[?(@.price<15)]">price &lt; 15</button>
+      <button data-q="$.store.book[?(@.category=='fiction')]">category=fiction</button>
+      <button data-q="$..book[-1]">最后一本</button>
+      <button data-q="$.store.book[:2]">前两本（切片）</button>
+    </div>
+
+    <div class="tool-layout" style="margin-top:var(--space-lg)">
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">JSON 数据</span>
+          <div class="panel-actions">
+            <button class="btn btn-sm" id="btnExample">示例</button>
+            <button class="btn btn-sm" id="btnClear">清空</button>
+          </div>
+        </div>
+        <textarea class="textarea" id="jsonInput" spellcheck="false" style="min-height:380px"></textarea>
+      </div>
+
+      <div class="panel" style="padding:0;background:transparent;border:none">
+        <div class="panel-header" style="padding:0 0 12px">
+          <span class="panel-title">查询结果</span>
+          <span id="resultMeta" style="color:var(--color-text-muted);font-size:.82rem"></span>
+        </div>
+        <div class="jp-out">
+          <div class="jp-out-head">
+            <span class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></span>
+            <span style="font-family:'JetBrains Mono',monospace">results.json</span>
+            <button class="copy-btn" id="btnCopy">复制</button>
+          </div>
+          <div class="jp-out-body" id="jpOut"><span style="color:var(--color-text-muted)">// 输入 JSON + JSONPath 后这里显示匹配结果</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cheatsheet">
+      <h2>JSONPath 语法备忘</h2>
+      <table class="cheat-table">
+        <thead><tr><th>语法</th><th>含义</th><th>示例</th></tr></thead>
+        <tbody>
+          <tr><td>$</td><td>根对象</td><td><code>$</code> 返回整个 JSON</td></tr>
+          <tr><td>.key</td><td>子属性</td><td><code>$.store</code></td></tr>
+          <tr><td>["key"]</td><td>子属性（含特殊字符可用）</td><td><code>$["my-key"]</code></td></tr>
+          <tr><td>[n]</td><td>数组第 n 个（0 起始；负数倒数）</td><td><code>$.list[0]</code>、<code>$.list[-1]</code></td></tr>
+          <tr><td>[n,m,k]</td><td>多个索引</td><td><code>$.list[0,2,4]</code></td></tr>
+          <tr><td>[s:e:step]</td><td>切片（end 不含）</td><td><code>$.list[1:5]</code>、<code>$.list[::2]</code></td></tr>
+          <tr><td>[*]</td><td>所有子元素</td><td><code>$.store.book[*]</code></td></tr>
+          <tr><td>..</td><td>递归下钻 (descendant)</td><td><code>$..price</code> 找所有 price</td></tr>
+          <tr><td>[?(...)]</td><td>过滤表达式</td><td><code>$..book[?(@.price&lt;10)]</code></td></tr>
+          <tr><td>@.key</td><td>过滤里指当前节点</td><td><code>[?(@.category=='fiction')]</code></td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top:14px;color:var(--color-text-muted);font-size:.84rem">过滤表达式支持 <code style="background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;color:#a5d6a7">==</code> <code style="background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;color:#a5d6a7">!=</code> <code style="background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;color:#a5d6a7">&lt;</code> <code style="background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;color:#a5d6a7">&lt;=</code> <code style="background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;color:#a5d6a7">&gt;</code> <code style="background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;color:#a5d6a7">&gt;=</code> <code style="background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;color:#a5d6a7">&&</code> <code style="background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;color:#a5d6a7">||</code>，比较对象支持字符串、数字、布尔、null。</p>
+    </div>
+
+  </main>
+  <div id="siteFooter"></div>
+
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    // ============================================
+    // JSONPath 实现
+    // ============================================
+
+    // 词法：把 path 切成 step 数组
+    function tokenize(path) {
+      if (!path || path[0] !== "$") throw new Error("JSONPath 必须以 $ 开头");
+      const tokens = [{ type: "root" }];
+      let i = 1;
+      while (i < path.length) {
+        const c = path[i];
+        if (c === "." && path[i + 1] === ".") {
+          // ..: 递归
+          i += 2;
+          // 紧跟着可能是 key、*、[ 等
+          if (i >= path.length) throw new Error(".. 后面缺少内容");
+          if (path[i] === "*") {
+            tokens.push({ type: "desc" }, { type: "wild" });
+            i++;
+          } else if (path[i] === "[") {
+            tokens.push({ type: "desc" });
+            // [ 由下面处理
+          } else {
+            // 读 key
+            let key = "";
+            while (i < path.length && /[\w$]/.test(path[i])) { key += path[i]; i++; }
+            if (!key) throw new Error(".. 后面 key 名为空");
+            tokens.push({ type: "desc" }, { type: "key", value: key });
+          }
+        } else if (c === ".") {
+          i++;
+          if (path[i] === "*") { tokens.push({ type: "wild" }); i++; }
+          else {
+            let key = "";
+            while (i < path.length && /[\w$]/.test(path[i])) { key += path[i]; i++; }
+            if (!key) throw new Error(". 后面 key 名为空");
+            tokens.push({ type: "key", value: key });
+          }
+        } else if (c === "[") {
+          // 读到匹配 ]
+          let depth = 1, j = i + 1;
+          while (j < path.length && depth > 0) {
+            if (path[j] === "[") depth++;
+            else if (path[j] === "]") depth--;
+            if (depth > 0) j++;
+          }
+          if (depth !== 0) throw new Error("[ 没有匹配的 ]");
+          const inside = path.substring(i + 1, j).trim();
+          tokens.push(parseBracket(inside));
+          i = j + 1;
+        } else {
+          throw new Error(`未预期的字符 '${c}' (位置 ${i})`);
+        }
+      }
+      return tokens;
+    }
+
+    function parseBracket(s) {
+      // []
+      if (s === "*") return { type: "wild" };
+      // [?(...)]
+      if (s.startsWith("?(") && s.endsWith(")")) {
+        return { type: "filter", expr: s.slice(2, -1) };
+      }
+      // [start:end:step]
+      if (s.includes(":")) {
+        const parts = s.split(":");
+        return {
+          type: "slice",
+          start: parts[0] === "" ? null : parseInt(parts[0]),
+          end: parts[1] === "" ? null : parseInt(parts[1]),
+          step: (parts[2] === undefined || parts[2] === "") ? 1 : parseInt(parts[2])
+        };
+      }
+      // ["key"] 或 ['key']
+      if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+        return { type: "key", value: s.slice(1, -1) };
+      }
+      // [0,2,4] 或 [0]
+      if (/^-?\d+(\s*,\s*-?\d+)*$/.test(s)) {
+        const idxs = s.split(",").map(x => parseInt(x.trim()));
+        return idxs.length === 1 ? { type: "index", value: idxs[0] } : { type: "indices", values: idxs };
+      }
+      // 当成 key 处理（无引号也允许）
+      return { type: "key", value: s };
+    }
+
+    // 过滤器求值（简化解析器）
+    function evalFilter(expr, ctx) {
+      // 支持 && / ||
+      // 先按 || 切，再按 && 切
+      const orParts = splitOp(expr, "||");
+      for (const op of orParts) {
+        const andParts = splitOp(op, "&&");
+        let allTrue = true;
+        for (const part of andParts) {
+          if (!evalSimple(part.trim(), ctx)) { allTrue = false; break; }
+        }
+        if (allTrue) return true;
+      }
+      return false;
+    }
+    function splitOp(s, op) {
+      // 不跨字符串切分
+      const out = [], len = op.length;
+      let buf = "", inStr = null;
+      for (let i = 0; i < s.length; i++) {
+        const c = s[i];
+        if (inStr) { buf += c; if (c === inStr && s[i-1] !== "\\") inStr = null; }
+        else if (c === '"' || c === "'") { inStr = c; buf += c; }
+        else if (s.substring(i, i + len) === op) { out.push(buf); buf = ""; i += len - 1; }
+        else buf += c;
+      }
+      out.push(buf);
+      return out;
+    }
+    function evalSimple(expr, ctx) {
+      // 形式：@.x [OP literal] 或 @.x.y.z
+      const OPS = ["==", "!=", "<=", ">=", "<", ">"];
+      let op = null, opPos = -1;
+      for (const o of OPS) {
+        const p = findOp(expr, o);
+        if (p >= 0 && (opPos === -1 || p < opPos)) { op = o; opPos = p; }
+      }
+      if (op === null) {
+        // 仅存在性：@.x
+        return resolveAt(expr.trim(), ctx) !== undefined;
+      }
+      const lhs = resolveAt(expr.substring(0, opPos).trim(), ctx);
+      const rhsRaw = expr.substring(opPos + op.length).trim();
+      const rhs = parseLiteral(rhsRaw, ctx);
+      switch (op) {
+        case "==": return lhs == rhs;
+        case "!=": return lhs != rhs;
+        case "<":  return lhs < rhs;
+        case "<=": return lhs <= rhs;
+        case ">":  return lhs > rhs;
+        case ">=": return lhs >= rhs;
+      }
+      return false;
+    }
+    function findOp(s, op) {
+      let inStr = null;
+      for (let i = 0; i <= s.length - op.length; i++) {
+        const c = s[i];
+        if (inStr) { if (c === inStr && s[i-1] !== "\\") inStr = null; continue; }
+        if (c === '"' || c === "'") { inStr = c; continue; }
+        if (s.substring(i, i + op.length) === op) return i;
+      }
+      return -1;
+    }
+    function resolveAt(path, ctx) {
+      // @.x.y.z 或 @
+      if (path === "@") return ctx;
+      if (!path.startsWith("@")) return undefined;
+      let cur = ctx;
+      const rest = path.slice(1);
+      // 简单按 . 切分（不支持 @[0] 这种）
+      if (rest === "") return cur;
+      if (!rest.startsWith(".")) return undefined;
+      const parts = rest.slice(1).split(".");
+      for (const p of parts) {
+        if (cur == null) return undefined;
+        cur = cur[p];
+      }
+      return cur;
+    }
+    function parseLiteral(s, ctx) {
+      if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) return s.slice(1, -1);
+      if (s === "true") return true;
+      if (s === "false") return false;
+      if (s === "null") return null;
+      if (/^-?\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+      if (s.startsWith("@")) return resolveAt(s, ctx);
+      return s;
+    }
+
+    // 应用一个 step 到节点集合
+    function apply(step, nodes) {
+      const out = [];
+      for (const node of nodes) {
+        const v = node.value;
+        if (step.type === "key") {
+          if (v && typeof v === "object" && step.value in v) {
+            out.push({ path: node.path + "." + step.value, value: v[step.value] });
+          }
+        } else if (step.type === "wild") {
+          if (Array.isArray(v)) v.forEach((x, i) => out.push({ path: node.path + "[" + i + "]", value: x }));
+          else if (v && typeof v === "object") for (const k of Object.keys(v)) out.push({ path: node.path + "." + k, value: v[k] });
+        } else if (step.type === "index") {
+          if (Array.isArray(v)) {
+            const idx = step.value < 0 ? v.length + step.value : step.value;
+            if (idx >= 0 && idx < v.length) out.push({ path: node.path + "[" + idx + "]", value: v[idx] });
+          }
+        } else if (step.type === "indices") {
+          if (Array.isArray(v)) {
+            for (const i of step.values) {
+              const idx = i < 0 ? v.length + i : i;
+              if (idx >= 0 && idx < v.length) out.push({ path: node.path + "[" + idx + "]", value: v[idx] });
+            }
+          }
+        } else if (step.type === "slice") {
+          if (Array.isArray(v)) {
+            const len = v.length;
+            const step_ = step.step || 1;
+            let s = step.start == null ? (step_ > 0 ? 0 : len - 1) : (step.start < 0 ? len + step.start : step.start);
+            let e = step.end == null ? (step_ > 0 ? len : -1) : (step.end < 0 ? len + step.end : step.end);
+            s = Math.max(0, Math.min(len, s));
+            e = Math.max(-1, Math.min(len, e));
+            if (step_ > 0) for (let i = s; i < e; i += step_) out.push({ path: node.path + "[" + i + "]", value: v[i] });
+            else for (let i = s; i > e; i += step_) out.push({ path: node.path + "[" + i + "]", value: v[i] });
+          }
+        } else if (step.type === "filter") {
+          if (Array.isArray(v)) {
+            v.forEach((x, i) => { try { if (evalFilter(step.expr, x)) out.push({ path: node.path + "[" + i + "]", value: x }); } catch {} });
+          } else if (v && typeof v === "object") {
+            for (const k of Object.keys(v)) { try { if (evalFilter(step.expr, v[k])) out.push({ path: node.path + "." + k, value: v[k] }); } catch {} }
+          }
+        } else if (step.type === "desc") {
+          // 递归下钻：把所有后代加入候选集
+          const stack = [node];
+          while (stack.length) {
+            const cur = stack.pop();
+            out.push(cur);
+            const cv = cur.value;
+            if (Array.isArray(cv)) cv.forEach((x, i) => stack.push({ path: cur.path + "[" + i + "]", value: x }));
+            else if (cv && typeof cv === "object") for (const k of Object.keys(cv)) stack.push({ path: cur.path + "." + k, value: cv[k] });
+          }
+        }
+      }
+      return out;
+    }
+
+    function query(json, path) {
+      const tokens = tokenize(path);
+      let nodes = [];
+      for (const tok of tokens) {
+        if (tok.type === "root") { nodes = [{ path: "$", value: json }]; continue; }
+        nodes = apply(tok, nodes);
+        if (nodes.length === 0) return [];
+      }
+      return nodes;
+    }
+
+    // ============================================
+    // UI
+    // ============================================
+    function escapeHTML(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+    function highlightJSON(s) {
+      let h = escapeHTML(s);
+      h = h.replace(/("(?:\\.|[^"\\])*")\s*:/g, '<span class="k">$1</span>:');
+      h = h.replace(/:\s*("(?:\\.|[^"\\])*")/g, ': <span class="s">$1</span>');
+      h = h.replace(/:\s*(-?\d+\.?\d*)/g, ': <span class="n">$1</span>');
+      h = h.replace(/\b(true|false)\b/g, '<span class="b">$1</span>');
+      h = h.replace(/\b(null)\b/g, '<span class="nl">null</span>');
+      return h;
+    }
+
+    const EXAMPLE = `{
+  "store": {
+    "book": [
+      {"category": "reference", "author": "Nigel Rees",     "title": "Sayings of the Century",  "price": 8.95},
+      {"category": "fiction",   "author": "Evelyn Waugh",   "title": "Sword of Honour",          "price": 12.99},
+      {"category": "fiction",   "author": "Herman Melville","title": "Moby Dick",                "price": 8.99, "isbn": "0-553-21311-3"},
+      {"category": "fiction",   "author": "J. R. R. Tolkien","title": "The Lord of the Rings",   "price": 22.99, "isbn": "0-395-19395-8"}
+    ],
+    "bicycle": {"color": "red", "price": 19.95}
+  },
+  "expensive": 10
+}`;
+
+    const inputEl = document.getElementById("jsonInput");
+    const pathEl = document.getElementById("pathInput");
+    const outEl = document.getElementById("jpOut");
+    const metaEl = document.getElementById("resultMeta");
+    let currentOut = "";
+
+    function render() {
+      const raw = inputEl.value.trim();
+      const path = pathEl.value.trim();
+      if (!raw) {
+        outEl.innerHTML = '<span style="color:var(--color-text-muted)">// 输入 JSON + JSONPath 后这里显示匹配结果</span>';
+        metaEl.textContent = "";
+        return;
+      }
+      let json;
+      try { json = JSON.parse(raw); }
+      catch (e) { outEl.innerHTML = `<div class="jp-err">// JSON 解析错误\n// ${escapeHTML(e.message)}</div>`; metaEl.textContent = ""; return; }
+      if (!path) {
+        outEl.innerHTML = '<span style="color:var(--color-text-muted)">// 在上方输入 JSONPath 表达式</span>';
+        metaEl.textContent = "";
+        return;
+      }
+      try {
+        const nodes = query(json, path);
+        metaEl.innerHTML = `匹配 <strong style="color:var(--color-accent)">${nodes.length}</strong> 个节点`;
+        if (nodes.length === 0) {
+          outEl.innerHTML = '<span style="color:var(--color-text-muted)">// 没有匹配结果</span>';
+          currentOut = "";
+          return;
+        }
+        // 输出格式：path + value 数组
+        const lines = [];
+        const justValues = nodes.map(n => n.value);
+        const valuesJson = JSON.stringify(justValues, null, 2);
+        currentOut = valuesJson;
+        const pathList = nodes.map(n => `<span class="pth">// ${escapeHTML(n.path)}</span>`).join("\n");
+        outEl.innerHTML = pathList + "\n\n" + highlightJSON(valuesJson);
+      } catch (e) {
+        outEl.innerHTML = `<div class="jp-err">// JSONPath 表达式错误\n// ${escapeHTML(e.message)}</div>`;
+        metaEl.textContent = "";
+        currentOut = "";
+      }
+    }
+
+    let debounce;
+    function trigger() { clearTimeout(debounce); debounce = setTimeout(render, 100); }
+    inputEl.addEventListener("input", trigger);
+    pathEl.addEventListener("input", trigger);
+
+    document.getElementById("btnExample").addEventListener("click", () => {
+      inputEl.value = EXAMPLE;
+      pathEl.value = "$.store.book[*].title";
+      render();
+    });
+    document.getElementById("btnClear").addEventListener("click", () => {
+      inputEl.value = "";
+      pathEl.value = "$";
+      render();
+    });
+    document.getElementById("presetRow").addEventListener("click", e => {
+      const btn = e.target.closest("button");
+      if (!btn || !btn.dataset.q) return;
+      pathEl.value = btn.dataset.q;
+      if (!inputEl.value.trim()) inputEl.value = EXAMPLE;
+      render();
+    });
+    document.getElementById("btnCopy").addEventListener("click", () => {
+      if (!currentOut) { showToast("没有可复制的内容", true); return; }
+      copyToClipboard(currentOut);
+    });
+
+    // 自动加载示例
+    inputEl.value = EXAMPLE;
+    render();
+  </script>
+</body>
+</html>

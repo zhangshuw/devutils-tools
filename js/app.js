@@ -3,6 +3,9 @@ import { renderHeader, renderFooter } from "./layout.js";
 
 const TOOLS = [
   { id: "json-formatter", name: "JSON 格式化", desc: "格式化、压缩、校验 JSON 数据", icon: "{}", cat: "encoding" },
+  { id: "json-to-typescript", name: "JSON → TypeScript", desc: "粘贴 JSON 自动推导 TS interface，含嵌套拆分、union 合并", icon: "📘", cat: "encoding", badge: "新" },
+  { id: "curl-converter", name: "cURL → 代码", desc: "DevTools 复制的 curl 一键转 fetch/axios/Python/Go 代码", icon: "🌀", cat: "encoding", badge: "新" },
+  { id: "jwt-editor", name: "JWT 编辑器", desc: "解码 + 本地验签 + 重签，比单纯解码强一档", icon: "🔏", cat: "security", badge: "新" },
   { id: "jwt-decoder", name: "JWT 解码器", desc: "解析 JWT Token 的 Header 和 Payload", icon: "🔐", cat: "security" },
   { id: "password-generator", name: "密码生成器", desc: "生成高强度随机密码，支持自定义选项", icon: "🔒", cat: "security" },
   { id: "base64", name: "Base64 编解码", desc: "文本与 Base64 互转，支持文件", icon: "🔤", cat: "encoding" },
@@ -45,6 +48,7 @@ function renderCards(filter = "") {
   }
   grid.innerHTML = filtered.map(t => `
     <a href="tools/${t.id}.html" class="card card-hover" data-cat="${t.cat}">
+      ${t.badge ? `<span class="card-badge">${t.badge}</span>` : ""}
       <div class="card-icon">${t.icon}</div>
       <div class="card-title">${t.name}</div>
       <div class="card-desc">${t.desc}</div>
@@ -80,7 +84,7 @@ function init() {
     if (!window.location.hash) {
       renderCards();
       const hero = document.querySelector(".hero p");
-      if (hero) hero.textContent = "免费、快速、无需安装 — 20+ 实用工具即开即用";
+      if (hero) hero.textContent = "浏览器本地运行的 27 个开发工具——不上传、不登录、不收钱";
     } else {
       applyHashFilter();
     }

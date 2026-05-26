@@ -5,21 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#6366f1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<title>开发者博客 - 编程技巧与在线工具指南 | DevUtils</title>
-<meta name="description" content="DevUtils开发者博客：分享编程技巧、开发效率提升、在线工具使用指南。面向前端开发、后端开发和全栈工程师。">
+<title>DevUtils 博客 — 一个写工具的人，记录下他踩过的坑</title>
+<meta name="description" content="DevUtils 博客：在线工具背后的故事、生产环境踩过的坑、JSON / 正则 / 哈希 / URL 编码这些不起眼但每天都要用的东西。">
 <link rel="canonical" href="https://devtool.blueblueliu.com/blog.html">
-<meta property="og:title" content="开发者博客 - 编程技巧与在线工具指南">
-<meta property="og:description" content="DevUtils开发者博客：编程技巧、效率提升、工具使用指南">
+<meta property="og:title" content="DevUtils 博客">
+<meta property="og:description" content="一个写工具的人，记录下他踩过的坑">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://devtool.blueblueliu.com/blog.html">
 <meta property="og:site_name" content="DevUtils">
 <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="开发者博客 - 编程技巧与在线工具指南">
-<meta name="twitter:description" content="DevUtils开发者博客：编程技巧、效率提升、工具使用指南">
+<meta name="twitter:title" content="DevUtils 博客">
+<meta name="twitter:description" content="一个写工具的人，记录下他踩过的坑">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Blog","name":"DevUtils开发者博客","description":"编程技巧与在线工具指南","url":"https://devtool.blueblueliu.com/blog.html"}
+{"@context":"https://schema.org","@type":"Blog","name":"DevUtils 博客","description":"在线工具背后的踩坑笔记","url":"https://devtool.blueblueliu.com/blog.html"}
 </script>
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/reset.css">
@@ -30,111 +30,197 @@
 </head>
 <body>
 <div id="siteHeader"></div>
+
 <main class="blog-page">
-<h1>开发者博客</h1>
-<p class="subtitle">分享编程技巧、效率提升和工具使用指南</p>
 
-<div class="blog-hero">
-<div class="blog-hero-icon">💡</div>
-<div>
-<h2>实用工具推荐</h2>
-<p>JSON 格式化、Base64 编解码、正则测试……<a href="/">20+ 在线工具</a>即开即用，提升开发效率。</p>
-</div>
-</div>
+  <header class="blog-page-header">
+    <span class="eyebrow">DevUtils Journal</span>
+    <h1>写工具的人，记下他踩过的坑</h1>
+    <p class="subtitle">这里不是教程站。每篇都是在某个具体场景里被坑过、然后整理出来的笔记——JSON、正则、哈希、编码、那些每天都要用但从来没人讲清楚的东西。</p>
+  </header>
 
-<div class="blog-grid" id="blogGrid">
-<div class="blog-card">
-<div class="date">2026-05-22</div>
-<div>
-<h3><a href="/blog/css-box-shadow-guide.html">CSS Box Shadow 完整指南：语法、示例与在线生成器</a></h3>
-<p class="excerpt">box-shadow 语法详解、8种常见阴影效果、drop-shadow 区别、移动端性能优化与在线生成器。</p>
-<div class="tags"><span class="tag">CSS</span><span class="tag">前端样式</span></div>
-</div>
-</div>
+  <!-- Featured -->
+  <article class="featured-post" data-category="后端">
+    <div>
+      <div class="featured-meta">
+        <span class="dot"></span>
+        <span>最新 · 编辑推荐</span>
+      </div>
+      <h2><a href="/blog/json-tips.html">JSON 的 10 个坑：那些文档不写但生产环境会咬你的事</a></h2>
+      <p class="excerpt">不是 "JSON 入门 30 分钟"。如果你已经在线上 ship 过 JSON API，那大概率被里面这些坑里的一两个搞过——大整数精度、循环引用、jq 实战、Schema 真实用法。</p>
+      <div class="featured-info">
+        <span class="author"><span class="avatar">SW</span>swzhang</span>
+        <span>·</span>
+        <span>2026-05-21</span>
+        <span>·</span>
+        <span>9 分钟阅读</span>
+      </div>
+    </div>
+    <div class="featured-visual"><span class="glyph">{ }</span></div>
+  </article>
 
-<div class="blog-card">
-<div class="date">2026-05-22</div>
-<div>
-<h3><a href="/blog/word-count-guide.html">字数统计的正确方法：中英文混排怎么算字数？</a></h3>
-<p class="excerpt">中英文混排字数计算规则、各平台统计差异、阅读时间估算、常见字数限制要求与代码实现。</p>
-<div class="tags"><span class="tag">字数统计</span><span class="tag">写作技巧</span></div>
-</div>
-</div>
+  <!-- 筛选 -->
+  <div class="blog-filters" id="blogFilters">
+    <button class="filter-btn active" data-filter="all">全部<span class="count">10</span></button>
+    <button class="filter-btn" data-filter="前端">前端</button>
+    <button class="filter-btn" data-filter="后端">后端</button>
+    <button class="filter-btn" data-filter="工具推荐">工具推荐</button>
+    <button class="filter-btn" data-filter="速查表">速查表</button>
+    <button class="filter-btn" data-filter="安全">安全</button>
+    <button class="filter-btn" data-filter="编码">编码</button>
+  </div>
 
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/timestamp-guide.html">时间戳转换详解：Unix时间戳与各语言获取方法</a></h3>
-<p class="excerpt">秒级vs毫秒级时间戳区别、各语言获取方法、前后端对接常见坑与在线转换工具。</p>
-<div class="tags"><span class="tag">时间戳</span><span class="tag">开发技巧</span></div>
-</div>
-</div>
+  <!-- 卡片网格 -->
+  <div class="blog-grid" id="blogGrid">
 
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/url-encoding-guide.html">URL编码是什么？为什么要对URL进行编码？</a></h3>
-<p class="excerpt">URL编码原理、哪些字符需要编码、和Base64的区别、各语言编解码示例与常见问题。</p>
-<div class="tags"><span class="tag">URL编码</span><span class="tag">编码转换</span></div>
-</div>
-</div>
+    <article class="blog-card" data-category="前端">
+      <span class="category">前端 · CSS</span>
+      <h3><a href="/blog/css-box-shadow-guide.html">CSS Box Shadow 完整指南：从基础到性能优化</a></h3>
+      <p class="excerpt">语法、8 种常见阴影、与 drop-shadow 的区别、移动端性能坑、配套在线生成器。</p>
+      <div class="card-meta">
+        <span>2026-05-22</span>
+        <span class="sep">·</span>
+        <span>7 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">CSS</span><span class="tag">前端样式</span></div>
+    </article>
 
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/hash-algorithm-guide.html">MD5、SHA-1、SHA-256有什么区别？哈希算法选择指南</a></h3>
-<p class="excerpt">哈希算法对比：MD5/SHA-1/SHA-256/SHA-512的区别、安全性和使用场景，附各语言计算示例。</p>
-<div class="tags"><span class="tag">安全</span><span class="tag">哈希算法</span></div>
-</div>
-</div>
+    <article class="blog-card" data-category="速查表">
+      <span class="category">速查 · 写作</span>
+      <h3><a href="/blog/word-count-guide.html">中英文混排到底怎么算字数？</a></h3>
+      <p class="excerpt">不同平台的字数规则差异、阅读时间估算公式、各种字数限制场景与实现代码。</p>
+      <div class="card-meta">
+        <span>2026-05-22</span>
+        <span class="sep">·</span>
+        <span>5 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">字数统计</span><span class="tag">写作</span></div>
+    </article>
 
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/frontend-dev-tools.html">前端开发必备的10个在线工具推荐（2026最新）</a></h3>
-<p class="excerpt">JSON格式化、Base64编解码、正则测试、时间戳转换……前端日常开发最高频使用的10个在线工具推荐。</p>
-<div class="tags"><span class="tag">前端开发</span><span class="tag">工具推荐</span></div>
-</div>
-</div>
+    <article class="blog-card" data-category="后端">
+      <span class="category">后端 · 时间</span>
+      <h3><a href="/blog/timestamp-guide.html">Unix 时间戳：秒级还是毫秒级，前后端各踩各的坑</a></h3>
+      <p class="excerpt">秒级 vs 毫秒级、各语言获取方法、前后端对接 case study、在线转换工具。</p>
+      <div class="card-meta">
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>6 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">时间戳</span><span class="tag">开发技巧</span></div>
+    </article>
 
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/regex-common-patterns.html">10 个最常用的正则表达式模式</a></h3>
-<p class="excerpt">整理了邮箱、手机号、URL、身份证等 10 个开发中最常用的正则表达式，可直接复制使用。</p>
-<div class="tags"><span class="tag">正则表达式</span><span class="tag">速查</span></div>
-</div>
-</div>
+    <article class="blog-card" data-category="编码">
+      <span class="category">编码 · URL</span>
+      <h3><a href="/blog/url-encoding-guide.html">URL 编码：哪些字符需要编码，为什么</a></h3>
+      <p class="excerpt">URL 编码原理、保留字符与不安全字符、与 Base64 的区别、各语言实现差异。</p>
+      <div class="card-meta">
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>5 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">URL 编码</span><span class="tag">编码转换</span></div>
+    </article>
 
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/choose-password-generator.html">如何选择安全的在线密码生成器？</a></h3>
-<p class="excerpt">密码安全的基础知识、在线密码生成器的选择标准，以及如何生成真正安全的随机密码。</p>
-<div class="tags"><span class="tag">安全</span><span class="tag">密码</span></div>
-</div>
-</div>
+    <article class="blog-card" data-category="安全">
+      <span class="category">安全 · 哈希</span>
+      <h3><a href="/blog/hash-algorithm-guide.html">MD5、SHA-1、SHA-256：什么时候用哪个</a></h3>
+      <p class="excerpt">从碰撞概率、计算开销到典型使用场景，一次说清四种主流哈希算法的取舍。</p>
+      <div class="card-meta">
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>8 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">安全</span><span class="tag">哈希算法</span></div>
+    </article>
 
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/json-tips.html">JSON 开发中的 10 个实用技巧</a></h3>
-<p class="excerpt">从格式化、验证到常见错误排查，分享 JSON 开发中的实用技巧，告别手动检查 JSON 的低效方式。</p>
-<div class="tags"><span class="tag">JSON</span><span class="tag">技巧</span></div>
-</div>
-</div>
+    <article class="blog-card" data-category="工具推荐">
+      <span class="category">工具 · 推荐</span>
+      <h3><a href="/blog/frontend-dev-tools.html">前端日常 10 个在线工具（2026 版）</a></h3>
+      <p class="excerpt">JSON 格式化、Base64、正则、时间戳——每天都要用的那批工具，省掉装一堆 App。</p>
+      <div class="card-meta">
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>6 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">前端开发</span><span class="tag">工具推荐</span></div>
+    </article>
 
-<div class="blog-card">
-<div class="date">2026-05-21</div>
-<div>
-<h3><a href="/blog/dev-efficiency-tools.html">提升开发效率的必备在线工具（2026版）</a></h3>
-<p class="excerpt">介绍 JSON 格式化、Base64 编解码、正则测试等日常开发中最常用的在线工具，让你的工作效率翻倍。</p>
-<div class="tags"><span class="tag">效率提升</span><span class="tag">开发工具</span></div>
-</div>
-</div>
-</div>
+    <article class="blog-card" data-category="速查表">
+      <span class="category">速查 · 正则</span>
+      <h3><a href="/blog/regex-common-patterns.html">10 个最常用的正则表达式</a></h3>
+      <p class="excerpt">邮箱、手机号、URL、身份证、IP——复制即用，含解释和边界条件说明。</p>
+      <div class="card-meta">
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>4 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">正则表达式</span><span class="tag">速查</span></div>
+    </article>
+
+    <article class="blog-card" data-category="安全">
+      <span class="category">安全 · 密码</span>
+      <h3><a href="/blog/choose-password-generator.html">怎么挑一个真正安全的在线密码生成器</a></h3>
+      <p class="excerpt">看似简单的需求背后：随机源、熵评估、本地 vs 远程生成的取舍。</p>
+      <div class="card-meta">
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>5 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">安全</span><span class="tag">密码</span></div>
+    </article>
+
+    <article class="blog-card" data-category="工具推荐">
+      <span class="category">工具 · 效率</span>
+      <h3><a href="/blog/dev-efficiency-tools.html">让开发效率翻倍的几个在线工具（2026 版）</a></h3>
+      <p class="excerpt">JSON 格式化、Base64、正则测试——这批工具组合起来，能省掉大半天的环境配置。</p>
+      <div class="card-meta">
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>5 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">效率提升</span><span class="tag">开发工具</span></div>
+    </article>
+
+  </div>
+
 </main>
+
 <div id="siteFooter"></div>
-<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+
+<script type="module">
+import { initLayout } from "/js/layout.js";
+initLayout();
+
+const filters = document.getElementById("blogFilters");
+const cards = document.querySelectorAll("#blogGrid .blog-card");
+
+// 统计每类数量
+const counts = { all: cards.length };
+cards.forEach(c => {
+  const cat = c.dataset.category;
+  counts[cat] = (counts[cat] || 0) + 1;
+});
+filters.querySelectorAll(".filter-btn").forEach(btn => {
+  const f = btn.dataset.filter;
+  if (f !== "all") {
+    const c = counts[f] || 0;
+    const span = document.createElement("span");
+    span.className = "count";
+    span.textContent = c;
+    btn.appendChild(span);
+  }
+});
+
+filters.addEventListener("click", e => {
+  const btn = e.target.closest(".filter-btn");
+  if (!btn) return;
+  filters.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  const f = btn.dataset.filter;
+  cards.forEach(c => {
+    c.style.display = (f === "all" || c.dataset.category === f) ? "" : "none";
+  });
+});
+</script>
 </body>
 </html>

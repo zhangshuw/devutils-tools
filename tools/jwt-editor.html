@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>JWT 编辑器 — 解码 / 验签 / 重签 | DevUtils</title>
+  <meta name="description" content="JWT 在线编辑器：粘贴 token 解码 header/payload、本地验证 HS256/HS384/HS512 签名、改字段后重签生成新 token。纯前端运行，secret 不上传。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/jwt-editor.html">
+  <meta property="og:title" content="JWT 编辑器 — 解码 / 验签 / 重签">
+  <meta property="og:description" content="比解码强一档：本地验证 + 重签 + 字段人话解释">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/jwt-editor.html">
+  <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="JWT 编辑器">
+  <meta name="twitter:description" content="解码 / 验签 / 重签 / 字段解释">
+  <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"JWT 编辑器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+  <style>
+    .jwt-layout{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-lg);align-items:start}
+    @media(max-width:900px){.jwt-layout{grid-template-columns:1fr}}
+
+    .jwt-input-wrap{position:relative}
+    .jwt-textarea{width:100%;min-height:160px;background:#0c0e15;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px 16px;color:#d4d4d4;font-family:"JetBrains Mono",monospace;font-size:.85rem;line-height:1.6;resize:vertical;white-space:pre-wrap;word-break:break-all}
+    .jwt-textarea:focus{outline:none;border-color:var(--color-accent)}
+    .jwt-textarea.invalid{border-color:#ef4444}
+    .jwt-colored{background:#0c0e15;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px 16px;font-family:"JetBrains Mono",monospace;font-size:.85rem;line-height:1.6;word-break:break-all;white-space:pre-wrap;min-height:160px}
+    .jwt-colored .seg-h{color:#ff5f57}.jwt-colored .seg-p{color:#a78bfa}.jwt-colored .seg-s{color:#28c840}
+    .jwt-colored .seg-dot{color:var(--color-text-muted)}
+
+    .sig-status{padding:12px 16px;border-radius:var(--radius-md);font-size:.88rem;font-weight:500;margin-top:12px;display:flex;align-items:center;gap:10px}
+    .sig-status.ok{background:rgba(34,197,94,.10);border:1px solid #22c55e;color:#86efac}
+    .sig-status.bad{background:rgba(239,68,68,.10);border:1px solid #ef4444;color:#fda4af}
+    .sig-status.idle{background:var(--color-bg-elevated);border:1px solid var(--color-border);color:var(--color-text-muted)}
+
+    .json-card{background:#0c0e15;border:1px solid var(--color-border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:14px}
+    .json-card-head{padding:8px 14px;background:linear-gradient(180deg,#1a1d27,#15171f);border-bottom:1px solid var(--color-border);font-size:.75rem;color:var(--color-text-muted);font-family:"JetBrains Mono",monospace;display:flex;align-items:center;gap:10px}
+    .json-card-head .badge{padding:2px 10px;border-radius:4px;font-size:.7rem;font-weight:600}
+    .json-card-head .badge.h{background:rgba(255,95,87,.15);color:#ff5f57}
+    .json-card-head .badge.p{background:rgba(167,139,250,.15);color:#a78bfa}
+    .json-card-body{padding:14px 16px;font-family:"JetBrains Mono",monospace;font-size:.85rem;line-height:1.7;color:#d4d4d4;white-space:pre;overflow-x:auto;tab-size:2}
+    .json-card-body .k{color:#ffcb6b}
+    .json-card-body .s{color:#a5d6a7}
+    .json-card-body .n{color:#82aaff}
+    .json-card-body .b{color:#c792ea}
+    .json-card-body .nl{color:#9ca0ab}
+
+    .claim-explain{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px;margin-bottom:14px}
+    .claim-explain h4{font-size:.78rem;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.08em;margin:0 0 10px}
+    .claim-row{display:grid;grid-template-columns:60px 1fr;gap:14px;padding:6px 0;font-size:.85rem;border-bottom:1px dashed var(--color-border)}
+    .claim-row:last-child{border-bottom:none}
+    .claim-row .ck{font-family:"JetBrains Mono",monospace;color:var(--color-accent);font-weight:600}
+    .claim-row .cv{color:var(--color-text-secondary);line-height:1.55}
+    .claim-row .cv .stale{color:#ef4444;font-weight:600}
+    .claim-row .cv .fresh{color:#22c55e;font-weight:600}
+
+    .secret-row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:10px 14px;margin-bottom:14px}
+    .secret-row label{font-size:.82rem;color:var(--color-text-secondary)}
+    .secret-row input{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:6px;padding:6px 12px;color:var(--color-text-primary);font-family:"JetBrains Mono",monospace;font-size:.82rem;width:100%}
+    .secret-row input:focus{outline:none;border-color:var(--color-accent)}
+    .secret-row select{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:6px;padding:6px 10px;color:var(--color-text-primary);font-size:.82rem;cursor:pointer;font-family:inherit}
+    .err-msg{color:#f87171;padding:10px 14px;font-family:"JetBrains Mono",monospace;font-size:.82rem;background:rgba(239,68,68,.06);border:1px solid #ef4444;border-radius:var(--radius-md);margin-top:10px}
+    .edit-hint{font-size:.78rem;color:var(--color-text-muted);margin-top:6px;font-style:italic}
+  </style>
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>JWT 编辑器</span></nav>
+    <h1>JWT 编辑器</h1>
+    <p style="color:var(--color-text-secondary);margin-bottom:var(--space-lg);max-width:720px">解码 + <strong>验签</strong> + <strong>重签</strong>，比单纯解码强一档。粘贴 JWT 自动拆 header/payload，标准字段配人话解释，输入 secret 后浏览器本地用 Web Crypto 验证签名是否有效，改字段还能重新签发新 token。<strong>所有操作不上传服务器</strong>。</p>
+
+    <div class="jwt-layout">
+      <!-- 左：原始 JWT -->
+      <div>
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">JWT Token</span>
+            <div class="panel-actions">
+              <button class="btn btn-sm" id="btnExample">示例</button>
+              <button class="btn btn-sm" id="btnClear">清空</button>
+            </div>
+          </div>
+          <textarea class="jwt-textarea" id="jwtInput" spellcheck="false" placeholder="粘贴 JWT，例如：&#10;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM..."></textarea>
+          <div class="edit-hint">三段用 . 分隔：header.payload.signature</div>
+        </div>
+
+        <div class="secret-row">
+          <label for="algSelect">算法</label>
+          <input type="text" id="secret" placeholder="HMAC secret (验签 + 重签用)">
+          <select id="algSelect">
+            <option value="HS256">HS256</option>
+            <option value="HS384">HS384</option>
+            <option value="HS512">HS512</option>
+          </select>
+        </div>
+
+        <div class="sig-status idle" id="sigStatus">
+          <span>○</span><span>输入 secret 后会验证签名</span>
+        </div>
+      </div>
+
+      <!-- 右：解析后 + 重签 -->
+      <div>
+        <div class="json-card">
+          <div class="json-card-head"><span class="badge h">HEADER</span><span id="algLabel"></span></div>
+          <div class="json-card-body" id="headerJson"><span style="color:var(--color-text-muted)">粘贴 JWT 后这里显示 header</span></div>
+        </div>
+
+        <div class="json-card">
+          <div class="json-card-head"><span class="badge p">PAYLOAD</span></div>
+          <div class="json-card-body" id="payloadJson"><span style="color:var(--color-text-muted)">粘贴 JWT 后这里显示 payload</span></div>
+        </div>
+
+        <div class="claim-explain" id="claimExplain" style="display:none">
+          <h4>字段说明</h4>
+          <div id="claimRows"></div>
+        </div>
+
+        <details style="background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:14px 18px">
+          <summary style="cursor:pointer;font-size:.92rem;color:var(--color-text-primary);font-weight:500">改 payload 后重签生成新 token</summary>
+          <textarea class="jwt-textarea" id="payloadEdit" spellcheck="false" placeholder='{"sub":"user-123","name":"Alice","iat":1716340000}' style="margin-top:12px;min-height:140px;font-size:.85rem"></textarea>
+          <div style="display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap">
+            <button class="btn btn-primary btn-sm" id="btnResign">用上方 secret 重签</button>
+            <span id="resignStatus" style="font-size:.82rem;color:var(--color-text-muted)"></span>
+          </div>
+          <div class="jwt-colored" id="newJwtOut" style="margin-top:12px;display:none"></div>
+          <button class="btn btn-sm" id="btnCopyNew" style="margin-top:10px;display:none">复制新 JWT</button>
+        </details>
+      </div>
+    </div>
+
+    <section style="margin-top:48px;color:var(--color-text-secondary);font-size:.95rem;line-height:1.8;max-width:760px">
+      <h2 style="color:var(--color-text-primary);font-size:1.3rem;margin-bottom:12px">关于安全</h2>
+      <ul style="padding-left:22px">
+        <li><strong>secret 不上传</strong> — 验签和重签都在浏览器本地用 Web Crypto API 完成</li>
+        <li><strong>建议不要</strong>把生产环境的 JWT secret 粘到任何在线工具——可以本地解码先用密钥拷贝，再粘到这里</li>
+        <li><strong>目前不支持</strong> RS256 / ES256（需要 PEM 公钥/私钥），仅支持 HMAC 系列（HS256/384/512）</li>
+        <li><strong>alg=none 攻击</strong> — 一些 JWT 库历史上有这个漏洞。本工具拒绝 alg 为 none 的 token</li>
+      </ul>
+    </section>
+  </main>
+  <div id="siteFooter"></div>
+
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    // ============================================
+    // base64url 编解码
+    // ============================================
+    function b64urlDecode(s) {
+      const pad = "=".repeat((4 - s.length % 4) % 4);
+      const b64 = (s + pad).replace(/-/g, "+").replace(/_/g, "/");
+      const bin = atob(b64);
+      // 转 UTF-8
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return new TextDecoder().decode(bytes);
+    }
+    function b64urlEncode(uint8) {
+      let s = "";
+      for (let i = 0; i < uint8.length; i++) s += String.fromCharCode(uint8[i]);
+      return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+    function b64urlEncodeStr(str) {
+      return b64urlEncode(new TextEncoder().encode(str));
+    }
+
+    // ============================================
+    // JSON 高亮
+    // ============================================
+    function escapeHTML(s) { return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+    function highlightJSON(obj) {
+      const s = JSON.stringify(obj, null, 2);
+      let h = escapeHTML(s);
+      h = h.replace(/("(?:\\.|[^"\\])*")\s*:/g, '<span class="k">$1</span>:');
+      h = h.replace(/:\s*("(?:\\.|[^"\\])*")/g, ': <span class="s">$1</span>');
+      h = h.replace(/:\s*(-?\d+\.?\d*)/g, ': <span class="n">$1</span>');
+      h = h.replace(/\b(true|false)\b/g, '<span class="b">$1</span>');
+      h = h.replace(/\b(null)\b/g, '<span class="nl">null</span>');
+      return h;
+    }
+
+    // ============================================
+    // 标准字段说明
+    // ============================================
+    const STANDARD_CLAIMS = {
+      iss: "签发者 (issuer)",
+      sub: "主题——通常是用户 ID (subject)",
+      aud: "受众 (audience)，token 给谁用的",
+      exp: "过期时间 (expiration)",
+      nbf: "生效起始时间 (not before)",
+      iat: "签发时间 (issued at)",
+      jti: "JWT ID，用于防重放"
+    };
+    const TIME_CLAIMS = new Set(["exp", "iat", "nbf"]);
+
+    function fmtTime(ts) {
+      if (!ts || typeof ts !== "number") return null;
+      const ms = ts < 10000000000 ? ts * 1000 : ts; // 秒→毫秒
+      const d = new Date(ms);
+      const now = Date.now();
+      const diff = ms - now;
+      const abs = Math.abs(diff);
+      const sec = Math.floor(abs / 1000), min = Math.floor(sec / 60), hr = Math.floor(min / 60), day = Math.floor(hr / 24);
+      let rel;
+      if (abs < 1000) rel = "刚才";
+      else if (sec < 60) rel = sec + " 秒";
+      else if (min < 60) rel = min + " 分钟";
+      else if (hr < 48) rel = hr + " 小时";
+      else rel = day + " 天";
+      const relStr = diff < 0 ? `${rel}前` : `${rel}后`;
+      return { date: d.toISOString().replace("T", " ").substring(0, 19) + " UTC", rel: relStr, expired: diff < 0 };
+    }
+
+    // ============================================
+    // 主解析
+    // ============================================
+    const inputEl = document.getElementById("jwtInput");
+    const secretEl = document.getElementById("secret");
+    const algSelect = document.getElementById("algSelect");
+    const sigStatus = document.getElementById("sigStatus");
+    const headerJsonEl = document.getElementById("headerJson");
+    const payloadJsonEl = document.getElementById("payloadJson");
+    const claimExplainEl = document.getElementById("claimExplain");
+    const claimRowsEl = document.getElementById("claimRows");
+    const algLabel = document.getElementById("algLabel");
+    const payloadEditEl = document.getElementById("payloadEdit");
+    const newJwtOut = document.getElementById("newJwtOut");
+
+    let parsed = null;
+
+    function setSigStatus(state, msg) {
+      sigStatus.className = "sig-status " + state;
+      let icon = "○";
+      if (state === "ok") icon = "✓";
+      else if (state === "bad") icon = "✗";
+      sigStatus.innerHTML = `<span>${icon}</span><span>${escapeHTML(msg)}</span>`;
+    }
+
+    function renderClaims(payload) {
+      const rows = [];
+      for (const k of Object.keys(payload)) {
+        const desc = STANDARD_CLAIMS[k];
+        if (!desc && !TIME_CLAIMS.has(k)) continue;
+        let valHtml = "";
+        if (TIME_CLAIMS.has(k)) {
+          const t = fmtTime(payload[k]);
+          if (t) {
+            const cls = (k === "exp" && t.expired) ? "stale" : (k === "nbf" && !t.expired) ? "stale" : "fresh";
+            valHtml = `${desc} · <code style="color:#82aaff">${t.date}</code> · <span class="${cls}">${t.rel}</span>`;
+          } else {
+            valHtml = desc;
+          }
+        } else {
+          valHtml = desc;
+        }
+        rows.push(`<div class="claim-row"><span class="ck">${k}</span><span class="cv">${valHtml}</span></div>`);
+      }
+      if (rows.length) {
+        claimRowsEl.innerHTML = rows.join("");
+        claimExplainEl.style.display = "";
+      } else {
+        claimExplainEl.style.display = "none";
+      }
+    }
+
+    function parseJWT(raw) {
+      raw = raw.trim().replace(/^Bearer\s+/i, "");
+      const parts = raw.split(".");
+      if (parts.length !== 3) throw new Error("JWT 必须是 3 段（header.payload.signature）");
+      const [hRaw, pRaw, sRaw] = parts;
+      let header, payload;
+      try { header = JSON.parse(b64urlDecode(hRaw)); }
+      catch { throw new Error("Header 解析失败——不是合法 base64url JSON"); }
+      try { payload = JSON.parse(b64urlDecode(pRaw)); }
+      catch { throw new Error("Payload 解析失败——不是合法 base64url JSON"); }
+      return { header, payload, signature: sRaw, signingInput: hRaw + "." + pRaw, parts };
+    }
+
+    async function verify(secret, alg, signingInput, sig) {
+      if (!secret) return { ok: false, reason: "未输入 secret" };
+      if (!sig) return { ok: false, reason: "原 token 没有签名" };
+      const ALG_MAP = { HS256: "SHA-256", HS384: "SHA-384", HS512: "SHA-512" };
+      const hashName = ALG_MAP[alg];
+      if (!hashName) return { ok: false, reason: "不支持的算法 " + alg };
+      const key = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(secret),
+        { name: "HMAC", hash: hashName },
+        false,
+        ["sign", "verify"]
+      );
+      const dataBytes = new TextEncoder().encode(signingInput);
+      const sigBytes = Uint8Array.from(b64urlDecode(sig).split("").map(c => c.charCodeAt(0))).buffer;
+      // base64url 解码不能直接给 binary sig；改用直接 base64
+      const pad = "=".repeat((4 - sig.length % 4) % 4);
+      const b64 = (sig + pad).replace(/-/g, "+").replace(/_/g, "/");
+      const bin = atob(b64);
+      const sigBuf = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) sigBuf[i] = bin.charCodeAt(i);
+      const valid = await crypto.subtle.verify("HMAC", key, sigBuf, dataBytes);
+      return { ok: valid };
+    }
+
+    async function sign(secret, alg, signingInput) {
+      const ALG_MAP = { HS256: "SHA-256", HS384: "SHA-384", HS512: "SHA-512" };
+      const key = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(secret),
+        { name: "HMAC", hash: ALG_MAP[alg] },
+        false,
+        ["sign"]
+      );
+      const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signingInput));
+      return b64urlEncode(new Uint8Array(sig));
+    }
+
+    function colorizeJWT(parts) {
+      return `<span class="seg-h">${escapeHTML(parts[0])}</span><span class="seg-dot">.</span><span class="seg-p">${escapeHTML(parts[1])}</span><span class="seg-dot">.</span><span class="seg-s">${escapeHTML(parts[2])}</span>`;
+    }
+
+    async function render() {
+      const raw = inputEl.value.trim();
+      if (!raw) {
+        headerJsonEl.innerHTML = '<span style="color:var(--color-text-muted)">粘贴 JWT 后这里显示 header</span>';
+        payloadJsonEl.innerHTML = '<span style="color:var(--color-text-muted)">粘贴 JWT 后这里显示 payload</span>';
+        claimExplainEl.style.display = "none";
+        algLabel.textContent = "";
+        setSigStatus("idle", "输入 secret 后会验证签名");
+        parsed = null;
+        inputEl.classList.remove("invalid");
+        return;
+      }
+      try {
+        parsed = parseJWT(raw);
+        inputEl.classList.remove("invalid");
+        // 拒绝 alg=none
+        if (parsed.header.alg && parsed.header.alg.toLowerCase() === "none") {
+          throw new Error("拒绝处理 alg=none 的 token（已知安全漏洞）");
+        }
+        headerJsonEl.innerHTML = highlightJSON(parsed.header);
+        payloadJsonEl.innerHTML = highlightJSON(parsed.payload);
+        algLabel.textContent = parsed.header.alg || "";
+        if (parsed.header.alg) {
+          // 自动设置算法选择器
+          const opt = [...algSelect.options].find(o => o.value === parsed.header.alg);
+          if (opt) algSelect.value = parsed.header.alg;
+        }
+        renderClaims(parsed.payload);
+        // payload 编辑框预填
+        payloadEditEl.value = JSON.stringify(parsed.payload, null, 2);
+        await verifyCurrent();
+      } catch (e) {
+        inputEl.classList.add("invalid");
+        headerJsonEl.innerHTML = `<span style="color:#f87171">${escapeHTML(e.message)}</span>`;
+        payloadJsonEl.innerHTML = "";
+        claimExplainEl.style.display = "none";
+        algLabel.textContent = "";
+        setSigStatus("bad", e.message);
+        parsed = null;
+      }
+    }
+
+    async function verifyCurrent() {
+      if (!parsed) return;
+      const secret = secretEl.value;
+      if (!secret) {
+        setSigStatus("idle", "输入 secret 后会验证签名");
+        return;
+      }
+      const alg = algSelect.value;
+      try {
+        const r = await verify(secret, alg, parsed.signingInput, parsed.signature);
+        if (r.ok) setSigStatus("ok", `签名有效 · ${alg} · secret 匹配`);
+        else setSigStatus("bad", r.reason || `签名无效 · secret 与 token 不匹配`);
+      } catch (e) {
+        setSigStatus("bad", "验证失败：" + e.message);
+      }
+    }
+
+    // 事件接线
+    let debounce;
+    inputEl.addEventListener("input", () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(render, 100);
+    });
+    secretEl.addEventListener("input", () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(verifyCurrent, 200);
+    });
+    algSelect.addEventListener("change", verifyCurrent);
+
+    const EXAMPLE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFsaWNlIiwiaWF0IjoxNzE2MzQwMDAwLCJleHAiOjE3MTYzNDM2MDB9.b1RfPRyzKKHo9emiE0NXvBzPg2K4hZQ1Xq-Ux2c8x4o";
+
+    document.getElementById("btnExample").addEventListener("click", () => {
+      inputEl.value = EXAMPLE;
+      secretEl.value = "your-256-bit-secret";
+      render();
+    });
+    document.getElementById("btnClear").addEventListener("click", () => {
+      inputEl.value = "";
+      secretEl.value = "";
+      payloadEditEl.value = "";
+      newJwtOut.style.display = "none";
+      document.getElementById("btnCopyNew").style.display = "none";
+      render();
+    });
+
+    document.getElementById("btnResign").addEventListener("click", async () => {
+      const status = document.getElementById("resignStatus");
+      if (!parsed) { status.textContent = "先粘贴一个 JWT"; status.style.color = "#f87171"; return; }
+      const secret = secretEl.value;
+      if (!secret) { status.textContent = "需要输入 secret"; status.style.color = "#f87171"; return; }
+      let newPayload;
+      try { newPayload = JSON.parse(payloadEditEl.value); }
+      catch (e) { status.textContent = "payload JSON 错误：" + e.message; status.style.color = "#f87171"; return; }
+      const alg = algSelect.value;
+      try {
+        const newHeader = { ...parsed.header, alg };
+        const hStr = b64urlEncodeStr(JSON.stringify(newHeader));
+        const pStr = b64urlEncodeStr(JSON.stringify(newPayload));
+        const signingInput = hStr + "." + pStr;
+        const sig = await sign(secret, alg, signingInput);
+        const newJwt = signingInput + "." + sig;
+        newJwtOut.innerHTML = colorizeJWT([hStr, pStr, sig]);
+        newJwtOut.style.display = "";
+        document.getElementById("btnCopyNew").style.display = "";
+        document.getElementById("btnCopyNew").dataset.jwt = newJwt;
+        status.textContent = "签发成功 · " + alg;
+        status.style.color = "#22c55e";
+      } catch (e) {
+        status.textContent = "签发失败：" + e.message;
+        status.style.color = "#f87171";
+      }
+    });
+
+    document.getElementById("btnCopyNew").addEventListener("click", e => {
+      const jwt = e.currentTarget.dataset.jwt;
+      if (jwt) copyToClipboard(jwt);
+    });
+  </script>
+</body>
+</html>

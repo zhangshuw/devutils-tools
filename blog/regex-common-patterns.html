@@ -5,164 +5,303 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#6366f1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<title>10个最常用的正则表达式速查表 | DevUtils 博客</title>
-<meta name="description" content="整理了邮箱、手机号、URL、身份证、IP地址等10个开发中最常用的正则表达式，可直接复制使用。附带在线测试工具。">
+<title>10 个能直接用的正则——附边界 case 测试 | DevUtils</title>
+<meta name="description" content="不只是粘个正则就完事——每条正则附带应该匹配/不应该匹配的测试样例。邮箱、手机号、URL、身份证、IP、密码强度、车牌号，常踩的边界都标出来。">
 <link rel="canonical" href="https://devtool.blueblueliu.com/blog/regex-common-patterns.html">
-<meta property="og:title" content="10个最常用的正则表达式速查表">
-<meta property="og:description" content="开发中最常用的10个正则表达式：邮箱、手机号、URL等，可直接复制">
+<meta property="og:title" content="10 个能直接用的正则——附边界 case 测试">
+<meta property="og:description" content="附测试样例的实战正则速查表">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://devtool.blueblueliu.com/blog/regex-common-patterns.html">
 <meta property="og:site_name" content="DevUtils">
 <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="10个最常用的正则表达式速查表">
-<meta name="twitter:description" content="10个最常用的正则表达式，可直接复制使用">
+<meta name="twitter:title" content="10 个能直接用的正则——附边界 case 测试">
+<meta name="twitter:description" content="实战正则速查表">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","headline":"10个最常用的正则表达式速查表","description":"开发中最常用的10个正则表达式","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-21"}
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"10 个能直接用的正则——附边界 case 测试","description":"附测试样例的实战正则速查表","author":{"@type":"Person","name":"swzhang"},"datePublished":"2026-05-21","dateModified":"2026-05-23","publisher":{"@type":"Organization","name":"DevUtils"}}
 </script>
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/reset.css">
 <link rel="stylesheet" href="/css/layout.css">
 <link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
 <style>
-.post{max-width:760px;margin:0 auto;padding:20px}
-.post h1{font-size:2rem;margin:24px 0 8px}
-.post .meta{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:24px}
-.post h2{color:var(--color-accent);margin:32px 0 16px;font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
-.post p{color:var(--color-text-secondary);line-height:1.9;margin-bottom:18px}
-.post ul,.post ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:18px;line-height:1.8}
-.post li{margin:6px 0}
-.post code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
-.post pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
-.post table{width:100%;border-collapse:collapse;margin:16px 0}
-.post th,.post td{border:1px solid var(--color-border);padding:8px 12px;text-align:left}
-.post th{background:var(--color-bg-elevated);color:var(--color-accent);font-weight:600}
-.post td{color:var(--color-text-secondary);font-size:var(--text-sm)}
-.post td code{font-size:0.8rem}
-.post a{color:var(--color-accent);text-decoration:underline}
-.cta{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
-.cta h3{color:var(--color-accent);margin-bottom:8px}
-.cta p{color:var(--color-text-secondary);margin-bottom:16px}
+/* 正则模式卡 */
+.regex-card{background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:12px;padding:20px 22px;margin:20px 0}
+.regex-card .head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;gap:12px;flex-wrap:wrap}
+.regex-card .head h3{margin:0;font-size:1.05rem;color:var(--color-text-primary)}
+.regex-card .head .lang-tag{font-size:.7rem;color:var(--color-text-muted);background:var(--color-bg-elevated);padding:2px 8px;border-radius:4px;letter-spacing:.05em;text-transform:uppercase}
+.regex-card .pattern{position:relative;background:#0c0e15;border:1px solid var(--color-border);border-radius:8px;padding:12px 50px 12px 14px;font-family:"JetBrains Mono",monospace;font-size:.85rem;color:#a5d6a7;overflow-x:auto;white-space:pre;margin-bottom:12px}
+.regex-card .pattern .copy{position:absolute;top:8px;right:8px;background:transparent;border:1px solid var(--color-border);color:var(--color-text-muted);padding:2px 10px;border-radius:5px;font-size:.7rem;cursor:pointer;font-family:inherit}
+.regex-card .pattern .copy:hover{color:var(--color-accent);border-color:var(--color-accent)}
+.regex-card .pattern .copy.copied{color:var(--color-success);border-color:var(--color-success)}
+.regex-card .note{color:var(--color-text-secondary);font-size:.92rem;margin:0 0 14px;line-height:1.65}
+.regex-card .tests{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.82rem;font-family:"JetBrains Mono",monospace}
+.regex-card .test-ok{color:#86efac}.regex-card .test-no{color:#fda4af}
+.regex-card .test-val{color:var(--color-text-secondary);word-break:break-all}
+.regex-card .test-comment{color:var(--color-text-muted);font-family:inherit;font-style:italic;font-size:.78rem;margin-left:8px}
 </style>
 </head>
 <body>
 <div id="siteHeader"></div>
-<main class="post">
-<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span><span>常见正则</span></nav>
 
-<h1>10 个最常用的正则表达式速查表</h1>
-<p class="meta">发布于 2026年5月21日 · 阅读时间约5分钟</p>
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
 
-<p>写正则表达式最怕的就是把边界情况漏了。这篇文章整理了开发中最常用的 10 个正则表达式，每个都经过大量实战检验，可以直接复制到你的项目中。用 <a href="/tools/regex-tester.html">正则测试器</a> 可以实时验证每个表达式。</p>
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>常用正则</span>
+    </nav>
 
-<table>
-<tr><th>用途</th><th>正则表达式</th><th>说明</th></tr>
+    <header class="post-header">
+      <span class="category">速查表 · 正则</span>
+      <h1>10 个能直接用的正则——附边界 case 测试</h1>
+      <p class="lede">网上多数正则速查表只给你模式，不告诉你<em>什么会被匹配</em>。这里每条都附 ✓/✗ 测试样例，你能一眼看出边界。复制前先看看 ✗ 那行——有可能你以为匹配的它不匹配。</p>
+      <div class="post-meta">
+        <span class="author-mini"><span class="avatar">SW</span> swzhang</span>
+        <span class="sep">·</span>
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>约 5 分钟阅读</span>
+      </div>
+    </header>
 
-<tr>
-<td><strong>邮箱</strong></td>
-<td><code>^[\w\.-]+@[\w-]+\.[\w\.-]+$</code></td>
-<td>覆盖常见邮箱格式，如 name@domain.com、name.name@sub.domain.co.jp</td>
-</tr>
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p>每条正则点击右上角「复制」即可。觉得测试样例不够？粘到 <a href="/tools/regex-tester.html">正则测试器</a> 自己加 case。</p></div>
+    </div>
 
-<tr>
-<td><strong>中国手机号</strong></td>
-<td><code>^1[3-9]\d{9}$</code></td>
-<td>匹配 130-199 号段，共 11 位</td>
-</tr>
+    <h2>邮箱（宽松版）</h2>
+    <div class="regex-card">
+      <div class="head"><h3>常用邮箱匹配</h3><span class="lang-tag">JS / Python</span></div>
+      <div class="pattern">^[\w\.\-+]+@[\w\-]+(\.[\w\-]+)+$<button class="copy" data-copy="^[\w\.\-+]+@[\w\-]+(\.[\w\-]+)+$">复制</button></div>
+      <p class="note">日常 99% 的场景够用。允许 <code>+</code> 和点号、多级子域名。<strong>不</strong>校验 RFC 5322 全规范——下面有严格版。</p>
+      <div class="tests">
+        <span class="test-ok">✓</span><span class="test-val">user@example.com</span>
+        <span class="test-ok">✓</span><span class="test-val">user.name+tag@mail.co.jp</span>
+        <span class="test-ok">✓</span><span class="test-val">u_123@sub.example.com</span>
+        <span class="test-no">✗</span><span class="test-val">@example.com<span class="test-comment">用户名为空</span></span>
+        <span class="test-no">✗</span><span class="test-val">user@.com<span class="test-comment">域名首字符为点</span></span>
+        <span class="test-no">✗</span><span class="test-val">user@example<span class="test-comment">缺少 TLD</span></span>
+      </div>
+    </div>
 
-<tr>
-<td><strong>固定电话</strong></td>
-<td><code>^0\d{2,3}-\d{7,8}$</code></td>
-<td>区号 2-3 位 + 号码 7-8 位，如 010-12345678</td>
-</tr>
+    <h2>中国手机号</h2>
+    <div class="regex-card">
+      <div class="head"><h3>11 位手机号（13x-19x 号段）</h3><span class="lang-tag">JS / Python</span></div>
+      <div class="pattern">^1[3-9]\d{9}$<button class="copy" data-copy="^1[3-9]\d{9}$">复制</button></div>
+      <p class="note">2026 年仍有效的号段：130-199。如果允许 +86 前缀，前面加 <code>(\+?86)?</code>。</p>
+      <div class="tests">
+        <span class="test-ok">✓</span><span class="test-val">13812345678</span>
+        <span class="test-ok">✓</span><span class="test-val">19912345678</span>
+        <span class="test-no">✗</span><span class="test-val">12012345678<span class="test-comment">12x 不是手机号段</span></span>
+        <span class="test-no">✗</span><span class="test-val">+8613812345678<span class="test-comment">含国际区号</span></span>
+        <span class="test-no">✗</span><span class="test-val">1381234567<span class="test-comment">只有 10 位</span></span>
+      </div>
+    </div>
 
-<tr>
-<td><strong>身份证号</strong></td>
-<td><code>^\d{17}[\dXx]$</code></td>
-<td>18 位，最后一位可能是 X</td>
-</tr>
+    <h2>URL 地址</h2>
+    <div class="regex-card">
+      <div class="head"><h3>HTTP / HTTPS URL</h3><span class="lang-tag">JS / Python</span></div>
+      <div class="pattern">^https?:\/\/[\w\-]+(\.[\w\-]+)+([\/\?#][^\s]*)?$<button class="copy" data-copy="^https?:\/\/[\w\-]+(\.[\w\-]+)+([\/\?#][^\s]*)?$">复制</button></div>
+      <p class="note">允许 query string、hash、复杂路径。<strong>不</strong>覆盖 IP URL 和 punycode 域名——那种用 <code>new URL()</code> 解析更稳。</p>
+      <div class="tests">
+        <span class="test-ok">✓</span><span class="test-val">https://example.com</span>
+        <span class="test-ok">✓</span><span class="test-val">http://sub.example.com/path/to/x?a=1&b=2#hash</span>
+        <span class="test-ok">✓</span><span class="test-val">https://devtool.blueblueliu.com/tools/regex-tester.html</span>
+        <span class="test-no">✗</span><span class="test-val">ftp://example.com<span class="test-comment">只匹配 http(s)</span></span>
+        <span class="test-no">✗</span><span class="test-val">example.com<span class="test-comment">缺少协议头</span></span>
+      </div>
+    </div>
 
-<tr>
-<td><strong>URL 地址</strong></td>
-<td><code>^https?://[\w\.-]+\.[a-z]{2,}(/\S*)?$</code></td>
-<td>匹配 http/https URL，不包含 URL 参数</td>
-</tr>
+    <h2>身份证号（18 位）</h2>
+    <div class="regex-card">
+      <div class="head"><h3>大陆居民身份证号码</h3><span class="lang-tag">JS / Python</span></div>
+      <div class="pattern">^[1-9]\d{5}(19|20)\d{2}((0[1-9])|(1[0-2]))(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$<button class="copy" data-copy="^[1-9]\d{5}(19|20)\d{2}((0[1-9])|(1[0-2]))(0[1-9]|[12]\d|3[01])\d{3}[\dXx]$">复制</button></div>
+      <p class="note">这个比常见的 <code>^\d{17}[\dXx]$</code> 严格——校验年份 1900-2099、月份 01-12、日期 01-31。但还<strong>不</strong>校验校验位（最后一位）。要严格校验得用 ISO 7064 算法。</p>
+      <div class="tests">
+        <span class="test-ok">✓</span><span class="test-val">110101199001011234</span>
+        <span class="test-ok">✓</span><span class="test-val">11010119900101123X</span>
+        <span class="test-no">✗</span><span class="test-val">110101189001011234<span class="test-comment">年份 1890 越界</span></span>
+        <span class="test-no">✗</span><span class="test-val">110101199013011234<span class="test-comment">月份 13 越界</span></span>
+      </div>
+    </div>
 
-<tr>
-<td><strong>IP 地址 v4</strong></td>
-<td><code>^((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$</code></td>
-<td>严格匹配 0.0.0.0 ~ 255.255.255.255</td>
-</tr>
+    <h2>IPv4 地址</h2>
+    <div class="regex-card">
+      <div class="head"><h3>严格 0.0.0.0 ~ 255.255.255.255</h3><span class="lang-tag">JS / Python</span></div>
+      <div class="pattern">^((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$<button class="copy" data-copy="^((25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.){3}(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)$">复制</button></div>
+      <p class="note">边界严格校验。<strong>不要</strong>用 <code>^(\d{1,3}\.){3}\d{1,3}$</code>——它会把 <code>999.999.999.999</code> 也匹配上。</p>
+      <div class="tests">
+        <span class="test-ok">✓</span><span class="test-val">192.168.1.1</span>
+        <span class="test-ok">✓</span><span class="test-val">0.0.0.0</span>
+        <span class="test-ok">✓</span><span class="test-val">255.255.255.255</span>
+        <span class="test-no">✗</span><span class="test-val">256.1.1.1<span class="test-comment">256 越界</span></span>
+        <span class="test-no">✗</span><span class="test-val">192.168.01.1<span class="test-comment">前导 0（八进制歧义）</span></span>
+      </div>
+    </div>
 
-<tr>
-<td><strong>邮政编码</strong></td>
-<td><code>^\d{6}$</code></td>
-<td>中国邮政编码为 6 位数字</td>
-</tr>
+    <h2>16 进制颜色</h2>
+    <div class="regex-card">
+      <div class="head"><h3>CSS 颜色短/长格式</h3><span class="lang-tag">JS / Python</span></div>
+      <div class="pattern">^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$<button class="copy" data-copy="^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$">复制</button></div>
+      <p class="note">兼容 <code>#FFF</code> 短写、<code>#FFFFFF</code> 完整、<code>#FFFFFFFF</code> 带 alpha。</p>
+      <div class="tests">
+        <span class="test-ok">✓</span><span class="test-val">#fff</span>
+        <span class="test-ok">✓</span><span class="test-val">#FFAA00</span>
+        <span class="test-ok">✓</span><span class="test-val">#6366F1AA</span>
+        <span class="test-no">✗</span><span class="test-val">FFF<span class="test-comment">缺 #</span></span>
+        <span class="test-no">✗</span><span class="test-val">#FFFFF<span class="test-comment">5 位非法</span></span>
+      </div>
+    </div>
 
-<tr>
-<td><strong>日期 YYYY-MM-DD</strong></td>
-<td><code>^\d{4}-\d{2}-\d{2}$</code></td>
-<td>不校验日期有效性（如 2026-02-30 也会匹配）</td>
-</tr>
+    <h2>日期 YYYY-MM-DD</h2>
+    <div class="regex-card">
+      <div class="head"><h3>带月日范围校验的日期</h3><span class="lang-tag">JS / Python</span></div>
+      <div class="pattern">^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$<button class="copy" data-copy="^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$">复制</button></div>
+      <p class="note"><strong>注意</strong>：能挡掉月份 13、日期 32 这种明显错的，但<strong>挡不住</strong> <code>2026-02-30</code> 这种"月内日期超限"。要严格校验必须用日期 API：<code>!isNaN(new Date(s).getTime())</code>。</p>
+      <div class="tests">
+        <span class="test-ok">✓</span><span class="test-val">2026-05-23</span>
+        <span class="test-ok">✓</span><span class="test-val">2024-02-29</span>
+        <span class="test-no">✗</span><span class="test-val">2026-13-01<span class="test-comment">13 月</span></span>
+        <span class="test-no">✗</span><span class="test-val">2026/05/23<span class="test-comment">分隔符不对</span></span>
+      </div>
+    </div>
 
-<tr>
-<td><strong>中文汉字</strong></td>
-<td><code>[一-龥]+</code></td>
-<td>匹配一个或多个中文字符</td>
-</tr>
+    <h2>密码强度</h2>
+    <div class="regex-card">
+      <div class="head"><h3>8 位以上 · 大小写 · 数字 · 符号</h3><span class="lang-tag">JS / Python</span></div>
+      <div class="pattern">^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$<button class="copy" data-copy="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$">复制</button></div>
+      <p class="note">用了 4 个 lookahead 同时校验四类字符。可以减项：去掉某个 <code>(?=.*X)</code> 就放宽对应规则。</p>
+      <div class="tests">
+        <span class="test-ok">✓</span><span class="test-val">P@ssw0rd</span>
+        <span class="test-ok">✓</span><span class="test-val">MyN@me1s</span>
+        <span class="test-no">✗</span><span class="test-val">password<span class="test-comment">缺大写、数字、符号</span></span>
+        <span class="test-no">✗</span><span class="test-val">P@ssw0r<span class="test-comment">仅 7 位</span></span>
+      </div>
+    </div>
 
-<tr>
-<td><strong>16 进制颜色</strong></td>
-<td><code>^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$</code></td>
-<td>匹配 #FFF 或 #FFFFFF 格式</td>
-</tr>
-</table>
+    <h2>中文汉字</h2>
+    <div class="regex-card">
+      <div class="head"><h3>常用 CJK 字符</h3><span class="lang-tag">JS / Python</span></div>
+      <div class="pattern">[一-龥]+<button class="copy" data-copy="[一-龥]+">复制</button></div>
+      <p class="note">基本汉字范围。<strong>不</strong>包含扩展 A/B/C 区的生僻字（如"𠀀"）。要全字符集用 <code>\p{Script=Han}</code>（Unicode property，需要 <code>/u</code> flag）。</p>
+      <div class="tests">
+        <span class="test-ok">✓</span><span class="test-val">你好世界</span>
+        <span class="test-ok">✓</span><span class="test-val">写代码<span class="test-comment">在 "abc写代码123" 中匹配</span></span>
+        <span class="test-no">✗</span><span class="test-val">𠀀<span class="test-comment">扩展 B 区</span></span>
+      </div>
+    </div>
 
-<h2>进阶版正则表达式</h2>
-<p>上面的是基础版。如果你需要更严格的校验，用下面这些：</p>
+    <h2>中国车牌号（含新能源）</h2>
+    <div class="regex-card">
+      <div class="head"><h3>普通车牌 + 新能源车牌</h3><span class="lang-tag">JS / Python</span></div>
+      <div class="pattern">^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤川青藏琼宁][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4,5}[A-HJ-NP-Z0-9挂学警港澳]$<button class="copy" data-copy="^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤川青藏琼宁][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4,5}[A-HJ-NP-Z0-9挂学警港澳]$">复制</button></div>
+      <p class="note">第二位不能是 I 或 O（容易和 1/0 混淆），通过 <code>[A-HJ-NP-Z]</code> 排除。后续 4-5 位允许字母数字（覆盖普通牌 5 位 + 新能源 6 位）。</p>
+      <div class="tests">
+        <span class="test-ok">✓</span><span class="test-val">京A12345</span>
+        <span class="test-ok">✓</span><span class="test-val">沪B123456<span class="test-comment">新能源 6 位</span></span>
+        <span class="test-ok">✓</span><span class="test-val">粤Y8888警</span>
+        <span class="test-no">✗</span><span class="test-val">京I12345<span class="test-comment">第二位 I 非法</span></span>
+      </div>
+    </div>
 
-<h3>严格邮箱校验</h3>
-<pre>^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$</pre>
-<p>这个来自 RFC 5322 规范，能过滤 99.99% 的非法邮箱。</p>
+    <h2>怎么用这些正则</h2>
+    <p>以邮箱为例：</p>
+    <pre data-lang="js"><code class="language-js">// JavaScript
+const re = /^[\w\.\-+]+@[\w\-]+(\.[\w\-]+)+$/;
+re.test("user@example.com");   // true</code></pre>
 
-<h3>密码强度校验（8位+大小写+数字+符号）</h3>
-<pre>^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$</pre>
+    <pre data-lang="python"><code class="language-python"># Python
+import re
+re.fullmatch(r"^[\w\.\-+]+@[\w\-]+(\.[\w\-]+)+$", "user@example.com")</code></pre>
 
-<h3>中国车牌号</h3>
-<pre>^[京津沪渝冀豫云辽黑湘皖鲁新苏浙赣鄂桂甘晋蒙陕吉闽贵粤川青藏琼宁][A-HJ-NP-Z][A-HJ-NP-Z0-9]{4,5}[A-HJ-NP-Z0-9挂学警港澳]$</pre>
+    <div class="callout callout-warn">
+      <span class="ic">⚠️</span>
+      <div class="body"><p><strong>坑</strong>：Java 里反斜杠要双重转义。<code>\d</code> 在 Java 字符串里要写成 <code>"\\d"</code>。复制本文正则到 Java 别忘了把所有 <code>\</code> 翻倍。</p></div>
+    </div>
 
-<h2>如何使用这些正则？</h2>
+    <h2>什么时候<em>不要</em>用正则</h2>
+    <p>这件事说重要也重要。下面这些场景用正则反而是坑：</p>
+    <ul>
+      <li><strong>解析 HTML / XML</strong> — 用 DOM 解析器（<code>DOMParser</code> 或 <code>cheerio</code>）</li>
+      <li><strong>解析 URL 取 query 参数</strong> — 用 <code>new URL(s).searchParams</code></li>
+      <li><strong>校验日期是否真实存在</strong> — 用 Date API，正则挡不住 2026-02-30</li>
+      <li><strong>金额、版本号</strong> — 用专门的库（<code>semver</code> 等）</li>
+    </ul>
 
-<h3>JavaScript</h3>
-<pre>const emailRegex = /^[\w\.-]+@[\w-]+\.[\w\.-]+$/;
-if (emailRegex.test('user@example.com')) {
-  console.log('邮箱格式正确');
-}</pre>
+    <div class="cta">
+      <h3>在线测试这些正则</h3>
+      <p>实时高亮匹配位置 · 显示捕获组 · 支持 /g /i /m 修饰符</p>
+      <a href="/tools/regex-tester.html" class="btn btn-primary">打开正则测试器</a>
+    </div>
 
-<h3>Python</h3>
-<pre>import re
-pattern = r'^[\w\.-]+@[\w-]+\.[\w\.-]+$'
-if re.match(pattern, 'user@example.com'):
-    print('邮箱格式正确')</pre>
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
 
-<h3>Java</h3>
-<pre>String email = "user@example.com";
-if (email.matches("^[\\w\\.-]+@[\\w-]+\\.[\\w\\.-]+$")) {
-    System.out.println("邮箱格式正确");
-}</pre>
+    <div class="author-card">
+      <div class="author-avatar">SW</div>
+      <div class="author-info">
+        <p class="author-name">swzhang</p>
+        <p class="author-bio">在线工具站 DevUtils 维护者。写正则写了快十年，依然每次都得自己测一下边界。把测过的攒下来。</p>
+      </div>
+    </div>
 
-<div class="cta">
-<h3>在线测试这些正则表达式</h3>
-<p>粘贴任意文本，实时查看匹配结果和高亮</p>
-<a href="/tools/regex-tester.html" class="btn btn-primary" style="text-decoration:none">打开正则测试器</a>
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/json-tips.html" class="related-card">
+          <div class="related-cat">后端 · 数据格式</div>
+          <div class="related-title">JSON 的 10 个坑：生产环境会咬你的事</div>
+          <p class="related-desc">大整数精度、循环引用、jq 实战。</p>
+        </a>
+        <a href="/blog/frontend-dev-tools.html" class="related-card">
+          <div class="related-cat">工具推荐</div>
+          <div class="related-title">前端日常的 10 个在线工具</div>
+          <p class="related-desc">每天都打开的那批工具——含正则测试。</p>
+        </a>
+        <a href="/blog/url-encoding-guide.html" class="related-card">
+          <div class="related-cat">编码</div>
+          <div class="related-title">URL 编码：哪些字符需要编码</div>
+          <p class="related-desc">URL 编码原理 + 各语言实现差异。</p>
+        </a>
+        <a href="/blog/hash-algorithm-guide.html" class="related-card">
+          <div class="related-cat">安全</div>
+          <div class="related-title">MD5、SHA-1、SHA-256 怎么选</div>
+          <p class="related-desc">哈希算法对比与使用场景。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
 </div>
 
-<p style="text-align:center;color:var(--color-text-muted);margin-top:40px">想系统学习正则表达式？看 <a href="/regex-tutorial.html">正则表达式入门教程</a></p>
-</main>
 <div id="siteFooter"></div>
-<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+<script type="module">
+import "/js/blog-post.js?v=2";
+
+// 复制按钮
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".regex-card .copy");
+  if (!btn) return;
+  const text = btn.dataset.copy;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = "已复制";
+    btn.classList.add("copied");
+    setTimeout(() => { btn.textContent = "复制"; btn.classList.remove("copied"); }, 1500);
+  });
+});
+</script>
 </body>
 </html>

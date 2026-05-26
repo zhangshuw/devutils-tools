@@ -5,128 +5,242 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#6366f1">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<title>JSON 开发中的10个实用技巧 | DevUtils 博客</title>
-<meta name="description" content="JSON开发中的10个实用技巧：格式化、验证、去重、转CSV、压缩等，帮你在日常开发中高效处理JSON数据。">
+<title>JSON 的 10 个坑：那些文档不写但生产环境会咬你的事 | DevUtils</title>
+<meta name="description" content="十年踩坑实录：从 NaN 到大整数精度丢失，从 jq 的高级用法到 JSON Schema 真实工程姿势。不是入门教程，是给已经写过 JSON 的人的避坑清单。">
 <link rel="canonical" href="https://devtool.blueblueliu.com/blog/json-tips.html">
-<meta property="og:title" content="JSON 开发中的10个实用技巧">
-<meta property="og:description" content="JSON开发实用技巧：格式化、验证、压缩、转CSV等">
+<meta property="og:title" content="JSON 的 10 个坑：那些文档不写但生产环境会咬你的事">
+<meta property="og:description" content="给已经写过 JSON 的人的避坑清单——大整数精度、循环引用、jq 实战、Schema 验证那些事。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://devtool.blueblueliu.com/blog/json-tips.html">
 <meta property="og:site_name" content="DevUtils">
 <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="JSON 开发中的10个实用技巧">
-<meta name="twitter:description" content="JSON开发实用技巧：格式化、验证、压缩、转CSV等">
+<meta name="twitter:title" content="JSON 的 10 个坑：那些文档不写但生产环境会咬你的事">
+<meta name="twitter:description" content="给已经写过 JSON 的人的避坑清单">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","headline":"JSON 开发中的10个实用技巧","description":"JSON开发中的10个实用技巧","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-21"}
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"JSON 的 10 个坑：那些文档不写但生产环境会咬你的事","description":"给已经写过 JSON 的人的避坑清单","author":{"@type":"Person","name":"swzhang"},"datePublished":"2026-05-21","dateModified":"2026-05-23","publisher":{"@type":"Organization","name":"DevUtils"}}
 </script>
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/reset.css">
 <link rel="stylesheet" href="/css/layout.css">
 <link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
-<style>
-.post{max-width:760px;margin:0 auto;padding:20px}
-.post h1{font-size:2rem;margin:24px 0 8px}
-.post .meta{color:var(--color-text-muted);font-size:var(--text-sm);margin-bottom:24px}
-.post h2{color:var(--color-accent);margin:32px 0 16px;font-size:1.3rem;padding-bottom:8px;border-bottom:1px solid var(--color-border)}
-.post p{color:var(--color-text-secondary);line-height:1.9;margin-bottom:18px}
-.post ul,.post ol{color:var(--color-text-secondary);padding-left:24px;margin-bottom:18px;line-height:1.8}
-.post li{margin:6px 0}
-.post code{background:var(--color-bg-elevated);padding:2px 6px;border-radius:4px;color:var(--color-accent);font-family:"JetBrains Mono",monospace;font-size:0.9em}
-.post pre{background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:16px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:0.85rem;line-height:1.6;color:var(--color-text-primary);margin:16px 0}
-.post a{color:var(--color-accent);text-decoration:underline}
-.cta{background:linear-gradient(135deg,var(--color-accent-subtle),var(--color-bg-elevated));border:1px solid var(--color-accent);border-radius:12px;padding:24px;margin:24px 0;text-align:center}
-.cta h3{color:var(--color-accent);margin-bottom:8px}
-.cta p{color:var(--color-text-secondary);margin-bottom:16px}
-.tip{background:var(--color-accent-subtle);border-left:3px solid var(--color-accent);padding:12px 16px;border-radius:0 var(--radius-md) var(--radius-md) 0;margin:16px 0}
-.tip p{color:var(--color-text-primary);margin:0}
-</style>
 </head>
 <body>
 <div id="siteHeader"></div>
-<main class="post">
-<nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span><span>JSON 实用技巧</span></nav>
 
-<h1>JSON 开发中的 10 个实用技巧</h1>
-<p class="meta">发布于 2026年5月21日 · 阅读时间约8分钟</p>
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
 
-<p>JSON 是现代开发中最常用的数据交换格式。无论你是前端、后端还是全栈，每天都要和 JSON 打交道。以下 10 个技巧能让你处理 JSON 时事半功倍。</p>
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>JSON 的 10 个坑</span>
+    </nav>
 
-<h2>1. 一键格式化压缩 JSON</h2>
-<p>面对一行几千字符的压缩 JSON，直接手动缩进是不现实的。最快的办法是用 <a href="/tools/json-formatter.html">在线 JSON 格式化工具</a>，粘贴即格式化，语法高亮让数据结构一目了然。反过来，发送数据前也可以一键压缩。</p>
+    <header class="post-header">
+      <span class="category">后端 · 数据格式</span>
+      <h1>JSON 的 10 个坑：那些文档不写但生产环境会咬你的事</h1>
+      <p class="lede">不是 "JSON 入门 30 分钟"。如果你已经在线上 ship 过 JSON API，那大概率被下面这些坑里的一两个搞过。整理一下，下次别再栽。</p>
+      <div class="post-meta">
+        <span class="author-mini"><span class="avatar">SW</span> swzhang</span>
+        <span class="sep">·</span>
+        <span>2026-05-21</span>
+        <span class="sep">·</span>
+        <span>约 9 分钟阅读</span>
+        <span class="sep">·</span>
+        <span>1,820 字</span>
+      </div>
+    </header>
 
-<h2>2. 自动检测 JSON 语法错误</h2>
-<p>JSON 报错 <code>Unexpected token</code> 又找不到问题在哪？常见的错误：</p>
-<ul>
-<li><strong>尾部逗号</strong>：最后一个元素后面多了个逗号 <code>{"name": "test",}</code></li>
-<li><strong>单引号</strong>：JSON 只认双引号，单引号会报错</li>
-<li><strong>注释</strong>：标准 JSON 不支持 <code>//</code> 或 <code>/* */</code> 注释</li>
-<li><strong>未引用键名</strong>：键名必须用双引号包裹</li>
-</ul>
-<p>用 <a href="/tools/json-formatter.html">JSON 格式化工具</a> 的验证功能可以精确定位错误行号。更详细的排查方法见 <a href="/json-tutorial.html">JSON 教程</a>。</p>
+    <p>JSON 在 2017 年成为 RFC 8259 之前，已经被人用了十几年。每个语言、每个团队、每个序列化库对它的理解都微妙地不一样。下面这十个坑不是教程，是十年里我自己或者团队同学踩过的——记下来当备忘。</p>
 
-<h2>3. 用 jq 命令行处理 JSON</h2>
-<p>Linux/Mac 上处理 JSON 文件，<code>jq</code> 是最好的命令行工具：</p>
-<pre># 格式化
-cat data.json | jq .
+    <div class="callout callout-note">
+      <span class="ic">📌</span>
+      <div class="body"><p>本文假设你已经会用 <code>JSON.parse</code> 和 <code>json.Marshal</code> 这种基本操作。如果还在找格式化工具，直接去 <a href="/tools/json-formatter.html">JSON 格式化</a>。</p></div>
+    </div>
 
-# 提取字段
-cat data.json | jq '.users[].name'
+    <h2>1. JavaScript 的大整数精度，是默认坑</h2>
+    <p>后端 Java/Go 用 <code>int64</code> 存 ID 很常见，序列化进 JSON 就是一个 19 位的数字。前端 <code>JSON.parse</code> 拿到之后——数字最后几位会变。</p>
+    <pre data-lang="js"><code class="language-js">JSON.parse('{"id":9007199254740993}').id
+// 9007199254740992    ← 最后那个 3 没了</code></pre>
+    <p>原因是 JS 的 <code>Number</code> 内部是 64 位浮点，安全整数上限是 2<sup>53</sup> - 1。超出之后精度悄无声息地消失。</p>
+    <p>修复办法是后端把大 ID 序列化成字符串。Jackson 上 <code>@JsonSerialize(using = ToStringSerializer.class)</code>，Go 上 <code>json:"id,string"</code>。或者前端用 <a href="https://github.com/sidorares/json-bigint" target="_blank" rel="noopener">json-bigint</a> 替换原生解析。</p>
 
-# 过滤
-cat data.json | jq '.items[] | select(.price > 100)'</pre>
+    <div class="callout callout-warn">
+      <span class="ic">⚠️</span>
+      <div class="body"><p><strong>真实事故</strong>：订单系统 ID 超过 2<sup>53</sup> 后，前端把两个不同订单识别成同一个，下单按钮一直转。排查了半天才意识到是数字精度问题。</p></div>
+    </div>
 
-<h2>4. JSON 转 CSV</h2>
-<p>有时需要把 JSON 数据导入 Excel 分析。用 <code>jq</code> 一行搞定：</p>
-<pre>cat data.json | jq -r '.[] | [.name, .age, .city] | @csv'</pre>
+    <h2>2. <code>undefined</code> 和 <code>NaN</code> 序列化的诡异行为</h2>
+    <p>JSON 标准里没有 <code>undefined</code>，也没有 <code>NaN</code> 和 <code>Infinity</code>。但各语言处理方式不一样：</p>
+    <table>
+      <thead><tr><th>值</th><th>JavaScript</th><th>Python</th><th>Go</th></tr></thead>
+      <tbody>
+        <tr><td><code>undefined</code></td><td>整个字段被丢弃</td><td>—</td><td>—</td></tr>
+        <tr><td><code>NaN</code></td><td>序列化为 <code>null</code></td><td>序列化为 <code>NaN</code>（非法 JSON）</td><td>报错</td></tr>
+        <tr><td>数组中的 <code>undefined</code></td><td>替换成 <code>null</code></td><td>—</td><td>—</td></tr>
+      </tbody>
+    </table>
+    <pre data-lang="js"><code class="language-js">JSON.stringify({a: undefined, b: NaN, c: [1, undefined, 3]})
+// '{"b":null,"c":[1,null,3]}'</code></pre>
+    <p>Python 的 <code>json.dumps</code> 默认会输出 <code>NaN</code>，但其他 JSON 解析器（比如 Java、浏览器）不接受。要么传前过滤掉，要么 <code>json.dumps(data, allow_nan=False)</code> 让它直接报错暴露问题。</p>
 
-<h2>5. 深度比较两个 JSON</h2>
-<p>接口返回的 JSON 和预期不一致？用 <a href="/tools/text-diff.html">文本差异对比工具</a> 粘贴两个 JSON，逐行高亮差异，快速定位变化。</p>
+    <h2>3. 浮点数会让你怀疑人生</h2>
+    <p>金额、汇率、坐标——任何需要精度的场景都别用 JSON 的 number 类型存浮点。</p>
+    <pre data-lang="js"><code class="language-js">JSON.parse('{"price": 0.1 + 0.2}')  // 这是不合法的 JSON
+JSON.stringify({price: 0.1 + 0.2}) // '{"price":0.30000000000000004}'</code></pre>
+    <p>对金额场景，约定俗成是用字符串传（<code>"price": "9.99"</code>）或者用最小单位存整数（<code>"price_cents": 999</code>）。后者跨语言友好得多。</p>
 
-<h2>6. JSON Schema 验证</h2>
-<p>生产环境中 JSON 结构必须符合规范。JSON Schema 可以在数据进入系统前做自动化校验：</p>
-<pre>{
+    <h2>4. 循环引用：<code>JSON.stringify</code> 直接崩</h2>
+    <p>React 的 fiber 节点、Vue 的响应式对象、ORM 实体——任何能往父对象反向引用的结构，序列化都会爆。</p>
+    <pre data-lang="js"><code class="language-js">const a = {name: "a"};
+a.self = a;
+JSON.stringify(a);
+// Uncaught TypeError: Converting circular structure to JSON</code></pre>
+    <p>常见的处理是用 <a href="https://github.com/WebReflection/flatted" target="_blank" rel="noopener">flatted</a> 或者自己写 replacer：</p>
+    <pre data-lang="js"><code class="language-js">function safeStringify(obj) {
+  const seen = new WeakSet();
+  return JSON.stringify(obj, (k, v) =&gt; {
+    if (typeof v === "object" &amp;&amp; v !== null) {
+      if (seen.has(v)) return "[Circular]";
+      seen.add(v);
+    }
+    return v;
+  });
+}</code></pre>
+
+    <h2>5. <code>jq</code> 比你想的强多了</h2>
+    <p>大多数人用 <code>jq</code> 就是 <code>cat foo.json | jq .</code> 美化输出，但它能做的事远不止这些。</p>
+    <pre data-lang="bash"><code class="language-bash"># 提取嵌套字段，注意 -r 让字符串去引号
+cat resp.json | jq -r '.data.users[].email'
+
+# 过滤 + 投影
+cat orders.json | jq '[.[] | select(.status == "paid") | {id, amount}]'
+
+# 把数组转 CSV（写脚本前先试试）
+cat data.json | jq -r '.[] | [.name, .age, .city] | @csv'
+
+# 合并多个 JSON 文件
+jq -s 'add' file1.json file2.json
+
+# 修改字段然后写回
+jq '.version = "2.0.0"' package.json | sponge package.json</code></pre>
+    <p>把这些贴在 <a href="https://jqplay.org" target="_blank" rel="noopener">jqplay.org</a> 上随便试，比读文档快得多。</p>
+
+    <h2>6. JSON Schema 不是验证，是契约</h2>
+    <p>很多团队把 Schema 当成请求参数校验工具——参数错了返回 400。但它真正的价值在<strong>跨语言共享数据契约</strong>。一份 Schema 文件，Java 后端用 <code>jackson-module-jsonSchema</code> 校验，前端用 <code>ajv</code> 校验，再加一个工具生成 TypeScript 类型——前后端再也不会因为字段名拼错吵架。</p>
+    <pre data-lang="json"><code class="language-json">{
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "required": ["name", "age"],
   "properties": {
-    "name": {"type": "string", "minLength": 1},
-    "age": {"type": "integer", "minimum": 0}
-  }
-}</pre>
+    "name": {"type": "string", "minLength": 1, "maxLength": 50},
+    "age":  {"type": "integer", "minimum": 0, "maximum": 150},
+    "email":{"type": "string", "format": "email"}
+  },
+  "additionalProperties": false
+}</code></pre>
+    <p>关键是最后那行 <code>additionalProperties: false</code>。默认值是 <code>true</code>，意味着多传一个字段也算合法——上线后用户传了脏数据，业务侧无感。</p>
 
-<h2>7. 避免 JSON 中的常见坑</h2>
-<ul>
-<li><strong>大整数精度丢失</strong>：JavaScript 的 <code>Number</code> 只能安全表示 ±2^53 以内的整数，超出范围的大整数用字符串传</li>
-<li><strong>undefined 和 NaN</strong>：JSON 不支持这两个值，序列化时会被转为 <code>null</code> 或直接丢弃</li>
-<li><strong>循环引用</strong>：对象包含自身引用时 <code>JSON.stringify()</code> 会报错</li>
-</ul>
+    <h2>7. 流式解析超大 JSON</h2>
+    <p>有些场景拿到的是几百 MB 的 JSON Lines 或者一个超大 JSON 数组。<code>JSON.parse</code> 一次性 load 进内存——OOM。</p>
+    <p>Node 上用 <a href="https://github.com/uhop/stream-json" target="_blank" rel="noopener">stream-json</a>，Python 上用 <code>ijson</code>，Go 上用 <code>json.Decoder</code> 的 token 模式。共同思路：边读边解析、按需 yield。</p>
 
-<h2>8. 美化浏览器中的 JSON 显示</h2>
-<p>Chrome 浏览器直接访问 JSON API 时，可以安装 JSON Viewer 扩展；或者用 <code>JSON.stringify(obj, null, 2)</code> 在控制台输出。</p>
+    <h2>8. 永远不要用 <code>eval()</code></h2>
+    <p>提到这个不是因为有人真这么干，是因为有些"老代码"或者 jsonp callback 处理里会偷懒用 <code>eval</code>。任意 JS 注入风险，2026 年了别再写了。</p>
+    <pre data-lang="js"><code class="language-js">// 坏：
+const data = eval("(" + str + ")");
 
-<h2>9. 安全地解析 JSON</h2>
-<p>永远不要用 <code>eval()</code> 解析 JSON（XSS 风险）。使用 <code>JSON.parse()</code> 并配合 try-catch：</p>
-<pre>try {
-  const data = JSON.parse(input);
-} catch (e) {
-  console.error('JSON 解析失败:', e.message);
-}</pre>
+// 好：
+let data;
+try { data = JSON.parse(str); }
+catch (e) { /* 处理错误 */ }</code></pre>
 
-<h2>10. 用 Base64 传输二进制 JSON</h2>
-<p>如果要在 JSON 中嵌入二进制数据（如图片），先 <a href="/tools/base64.html">Base64 编码</a>再放入 JSON 字符串字段。</p>
+    <h2>9. 排查"Unexpected token"的笨办法</h2>
+    <p>JSON 报错从来不告诉你具体哪一行。错误信息只给一个字符位置。最快的定位方式：复制到 <a href="/tools/json-formatter.html">JSON 格式化工具</a>，它会同时给你格式化结果和错误行号。</p>
+    <p>常见原因按概率排序：</p>
+    <ol>
+      <li>尾随逗号：<code>{"a": 1,}</code>——人类觉得没问题，JSON 解析器拒绝</li>
+      <li>单引号：JSON 只认双引号</li>
+      <li>注释：<code>//</code> 或 <code>/* */</code> 都不合法</li>
+      <li>未转义的特殊字符（最常见的是字符串里的真换行符）</li>
+      <li>键名没加引号</li>
+    </ol>
 
-<div class="tip"><p>以上技巧中涉及的格式化、验证、对比等操作，都可以在 <a href="/">DevUtils</a> 上免费完成，无需安装任何软件。</p></div>
+    <h2>10. 在 JSON 里嵌入二进制数据的正确姿势</h2>
+    <p>JSON 是文本格式，二进制塞进去必须先编码。两种方案：</p>
+    <ul>
+      <li><strong>Base64</strong>：兼容性最好，但体积膨胀 33%。用 <a href="/tools/base64.html">Base64 工具</a> 测试转换。</li>
+      <li><strong>Multipart 上传 + JSON 元数据分离</strong>：大文件场景的标准做法，HTTP 一个 multipart 请求里同时带 JSON 描述和二进制 part。</li>
+    </ul>
+    <p>千万别试图把二进制直接塞进字符串字段——非 UTF-8 字节会让序列化在某些语言里直接崩溃。</p>
 
-<div class="cta">
-<h3>JSON 格式化工具</h3>
-<p>粘贴 JSON 即可格式化、压缩、验证，支持语法高亮和错误定位</p>
-<a href="/tools/json-formatter.html" class="btn btn-primary" style="text-decoration:none">打开 JSON 格式化</a>
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p>上面 10 条里如果你只能记一条，就记<strong>第 1 条</strong>：跨语言大整数精度问题。其他都能搜出来，这个最容易在线上才暴露。</p></div>
+    </div>
+
+    <h2>顺手能用的工具</h2>
+    <p>本文里提到的格式化、Base64 编解码、文本对比都能在 <a href="/">DevUtils</a> 直接打开用。不上传服务器，数据在浏览器里处理。</p>
+
+    <div class="cta">
+      <h3>JSON 格式化 · 校验 · 压缩</h3>
+      <p>粘贴即用，自动定位语法错误，支持大文件</p>
+      <a href="/tools/json-formatter.html" class="btn btn-primary">打开工具</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="author-card">
+      <div class="author-avatar">SW</div>
+      <div class="author-info">
+        <p class="author-name">swzhang</p>
+        <p class="author-bio">在线工具站 DevUtils 维护者。写后端为主，偶尔被前端折磨。把日常踩过的坑写成博客避免下次再踩。</p>
+      </div>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/frontend-dev-tools.html" class="related-card">
+          <div class="related-cat">工具推荐</div>
+          <div class="related-title">前端开发必备的 10 个在线工具</div>
+          <p class="related-desc">JSON 格式化、Base64、正则测试……每天都要用的那批工具。</p>
+        </a>
+        <a href="/blog/regex-common-patterns.html" class="related-card">
+          <div class="related-cat">速查表</div>
+          <div class="related-title">10 个最常用的正则表达式模式</div>
+          <p class="related-desc">邮箱、手机号、URL、身份证——复制即用。</p>
+        </a>
+        <a href="/blog/hash-algorithm-guide.html" class="related-card">
+          <div class="related-cat">安全</div>
+          <div class="related-title">MD5、SHA-1、SHA-256 怎么选</div>
+          <p class="related-desc">哈希算法对比与典型使用场景。</p>
+        </a>
+        <a href="/blog/url-encoding-guide.html" class="related-card">
+          <div class="related-cat">编码</div>
+          <div class="related-title">URL 编码是什么、为什么要编码</div>
+          <p class="related-desc">URL 编码原理 + 各语言示例。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
 </div>
-</main>
+
 <div id="siteFooter"></div>
-<script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
+<script type="module" src="/js/blog-post.js?v=2"></script>
 </body>
 </html>
