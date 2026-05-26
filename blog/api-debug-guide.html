@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>API 调试实战：从 curl 到上线的 8 个排障手段 | DevUtils</title>
+<meta name="description" content="后端返回 500？前端拿不到数据？从 HTTP 状态码、JSON 解析、JWT 验签、时间戳偏移到 Base64 编码，一篇讲完 API 调试的完整工作流。附带在线工具链接，开箱即用。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/api-debug-guide.html">
+<meta property="og:title" content="API 调试实战：从 curl 到上线的 8 个排障手段">
+<meta property="og:description" content="从 HTTP 状态码、JSON 解析、JWT 验签到时间戳偏移，一篇讲完 API 调试完整工作流。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/api-debug-guide.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="API 调试实战：从 curl 到上线的 8 个排障手段">
+<meta name="twitter:description" content="从 HTTP 状态码到 JWT 验签，一篇讲完 API 调试完整工作流">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"API 调试实战：从 curl 到上线的 8 个排障手段","description":"从 HTTP 状态码、JSON 解析、JWT 验签到时间戳偏移，一篇讲完 API 调试完整工作流","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-05-26","dateModified":"2026-05-26","publisher":{"@type":"Organization","name":"DevUtils"}}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="siteHeader"></div>
+
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
+
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>API 调试实战</span>
+    </nav>
+
+    <header class="post-header">
+      <span class="category">后端 · 调试</span>
+      <h1>API 调试实战：从 curl 到上线的 8 个排障手段</h1>
+      <p class="lede">后端返回 500？前端拿不到数据？JWT 过期了不知道？这篇不是 API 入门，是给已经写过接口的人的排障清单——从拿到错误到定位问题，一条线串完。</p>
+      <div class="post-meta">
+        <span>2026-05-26</span>
+        <span class="sep">·</span>
+        <span>8 分钟阅读</span>
+      </div>
+    </header>
+
+    <h2 id="section-1">第一步：搞清楚 HTTP 状态码在说什么</h2>
+    <p>API 调试的第一关永远不是"代码哪里写错了"，而是"这个响应到底算成功还是失败"。很多人看到 <code>200</code> 就放心了，看到 <code>500</code> 就慌了——但实际上：</p>
+    <ul>
+      <li><code>400</code> 不是"服务端出错了"，是"你的请求有问题"，先查参数和 Body</li>
+      <li><code>401</code> 和 <code>403</code> 不是一回事：401 是"你谁"，403 是"你不行"</li>
+      <li><code>422</code> 是"格式对了但业务校验没过"，比 400 更具体</li>
+      <li><code>429</code> 是限流，不是你的代码有 bug，是你请求太频繁了</li>
+    </ul>
+    <p>排障的第一步：看状态码，别急着翻代码。</p>
+
+    <div class="callout callout-note">
+      <div class="ic">💡</div>
+      <div class="body"><p>很多 API 的错误信息藏在 JSON Body 里。状态码只能告诉你"哪一类问题"，<code>message</code> 或 <code>error</code> 字段才是真正的线索。</p></div>
+    </div>
+
+    <h2 id="section-2">第二步：JSON 格式化和校验</h2>
+    <p>拿到响应的第一件事不是人眼硬读——是格式化。一段压缩的 JSON 没有任何可读性，漏个逗号你根本看不出来。</p>
+    <p>常见问题：</p>
+    <ul>
+      <li>最后多了一个逗号（trailing comma）——JSON 规范不允许，但 JS 对象可以</li>
+      <li>键名用了单引号——JSON 只认双引号</li>
+      <li>混进了注释——JSON 没有注释语法，<code>//</code> 和 <code>/* */</code> 都不行</li>
+      <li>值里出现了 <code>NaN</code>、<code>Infinity</code>——JSON 不支持这些值</li>
+    </ul>
+    <p>用 <a href="/tools/json-formatter.html">JSON 格式化工具</a> 一键格式化和校验，比手动找半天的逗号快得多。</p>
+
+    <h2 id="section-3">第三步：JWT 验签和解析</h2>
+    <p>如果你的 API 用 JWT 做认证，排障时最常见的问题是"这个 Token 还有效吗？"和"里面到底存了什么？"</p>
+    <p>JWT 的三段结构（Header.Payload.Signature）用 Base64Url 编码，直接人眼看不出来的。常见坑：</p>
+    <ul>
+      <li><code>exp</code> 已过——注意时间戳是秒级还是毫秒级，搞错了会"看起来过期了但其实没有"</li>
+      <li><code>iss</code> 和 <code>aud</code> 不匹配——签发方和受众对不上，服务端会拒</li>
+      <li>Signature 验签不过——密钥换了但旧 Token 还在流转</li>
+    </ul>
+    <p>把 Token 粘到 <a href="/tools/jwt-decoder.html">JWT 解码器</a> 里，Header、Payload、过期时间一目了然。比每次都 <code>atob</code> 再 <code>JSON.parse</code> 快十倍。</p>
+
+    <h2 id="section-4">第四步：URL 编码坑</h2>
+    <p>GET 请求的 query 参数里出现中文、空格、<code>&</code>，你的接口就炸了。这不是"编码问题"，是你没做 URL 编码。</p>
+    <p>最典型的场景：</p>
+    <ul>
+      <li>搜索接口：用户搜 <code>c++</code>，<code>+</code> 被解析成空格——你需要先 URL 编码</li>
+      <li>回调地址：<code>redirect_uri=https://example.com/callback?code=abc</code>——不编码的话 <code>?</code> 和 <code>&</code> 会被当成当前 URL 的参数</li>
+      <li>Base64 在 URL 里：<code>+</code> 和 <code>/</code> 和 <code>=</code> 都是特殊字符——需要 Base64Url 编码</li>
+    </ul>
+    <p>用 <a href="/tools/url-encode.html">URL 编码工具</a> 快速验证编码前后的差异，比翻文档快。</p>
+
+    <h2 id="section-5">第五步：时间戳对齐</h2>
+    <p>前后端对接最常见的"玄学 bug"之一：明明数据库里有这条记录，API 返回"找不到"。查半天发现——时间戳单位不对。</p>
+    <ul>
+      <li>JavaScript <code>Date.now()</code> 返回<strong>毫秒</strong>（13 位）</li>
+      <li>Python <code>int(time.time())</code> 返回<strong>秒</strong>（10 位）</li>
+      <li>Go <code>time.Now().Unix()</code> 返回<strong>秒</strong>（10 位）</li>
+      <li>Go <code>time.Now().UnixMilli()</code> 返回<strong>毫秒</strong>（13 位）</li>
+    </ul>
+    <p>前端用 <code>1700000000000</code>（毫秒），后端期望 <code>1700000000</code>（秒），差了 1000 倍——要么查不到，要么查到 1970 年的数据。</p>
+    <p>用 <a href="/tools/timestamp-converter.html">时间戳转换器</a> 验证你手上的时间戳到底是秒还是毫秒，一键转成人类可读时间。</p>
+
+    <div class="callout callout-warn">
+      <div class="ic">⚠️</div>
+      <div class="body"><p>JWT 的 <code>exp</code>、<code>iat</code>、<code>nbf</code> 字段用的是<strong>秒级时间戳</strong>（NumericDate）。如果你把 JavaScript 的 <code>Date.now()</code>（毫秒）直接塞进去，Token 会"看起来"过期时间在 53000 年以后。</p></div>
+    </div>
+
+    <h2 id="section-6">第六步：Base64 编解码</h2>
+    <p>API 调试中 Base64 出现的频率远比你想象的高：</p>
+    <ul>
+      <li>HTTP Basic Auth：<code>Authorization: Basic base64(username:password)</code></li>
+      <li>JWT 的三段都是 Base64Url 编码</li>
+      <li>文件上传：<code>data:image/png;base64,iVBORw0KGgo...</code></li>
+      <li>SAML Token、SMTP Auth、很多 OAuth 流程都在用</li>
+    </ul>
+    <p>最常踩的坑：标准 Base64 和 URL-safe Base64 不一样。<code>+</code> 变 <code>-</code>，<code>/</code> 变 <code>_</code>，<code>=</code> 可以省略。JWT 用的是 URL-safe 变体，如果你用标准 Base64 解码器去解 JWT，遇到 <code>-</code> 和 <code>_</code> 就会报错。</p>
+    <p><a href="/tools/base64.html">Base64 工具</a> 支持标准和 URL-safe 两种模式，排查编码问题时不用再猜了。</p>
+
+    <h2 id="section-7">第七步：哈希校验——数据一致性检查</h2>
+    <p>API 返回的数据和数据库里的不一致？文件下载后内容损坏？这些都是哈希的用武之地。</p>
+    <ul>
+      <li>校验文件完整性：<code>MD5</code> 够快，<code>SHA-256</code> 更安全</li>
+      <li>验证 Webhook 签名：大部分平台用 HMAC-SHA256</li>
+      <li>去重/缓存的 ETag：<code>ETag: "hash-of-content"</code></li>
+    </ul>
+    <p>调试时你经常需要确认"这段文本的 SHA-256 是不是和文档里写的一样"。<a href="/tools/hash-generator.html">哈希生成器</a> 一键出结果，比装命令行工具快。</p>
+
+    <h2 id="section-8">第八步：用 curl 重现，用工具验证</h2>
+    <p>所有浏览器 Network 面板里都能 "Copy as cURL"。拿到 curl 命令后：</p>
+    <ol>
+      <li>先原样跑一次，确认复现</li>
+      <li>用 <a href="/tools/curl-converter.html">curl 转代码</a> 转成 fetch/axios/Python/Go，对比你的代码</li>
+      <li>逐个去掉 Header，找出哪个 Header 是必须的</li>
+      <li>改 Body 参数，确认服务端校验逻辑</li>
+    </ol>
+    <p>很多人跳过"原样跑一次"这一步，直接改参数，结果改了三个地方，也不知道到底是哪个改法解决了问题。</p>
+
+    <div class="callout callout-tip">
+      <div class="ic">✓</div>
+      <div class="body"><p><strong>排障的核心原则：一次只改一个变量。</strong> curl 可以精确重现，这是浏览器 Network 面板做不到的——因为浏览器的请求带了太多隐式 Header 和 Cookie。</p></div>
+    </div>
+
+    <h2 id="section-9">排障流程总结</h2>
+    <p>把上面的步骤串成一条线：</p>
+    <ol>
+      <li>看状态码 → 定位问题大类</li>
+      <li>格式化 JSON → 找到具体错误信息</li>
+      <li>解析 JWT → 确认认证状态和 Claims</li>
+      <li>检查 URL 编码 → 排除参数传递问题</li>
+      <li>对齐时间戳 → 排除时间单位不匹配</li>
+      <li>解码 Base64 → 确认编码数据是否正确</li>
+      <li>计算哈希 → 确认数据一致性</li>
+      <li>curl 重现 → 最小化复现条件</li>
+    </ol>
+    <p>8 步走完，95% 的 API 问题能定位到原因。剩下 5% 通常是服务端代码逻辑 bug，那该去翻日志了。</p>
+
+    <div class="callout callout-note">
+      <div class="ic">💡</div>
+      <div class="body"><p>上面提到的所有工具（JSON 格式化、JWT 解码、URL 编码、时间戳转换、Base64、哈希、cURL 转换）都在 <a href="/">DevUtils</a> 上可以免费使用，全部浏览器本地运行，数据不上传。</p></div>
+    </div>
+
+    <!-- 分享栏 -->
+    <div class="share-bar">
+      <span class="label">分享本文</span>
+      <a class="share-btn" href="https://twitter.com/intent/tweet?url=https://devtool.blueblueliu.com/blog/api-debug-guide.html&text=API 调试实战：从 curl 到上线的 8 个排障手段" target="_blank" rel="noopener">Twitter</a>
+      <a class="share-btn" href="https://t.me/share/url?url=https://devtool.blueblueliu.com/blog/api-debug-guide.html" target="_blank" rel="noopener">Telegram</a>
+      <button class="share-btn" onclick="navigator.clipboard.writeText('https://devtool.blueblueliu.com/blog/api-debug-guide.html');this.textContent='已复制!'">复制链接</button>
+    </div>
+
+    <!-- 相关文章 -->
+    <div class="related-posts">
+      <div class="section-title">相关文章</div>
+      <div class="related-grid">
+        <a class="related-card" href="/blog/json-tips.html">
+          <div class="related-cat">后端 · 数据格式</div>
+          <div class="related-title">JSON 的 10 个坑：那些文档不写但生产环境会咬你的事</div>
+          <div class="related-desc">大整数精度、循环引用、jq 实战、Schema 验证</div>
+        </a>
+        <a class="related-card" href="/blog/timestamp-guide.html">
+          <div class="related-cat">后端 · 时间</div>
+          <div class="related-title">Unix 时间戳：秒级还是毫秒级</div>
+          <div class="related-desc">各语言获取方法、前后端对接 case study</div>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
+</div>
+
+<div id="siteFooter"></div>
+
+<script type="module">
+import { initLayout } from "/js/layout.js";
+initLayout();
+
+// TOC 生成
+const post = document.querySelector(".post");
+const toc = document.querySelector("[data-toc]");
+if (post && toc) {
+  const headings = post.querySelectorAll("h2");
+  const ul = document.createElement("ul");
+  headings.forEach(h => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#" + h.id;
+    a.textContent = h.textContent;
+    if (h.tagName === "H3") a.classList.add("level-3");
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+  const title = document.createElement("div");
+  title.className = "toc-title";
+  title.textContent = "目录";
+  toc.appendChild(title);
+  toc.appendChild(ul);
+
+  // 滚动高亮
+  const links = toc.querySelectorAll("a");
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove("active"));
+        const active = toc.querySelector(`a[href="#${e.target.id}"]`);
+        if (active) active.classList.add("active");
+      }
+    });
+  }, { rootMargin: "-80px 0px -70% 0px" });
+  headings.forEach(h => observer.observe(h));
+}
+
+// 阅读进度条
+const progressBar = document.querySelector(".reading-progress");
+if (progressBar) {
+  window.addEventListener("scroll", () => {
+    const h = document.documentElement.scrollHeight - window.innerHeight;
+    const p = h > 0 ? (window.scrollY / h * 100) : 0;
+    progressBar.style.setProperty("--progress", p + "%");
+  });
+}
+</script>
+</body>
+</html>
