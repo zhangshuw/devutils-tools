@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>为什么 "👨‍👩‍👧‍👦".length 是 11：码点、代理对与字素簇 | DevUtils</title>
+<meta name="description" content="一个家庭 emoji 在 JavaScript 里 .length 等于 11，截断字符串会把 emoji 劈成乱码。这篇讲清楚字节、码元、码点、字素簇四层概念的区别，代理对和 ZWJ 序列怎么回事，以及 Intl.Segmenter 和 NFC 归一化在实战里怎么用。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/unicode-string-length.html">
+<meta property="og:title" content="为什么 &quot;👨‍👩‍👧‍👦&quot;.length 是 11">
+<meta property="og:description" content="码点、代理对与字素簇讲清楚">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/unicode-string-length.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="为什么家庭 emoji 的 length 是 11">
+<meta name="twitter:description" content="码点、代理对与字素簇">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"为什么 \"👨‍👩‍👧‍👦\".length 是 11：码点、代理对与字素簇","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-06-02","dateModified":"2026-06-02","publisher":{"@type":"Organization","name":"DevUtils"}}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="siteHeader"></div>
+
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
+
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>Unicode 长度</span>
+    </nav>
+
+    <header class="post-header">
+      <span class="category">前端 · 编码</span>
+      <h1>为什么 "👨‍👩‍👧‍👦".length 是 11：码点、代理对与字素簇</h1>
+      <p class="lede">在浏览器控制台敲 <code>"👨‍👩‍👧‍👦".length</code>，回车，得到 <strong>11</strong>。一个肉眼看上去明明是"一个"图标的东西，JavaScript 说它有 11。如果你的昵称长度校验、短信截断、数据库 <code>VARCHAR</code> 限制是按这个数来的，那它们全都在用错误的单位计数。这篇把"字符串长度到底是什么"这件事一层层拆开。</p>
+      <div class="post-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>约 10 分钟阅读</span>
+      </div>
+    </header>
+
+    <p>"一个字符串有多长"这个问题没有唯一答案，因为"长度"至少有<strong>四种</strong>，取决于你问的是哪一层。从底到顶：字节数、码元数、码点数、字素簇数。绝大多数 bug，都来自把其中一层的数字当成了另一层。</p>
+
+    <h2>四层模型，用 "😀" 走一遍</h2>
+    <table>
+      <thead><tr><th>层级</th><th>"😀" 在这层是几</th><th>谁按这个算</th></tr></thead>
+      <tbody>
+        <tr><td><strong>字节</strong>（UTF-8）</td><td>4</td><td>网络传输、数据库存储</td></tr>
+        <tr><td><strong>码元</strong>（UTF-16 code unit）</td><td>2</td><td>JS <code>.length</code>、Java <code>String.length()</code></td></tr>
+        <tr><td><strong>码点</strong>（code point）</td><td>1</td><td><code>[...str]</code>、<code>for...of</code>、Python 3 <code>len()</code></td></tr>
+        <tr><td><strong>字素簇</strong>（grapheme，肉眼字符）</td><td>1</td><td>用户的"一个字"、光标移动</td></tr>
+      </tbody>
+    </table>
+    <p>😀 比较温和，码点和字素簇都是 1。真正暴露问题的是那个家庭 emoji，下面专门拆它。</p>
+
+    <h2>码元：JS 的 .length 数的是 UTF-16 单位</h2>
+    <p>JavaScript 字符串内部是 UTF-16。BMP 里的字符（U+0000–U+FFFF）占 1 个码元，<code>.length</code> 加 1，符合直觉。但补充平面的字符（U+10000 以上，比如所有 emoji）在 UTF-16 里用<strong>一对</strong>码元表示——这叫<strong>代理对</strong>（surrogate pair）。于是：</p>
+    <pre data-lang="js"><code class="language-js">"a".length       // 1
+"中".length      // 1  —— 在 BMP 内
+"😀".length      // 2  —— 补充平面，一个代理对
+"𝕏".length       // 2  —— 数学粗体 X 也是补充平面</code></pre>
+    <p><code>.length</code> 数的是"UTF-16 码元个数"，不是"字符个数"。这俩在纯 BMP 文本里恰好相等，于是这个误会能潜伏很久，直到有人在昵称里放了个 emoji。</p>
+
+    <h2>拆解那个 11</h2>
+    <p>"👨‍👩‍👧‍👦" 不是一个字符，它是一个 <strong>ZWJ 序列</strong>——四个独立 emoji 用"零宽连接符"（ZWJ，U+200D）粘起来，渲染引擎看到这个序列才把它画成一家四口：</p>
+    <pre data-lang="text"><code class="language-text">👨  U+1F468  男人    → 补充平面，2 个码元
+ZWJ U+200D   零宽连接 → BMP，   1 个码元
+👩  U+1F469  女人    → 补充平面，2 个码元
+ZWJ U+200D                      1 个码元
+👧  U+1F467  女孩    → 补充平面，2 个码元
+ZWJ U+200D                      1 个码元
+👦  U+1F466  男孩    → 补充平面，2 个码元
+────────────────────────────────────────
+4×2 (emoji) + 3×1 (ZWJ) = 11 个码元</code></pre>
+    <pre data-lang="js"><code class="language-js">const family = "👨‍👩‍👧‍👦";
+family.length          // 11  —— UTF-16 码元
+[...family].length     // 7   —— 码点（4 emoji + 3 ZWJ）
+// 字素簇（肉眼的"1 个"）要靠 Intl.Segmenter，见下</code></pre>
+
+    <div class="callout callout-danger">
+      <span class="ic">🚫</span>
+      <div class="body"><p>真正的 bug 是<strong>截断</strong>。<code>str.slice(0, 10)</code> 这种按码元下标切，很可能正好切在一个代理对中间，把半个 emoji 留下——结果是一个孤立的代理码元，渲染成 <code>�</code>，存进库还可能因为不是合法 UTF-8 报错。按字节截断（很多短信/推送网关这么干）更惨，一刀下去一串乱码。</p></div>
+    </div>
+
+    <h2>正确地数和切：按码点，或按字素簇</h2>
+    <p>看你要的是哪种"一个"。要"程序意义上的字符"（码点），用展开运算符；要"用户眼里的一个字"（字素簇），用 <code>Intl.Segmenter</code>——现代浏览器和 Node 18+ 都支持了。</p>
+    <pre data-lang="js"><code class="language-js">// 按码点：emoji 不会被劈开，但 ZWJ 序列会散成多个
+[..."😀abc"].length          // 4，安全
+
+// 按字素簇：把 ZWJ 序列、变体选择符、肤色修饰都算作 1
+const seg = new Intl.Segmenter("zh", { granularity: "grapheme" });
+[...seg.segment("👨‍👩‍👧‍👦")].length   // 1  —— 这才是用户认知里的"1 个"
+[...seg.segment("👍🏽")].length        // 1  —— 带肤色的点赞也是 1
+
+// 安全截断前 N 个"肉眼字符"
+function truncate(str, n) {
+  const segs = [...seg.segment(str)].map(s =&gt; s.segment);
+  return segs.slice(0, n).join("");
+}</code></pre>
+    <p>做昵称长度限制、输入框计数、卡片标题截断，应该按<strong>字素簇</strong>。做数据库存储评估，按<strong>字节</strong>。两者别混。想直观看一段文本在不同口径下各是多少，丢进 <a href="/tools/word-counter.html">在线字数统计</a>，字符数和字节数分开列出来。</p>
+
+    <h2>还有一个隐藏维度：同一个字，两种码点序列</h2>
+    <p>以为按码点数就稳了？再加一层。<code>"é"</code> 这个字符有两种合法写法：</p>
+    <pre data-lang="js"><code class="language-js">const a = "é";          // U+00E9，单个预组合码点
+const b = "é";    // U+0065 + U+0301（e + 组合用重音符）
+a === b                 // false ！两个字符串不相等
+a.length                // 1
+b.length                // 2
+a.normalize() === b.normalize()  // true —— 归一化后相等</code></pre>
+    <p>它们长得一模一样，<code>===</code> 却不相等。这会坑到去重、搜索、唯一约束：用户两次输入"看起来一样"的用户名，你的唯一索引拦不住。修法是存储和比较前统一做 <strong>Unicode 归一化</strong>（一般用 NFC）。</p>
+
+    <div class="callout callout-warn">
+      <span class="ic">⚠️</span>
+      <div class="body"><p>这一层还有安全含义：攻击者可以用<strong>同形字</strong>（不同码点、外观相同的字符，比如拉丁 <code>а</code> 和西里尔 <code>а</code>）注册一个看起来和管理员一样的用户名，或伪造域名做钓鱼。涉及身份的字段，除了 NFC 归一化，还要考虑限制允许的字符集、或做同形字检测。</p></div>
+    </div>
+
+    <h2>各语言怎么对待这件事</h2>
+    <ul>
+      <li><strong>JavaScript / Java</strong>：<code>.length</code> 是 UTF-16 码元。要码点用 <code>[...str]</code> / <code>codePointAt</code> / <code>str.codePoints()</code>。</li>
+      <li><strong>Python 3</strong>：<code>len()</code> 数的是<strong>码点</strong>，<code>len("😀")</code> 就是 1，比 JS 友好一截。但字素簇仍要第三方库（如 <code>regex</code> 的 <code>\X</code>）。</li>
+      <li><strong>Go</strong>：<code>len(s)</code> 是<strong>字节数</strong>，<code>utf8.RuneCountInString</code> 才是码点数。<code>range</code> 字符串按码点迭代。</li>
+      <li><strong>Rust</strong>：<code>s.len()</code> 是字节，<code>s.chars().count()</code> 是码点，字素簇靠 <code>unicode-segmentation</code> crate。</li>
+    </ul>
+    <p>没有哪门语言的默认 <code>length</code> 直接给你"肉眼字符数"——因为字素簇的切分规则复杂、还会随 Unicode 版本更新。它们各自选了一个"够用又便宜"的层次当默认，把麻烦留给了不知道这回事的人。</p>
+
+    <h2>一句话收尾</h2>
+    <p>下次写"字符串不能超过 20 个字符"这种需求，先反问一句：<strong>哪种字符？</strong>字节、码元、码点、字素簇是四件不同的事。想清楚用户、数据库、传输层各自关心哪一层，比记住"length 是 11"这个结论重要得多。</p>
+
+    <div class="cta">
+      <h3>在线字数统计</h3>
+      <p>中英文混排、字符数与字节数分开计，看清文本在各口径下到底"算几个"</p>
+      <a href="/tools/word-counter.html" class="btn btn-primary">打开字数统计</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/mysql-utf8mb4.html" class="related-card">
+          <div class="related-cat">后端 · 数据库</div>
+          <div class="related-title">utf8 不是 UTF-8：MySQL 最坑的命名</div>
+          <p class="related-desc">emoji 存进去变问号的真相。</p>
+        </a>
+        <a href="/blog/word-count-guide.html" class="related-card">
+          <div class="related-cat">速查 · 写作</div>
+          <div class="related-title">中英文混排到底怎么算字数</div>
+          <p class="related-desc">不同平台的字数规则差异。</p>
+        </a>
+        <a href="/blog/url-encoding-guide.html" class="related-card">
+          <div class="related-cat">编码 · URL</div>
+          <div class="related-title">URL 编码：哪些字符要编码</div>
+          <p class="related-desc">保留字符与不安全字符。</p>
+        </a>
+        <a href="/blog/hash-algorithm-guide.html" class="related-card">
+          <div class="related-cat">安全 · 哈希</div>
+          <div class="related-title">MD5、SHA-1、SHA-256 怎么选</div>
+          <p class="related-desc">按场景倒推该用哪个哈希。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
+</div>
+
+<div id="siteFooter"></div>
+<script type="module" src="/js/blog-post.js?v=2"></script>
+</body>
+</html>

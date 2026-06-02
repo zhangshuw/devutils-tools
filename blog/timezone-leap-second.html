@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>只存 UTC 还不够：夏令时、闰秒和那次放倒半个互联网的跳秒 | DevUtils</title>
+<meta name="description" content="“时间都存 UTC”只是及格线。这篇讲清楚真正会出 bug 的地方：夏令时造成的不存在的时间和重复的时间、2012 年闰秒触发的 Linux 内核 futex CPU 100% 事故、以及为什么 Google 用 leap smear 躲过。附工程上该怎么存、怎么算。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/timezone-leap-second.html">
+<meta property="og:title" content="只存 UTC 还不够：夏令时、闰秒和那次放倒半个互联网的跳秒">
+<meta property="og:description" content="时间处理真正会出 bug 的地方">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/timezone-leap-second.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="只存 UTC 还不够">
+<meta name="twitter:description" content="夏令时、闰秒与跳秒事故">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"只存 UTC 还不够：夏令时、闰秒和那次放倒半个互联网的跳秒","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-06-02","dateModified":"2026-06-02","publisher":{"@type":"Organization","name":"DevUtils"}}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="siteHeader"></div>
+
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
+
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>时间处理</span>
+    </nav>
+
+    <header class="post-header">
+      <span class="category">后端 · 时间</span>
+      <h1>只存 UTC 还不够：夏令时、闰秒和那次放倒半个互联网的跳秒</h1>
+      <p class="lede">"时间都存 UTC 不就行了？"——这是工程师面对时间 bug 时的第一道护身符，也是个只能及格的答案。UTC 解决了"时区偏移"，但解决不了夏令时那一小时凭空消失、也解决不了闰秒。2012 年 6 月 30 日那个闰秒，把 Reddit、LinkedIn 和一票跑 Java 的服务集体放倒，根因深到 Linux 内核里。这篇讲 UTC 之外的那些坑。</p>
+      <div class="post-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>约 10 分钟阅读</span>
+      </div>
+    </header>
+
+    <p>先把"存 UTC"这条铁律说清楚：它对，但它只覆盖了一半问题。把所有时间点以 UTC 时间戳存储、只在展示给用户的最后一刻转成本地时区——这是对的，照做。问题在于，<strong>有些时间根本不是"一个时间点"，而是"墙上时钟的某个读数"</strong>，这类需求 UTC 救不了。下面分三层，从最常见到最阴间。</p>
+
+    <h2>第一层：未来的会议，不能存 UTC</h2>
+    <p>这是最反直觉的一条。用户在北京时间 2027 年 3 月 8 日早上 9:00 定了个跨国周会。你顺手转成 UTC 存下来：<code>2027-03-08 01:00:00Z</code>。看起来很专业。</p>
+    <p>问题来了：万一在这之前，某个参会者所在的时区<strong>修改了夏令时规则</strong>呢？时区规则不是物理常数，它是各国政府说改就改的法律。欧盟讨论废除夏令时讨论了好几年，各国 DST 起止日期年年有微调。你存下的那个 UTC 时刻一旦规则变了，换算回当地的"上午 9 点"就错位了——会议会在错误的本地时间响铃。</p>
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p>规则：<strong>过去发生的事件</strong>（日志、交易、下单时间）存 UTC 时间戳，没错。<strong>未来的"墙上时间"</strong>（日程、闹钟、定时任务）要存<em>本地时间 + IANA 时区名</em>（如 <code>Asia/Shanghai</code>），到点了再用最新的时区数据库换算。别存死 UTC，也别存 <code>+08:00</code> 这种固定偏移——偏移会随 DST 变，时区名才稳定。</p></div>
+    </div>
+
+    <h2>第二层：夏令时，一年有一小时不存在、一小时存在两次</h2>
+    <p>实行夏令时的地区，每年"春季前拨"那天，本地时钟从 02:00 直接跳到 03:00。<strong>02:00–02:59 这一小时在那天根本不存在。</strong>"秋季回拨"那天反过来，01:00–01:59 会走两遍——同一个本地时间出现两次，无法区分是第一次还是第二次。</p>
+    <p>这两件事在代码里就是真实的崩溃点：</p>
+    <ul>
+      <li><strong>不存在的时间</strong>：用户在不实行 DST 的设备上选了个"跳过"的本地时间，构造 <code>Date</code> 时不同库行为不一致——有的抛错，有的静默修正到 01:59 或 03:00，有的给你一个无效对象。定时任务设在这个点上，那天可能不触发，也可能触发两次。</li>
+      <li><strong>重复的时间</strong>：日志里两条记录都标着本地 01:30，排序、对账、计费全乱。这也是为什么金融和日志系统坚持内部一律 UTC。</li>
+    </ul>
+    <pre data-lang="js"><code class="language-js">// 美国 2027 DST 前拨日，本地 02:30 不存在
+// 不同运行时给的答案不一样，别依赖这种边界行为
+new Date("2027-03-14T02:30:00-05:00")  // 这是有效的——因为带了明确偏移
+// 真正的坑是：只给本地"02:30"、让库去猜偏移时</code></pre>
+    <p>排查这类问题，最有用的动作是<strong>把时间戳和本地时间双向对一遍</strong>，确认偏移对不对。直接丢进 <a href="/tools/timestamp-converter.html">在线时间戳转换器</a>，秒级/毫秒级、UTC 和本地并排看，比在代码里 <code>console.log</code> 一堆 <code>Date</code> 高效。</p>
+
+    <h2>第三层：闰秒，2012 年那次真的放倒了半个互联网</h2>
+    <p>前两层是业务逻辑。闰秒是另一个维度的麻烦——它能直接打挂操作系统。</p>
+    <p>地球自转不均匀，UTC 偶尔要补一个"闰秒"对齐天文时间。2012 年 6 月 30 日午夜（UTC），全球时钟在 23:59:59 之后插入了一个 23:59:60，再到 00:00:00。就这一秒，引爆了一个潜伏多年的 <strong>Linux 内核 bug</strong>。</p>
+    <p>机制是这样的：NTP 服务器提前置位"插入闰秒"标志，内核启动一个 hrtimer（高精度定时器）在月末午夜插秒。但插秒时，内核<strong>漏了调用 <code>clock_was_set()</code></strong> 去通知 hrtimer 子系统时间变了。后果是所有 <code>CLOCK_REALTIME</code> 的高精度定时器以为自己早到期了——亚秒级的超时<strong>全部立即触发</strong>。</p>
+
+    <div class="callout callout-danger">
+      <span class="ic">🚫</span>
+      <div class="body"><p>凡是用 futex 做细粒度 pthread 超时的程序，会陷入"超时→重新挂起→又立刻超时"的空转死循环，单机 CPU 直接顶到接近 100%。点名中招的有 <strong>mysqld、Java（JVM）、Firefox、Thunderbird、VirtualBox</strong>。当晚 Reddit、LinkedIn、Mozilla 的 Java 服务（Mozilla Bug 769972）相继出问题，而且只影响那些在闰秒之前就已经在跑的进程。</p></div>
+    </div>
+
+    <p>应急绕过当年传疯了的一招，是强制重设一次系统时钟：</p>
+    <pre data-lang="bash"><code class="language-bash"># 把当前时间再写回去一次，借 settimeofday() 触发 clock_was_set()
+date -s "$(date)"
+# 重启也行——重启后这个一次性的错误状态就没了</code></pre>
+    <p>真正的修复由内核开发者 John Stultz 提交、Thomas Gleixner 在 2012 年 7 月合入，顺带还修了一个 <code>xtime_lock</code> 上的活锁。</p>
+    <p>最值得记的是 Google 的做法：它不在午夜硬插一秒，而是用 <strong>leap smear（闰秒涂抹）</strong>——把这一秒摊到当天的很多次微小调整里慢慢消化，时钟永远是连续单调的，于是从根上没碰到那个内核 bug。这后来成了大厂的标准姿势。</p>
+
+    <h2>顺手说：别自己写时区换算</h2>
+    <p>三层坑下来，结论很朴素：<strong>时间这东西，能调库就别手算。</strong></p>
+    <ul>
+      <li>存储：过去的事件存 UTC（Unix 时间戳或带 <code>Z</code> 的 ISO 8601）；未来的墙上时间存 本地时间 + IANA 时区名。</li>
+      <li>换算：用维护良好、能自动更新 tz 数据库的库——前端 <code>Intl.DateTimeFormat</code> / Temporal、Java <code>java.time</code>（<code>ZonedDateTime</code>）、Python <code>zoneinfo</code>。绝不手动加减偏移。</li>
+      <li>服务器：系统时区设 UTC，开 NTP，了解你的发行版/云厂商是硬插闰秒还是 leap smear。</li>
+      <li>测试：专门造 DST 前拨/回拨那天的用例。这种 bug 一年只在那两天暴露，平时测不出来。</li>
+    </ul>
+    <p>2012 那次最深的教训其实不是"闰秒难"，而是<strong>极少执行的代码路径等于没测过的代码路径</strong>。闰秒几年才一次，那段内核逻辑就一直带病运行到某个午夜集体爆发。你代码里那些"几乎不会走到"的时间分支，多半也是同一种债。</p>
+
+    <div class="cta">
+      <h3>在线时间戳转换器</h3>
+      <p>Unix 时间戳 ↔ 日期，秒级毫秒级、UTC 与本地时区并排对照，全本地计算</p>
+      <a href="/tools/timestamp-converter.html" class="btn btn-primary">打开时间戳转换器</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/timestamp-guide.html" class="related-card">
+          <div class="related-cat">后端 · 时间</div>
+          <div class="related-title">Unix 时间戳：秒级还是毫秒级</div>
+          <p class="related-desc">前后端各踩各的坑。</p>
+        </a>
+        <a href="/blog/mysql-utf8mb4.html" class="related-card">
+          <div class="related-cat">后端 · 数据库</div>
+          <div class="related-title">utf8 不是 UTF-8：MySQL 最坑的命名</div>
+          <p class="related-desc">emoji 存进去变问号的真相。</p>
+        </a>
+        <a href="/blog/uuid-primary-key.html" class="related-card">
+          <div class="related-cat">后端 · 数据库</div>
+          <div class="related-title">别拿 UUID v4 当数据库主键</div>
+          <p class="related-desc">随机主键怎么拖垮写入。</p>
+        </a>
+        <a href="/blog/regex-redos.html" class="related-card">
+          <div class="related-cat">安全 · 性能</div>
+          <div class="related-title">一个正则打满线上 CPU</div>
+          <p class="related-desc">ReDoS 原理与排查。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
+</div>
+
+<div id="siteFooter"></div>
+<script type="module" src="/js/blog-post.js?v=2"></script>
+</body>
+</html>

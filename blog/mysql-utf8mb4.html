@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>utf8 不是 UTF-8：MySQL 最坑的一次命名，和 emoji 变问号的真相 | DevUtils</title>
+<meta name="description" content="MySQL 里的 utf8 其实是阉割版的 utf8mb3，每字符最多 3 字节，存不下 emoji 和部分生僻字——这就是 emoji 变成问号的根因。这篇讲清楚 utf8mb3/utf8mb4 的区别、767 字节索引上限和 191 字符魔数的由来，以及怎么安全迁移。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/mysql-utf8mb4.html">
+<meta property="og:title" content="utf8 不是 UTF-8：MySQL 最坑的一次命名">
+<meta property="og:description" content="emoji 变问号的真相与 utf8mb4 迁移">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/mysql-utf8mb4.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="utf8 不是 UTF-8：MySQL 最坑的命名">
+<meta name="twitter:description" content="emoji 变问号的真相">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"utf8 不是 UTF-8：MySQL 最坑的一次命名，和 emoji 变问号的真相","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-06-02","dateModified":"2026-06-02","publisher":{"@type":"Organization","name":"DevUtils"}}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="siteHeader"></div>
+
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
+
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>MySQL utf8mb4</span>
+    </nav>
+
+    <header class="post-header">
+      <span class="category">后端 · 数据库</span>
+      <h1>utf8 不是 UTF-8：MySQL 最坑的一次命名，和 emoji 变问号的真相</h1>
+      <p class="lede">用户昵称里带个 😀，存进 MySQL 再读出来变成了 <code>?</code>，或者直接报 <code>Incorrect string value</code> 插不进去。八成的人第一反应是去查前端编码、查连接字符集——其实根都不在那。在于 MySQL 干了一件至今没法洗的事：它把一个<strong>只支持 3 字节</strong>的残缺编码命名为 <code>utf8</code>。你以为你在用 UTF-8，其实没有。</p>
+      <div class="post-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>约 9 分钟阅读</span>
+      </div>
+    </header>
+
+    <p>一句话真相：<strong>MySQL 里的 <code>utf8</code> 是 <code>utf8mb3</code> 的别名，每个字符最多 3 字节；而真正的 UTF-8 一个字符最多 4 字节。</strong>emoji、一部分生僻汉字、各种补充平面字符，都需要 4 字节。用 <code>utf8</code> 存它们，要么报错，要么被替换成 <code>?</code>。要存得下，必须用 <code>utf8mb4</code>（mb4 = maximum bytes 4）。</p>
+
+    <h2>为什么是 3 字节，问题出在哪</h2>
+    <p>Unicode 的字符分布在多个"平面"。基本多文种平面（BMP，U+0000–U+FFFF）里的字符，UTF-8 编码最多 3 字节，常用汉字、拉丁字母都在这。但 emoji（😀 在 U+1F600）、部分 CJK 扩展区汉字落在<strong>补充平面</strong>（U+10000 以上），UTF-8 需要 <strong>4 字节</strong>。</p>
+    <p>MySQL 早年实现 <code>utf8</code> 时只做到 3 字节就收工，还占了 <code>utf8</code> 这个名字。等到 2010 年（5.5.3）补上 4 字节支持时，名字已经被用掉了，只能另起一个 <code>utf8mb4</code>，原来那个追认成 <code>utf8mb3</code>。于是留下一个全世界踩了十几年的命名陷阱。</p>
+
+    <div class="callout callout-danger">
+      <span class="ic">🚫</span>
+      <div class="body"><p>典型现场：建表时写 <code>DEFAULT CHARSET=utf8</code>，自我感觉良好。插入带 emoji 的数据时，MySQL 报 <code>Incorrect string value: '\xF0\x9F\x98\x80' for column ...</code>——那串 <code>\xF0\x9F\x98\x80</code> 正是 😀 的 4 字节 UTF-8 编码。3 字节的列装不下 4 字节的字符，于是报错或截断。</p></div>
+    </div>
+
+    <h2>那个 191 的魔数是怎么来的</h2>
+    <p>很多人见过 Laravel 等框架把字符串列默认设成 <code>VARCHAR(191)</code>，一脸问号——为什么是这么个怪数字？这背后是 InnoDB 的<strong>索引前缀字节上限</strong>。</p>
+    <p>MySQL 5.6 及更早，InnoDB 在 <code>REDUNDANT</code>/<code>COMPACT</code> 行格式下，单个索引前缀最长 <strong>767 字节</strong>。换算成字符要除以每字符的最大字节数：</p>
+    <table>
+      <thead><tr><th>字符集</th><th>每字符字节</th><th>767 字节能索引</th></tr></thead>
+      <tbody>
+        <tr><td><code>latin1</code></td><td>1</td><td>767 字符</td></tr>
+        <tr><td><code>utf8</code> (utf8mb3)</td><td>3</td><td>255 字符（255×3=765，刚好塞下）</td></tr>
+        <tr><td><code>utf8mb4</code></td><td>4</td><td><strong>191 字符</strong>（767÷4≈191）</td></tr>
+      </tbody>
+    </table>
+    <p>看出来了：<code>utf8mb3</code> 时代 <code>VARCHAR(255)</code> 加索引正好压线（765 字节），所以 255 成了惯例。一旦切到 <code>utf8mb4</code>，<code>VARCHAR(255)</code> 的索引变成 255×4=1020 字节，超了 767，于是经典报错：</p>
+    <pre data-lang="text"><code class="language-text">Specified key was too long; max key length is 767 bytes</code></pre>
+    <p>把列降到 <strong>191</strong>（191×4=764，刚好不超），报错就消失了。这就是 191 魔数的全部来历——它不是什么最佳实践，是一个被字节上限逼出来的妥协。</p>
+
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p><strong>好消息：191 在现代 MySQL 上基本不需要了。</strong>MySQL 5.7 起，<code>DYNAMIC</code> 行格式（现在的默认）+ <code>innodb_large_prefix</code> 把上限提到了 <strong>3072 字节</strong>，<code>utf8mb4</code> 下能索引到 768 字符，<code>VARCHAR(255)</code> 随便加索引。前提是 16KB 默认页大小——如果你把 <code>innodb_page_size</code> 调到 8KB/4KB，上限会按比例降到 1536/768 字节，191 的幽灵又会回来。</p></div>
+    </div>
+
+    <h2>迁移：四个地方都得是 utf8mb4，漏一个就白干</h2>
+    <p>把 <code>utf8</code> 改成 <code>utf8mb4</code> 不是改一处。它是一条链路，从客户端到磁盘任何一环还是 3 字节，emoji 照样丢。逐个查：</p>
+    <ol>
+      <li><strong>数据库 / 表 / 列字符集</strong>：三个层级都要改。已有数据的表用 <code>ALTER TABLE ... CONVERT TO CHARACTER SET utf8mb4</code>，它会真正转换列里的数据，不是只改元信息。</li>
+      <li><strong>连接字符集</strong>：客户端连上来得声明 <code>utf8mb4</code>，否则数据在传输层就被降级。JDBC URL、<code>SET NAMES utf8mb4</code>、连接池配置都查一遍。</li>
+      <li><strong>服务端默认</strong>：<code>my.cnf</code> 里 <code>character-set-server=utf8mb4</code>。MySQL 8.0 默认已经是 <code>utf8mb4</code>，新项目省心，老项目升级上来的要确认。</li>
+      <li><strong>collation（排序规则）</strong>：选 <code>utf8mb4_unicode_ci</code> 或 8.0 的 <code>utf8mb4_0900_ai_ci</code>。注意 emoji 在很多 collation 下被当作"相等"——<code>WHERE name = '😀'</code> 可能匹配到别的 emoji，做唯一约束时尤其要留神。</li>
+    </ol>
+
+    <pre data-lang="sql"><code class="language-sql">-- 把一张老表整体转成 utf8mb4（会重写数据，大表请挑维护窗口）
+ALTER TABLE users
+  CONVERT TO CHARACTER SET utf8mb4
+  COLLATE utf8mb4_0900_ai_ci;
+
+-- 检查现状：哪些列还不是 utf8mb4
+SELECT table_name, column_name, character_set_name
+FROM information_schema.columns
+WHERE table_schema = DATABASE()
+  AND character_set_name IS NOT NULL
+  AND character_set_name &lt;&gt; 'utf8mb4';</code></pre>
+
+    <div class="callout callout-warn">
+      <span class="ic">⚠️</span>
+      <div class="body"><p>转换前先<strong>评估索引列长度</strong>。如果你还在 5.6 或者用了小页大小，<code>CONVERT</code> 之后某些索引列会撞 767 字节上限直接失败。先把超长的索引列缩短、或改成前缀索引（<code>INDEX(col(191))</code>），再做转换。别在生产上裸跑 <code>CONVERT</code>。</p></div>
+    </div>
+
+    <h2>顺带纠正一个常见误解</h2>
+    <p>"那我把所有列都设 <code>utf8mb4</code> 是不是更费空间？"——<code>VARCHAR</code> 是变长存储，实际占用看真实内容。一个纯英文字符串在 <code>utf8mb4</code> 列里依然是 1 字节/字符，不会因为"最多 4 字节"就凭空膨胀。变大的只有<strong>索引</strong>（按最大字节预留）和内存里的临时表。对绝大多数业务，直接全站 <code>utf8mb4</code>，省得哪天又冒出个存不下的字符。</p>
+    <p>顺便提一句字符和字节的区别：一个 emoji 在数据库里占 4 字节，但它在用户眼里是"1 个字符"，在 JavaScript 里 <code>.length</code> 又可能是 2——这套"到底算几个"的混乱，<a href="/blog/unicode-string-length.html">另一篇专门讲了</a>。要快速数一段文本里中英文/emoji 各算几个，可以用 <a href="/tools/word-counter.html">在线字数统计</a>。</p>
+
+    <div class="cta">
+      <h3>在线字数统计</h3>
+      <p>中英文混排、字符数、字节数分开计，看清一段文本到底"算几个"</p>
+      <a href="/tools/word-counter.html" class="btn btn-primary">打开字数统计</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/unicode-string-length.html" class="related-card">
+          <div class="related-cat">前端 · 编码</div>
+          <div class="related-title">为什么 "👨‍👩‍👧‍👦".length 是 11</div>
+          <p class="related-desc">码点、代理对与字素簇。</p>
+        </a>
+        <a href="/blog/uuid-primary-key.html" class="related-card">
+          <div class="related-cat">后端 · 数据库</div>
+          <div class="related-title">别拿 UUID v4 当数据库主键</div>
+          <p class="related-desc">随机主键怎么拖垮写入。</p>
+        </a>
+        <a href="/blog/url-encoding-guide.html" class="related-card">
+          <div class="related-cat">编码 · URL</div>
+          <div class="related-title">URL 编码：哪些字符要编码，为什么</div>
+          <p class="related-desc">保留字符与不安全字符。</p>
+        </a>
+        <a href="/blog/timezone-leap-second.html" class="related-card">
+          <div class="related-cat">后端 · 时间</div>
+          <div class="related-title">只存 UTC 还不够</div>
+          <p class="related-desc">夏令时、闰秒与跳秒事故。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
+</div>
+
+<div id="siteFooter"></div>
+<script type="module" src="/js/blog-post.js?v=2"></script>
+</body>
+</html>

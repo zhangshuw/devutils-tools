@@ -59,7 +59,7 @@
 
   <!-- 筛选 -->
   <div class="blog-filters" id="blogFilters">
-    <button class="filter-btn active" data-filter="all">全部<span class="count">14</span></button>
+    <button class="filter-btn active" data-filter="all">全部<span class="count">17</span></button>
     <button class="filter-btn" data-filter="前端">前端</button>
     <button class="filter-btn" data-filter="后端">后端</button>
     <button class="filter-btn" data-filter="工具推荐">工具推荐</button>
@@ -70,6 +70,42 @@
 
   <!-- 卡片网格 -->
   <div class="blog-grid" id="blogGrid">
+
+    <article class="blog-card" data-category="后端">
+      <span class="category">后端 · 时间</span>
+      <h3><a href="/blog/timezone-leap-second.html">只存 UTC 还不够：夏令时、闰秒和那次放倒半个互联网的跳秒</a></h3>
+      <p class="excerpt">未来的会议为什么不能存 UTC、DST 那一小时怎么凭空消失、2012 闰秒如何触发 Linux 内核 futex 让 CPU 打满。</p>
+      <div class="card-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>10 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">时区</span><span class="tag">夏令时</span><span class="tag">闰秒</span></div>
+    </article>
+
+    <article class="blog-card" data-category="后端">
+      <span class="category">后端 · 数据库</span>
+      <h3><a href="/blog/mysql-utf8mb4.html">utf8 不是 UTF-8：MySQL 最坑的一次命名，和 emoji 变问号的真相</a></h3>
+      <p class="excerpt">MySQL 的 utf8 只是 3 字节的 utf8mb3，存不下 emoji。191 魔数怎么来的、767 字节索引上限、四处都要改的迁移清单。</p>
+      <div class="card-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>9 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">MySQL</span><span class="tag">字符集</span><span class="tag">utf8mb4</span></div>
+    </article>
+
+    <article class="blog-card" data-category="前端">
+      <span class="category">前端 · 编码</span>
+      <h3><a href="/blog/unicode-string-length.html">为什么 "👨‍👩‍👧‍👦".length 是 11：码点、代理对与字素簇</a></h3>
+      <p class="excerpt">字节/码元/码点/字素簇四层长度的区别，代理对怎么把 emoji 切成乱码，Intl.Segmenter 与 NFC 归一化实战。</p>
+      <div class="card-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>10 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">Unicode</span><span class="tag">编码</span><span class="tag">JavaScript</span></div>
+    </article>
 
     <article class="blog-card" data-category="后端">
       <span class="category">后端 · 数据库</span>
