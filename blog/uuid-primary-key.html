@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>别拿 UUID v4 当数据库主键：一次写到崩的教训，和 v7 怎么救场 | DevUtils</title>
+<meta name="description" content="UUID v4 当 MySQL 主键，表一大写入就塌——根因是聚簇索引页分裂。这篇讲清楚为什么、坏到什么程度，以及 RFC 9562 的 UUID v7 怎么用时间前缀解决，附迁移做法。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/uuid-primary-key.html">
+<meta property="og:title" content="别拿 UUID v4 当数据库主键：一次写到崩的教训，和 v7 怎么救场">
+<meta property="og:description" content="随机 UUID 主键为什么拖垮写入，UUID v7 怎么解决">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/uuid-primary-key.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="别拿 UUID v4 当数据库主键">
+<meta name="twitter:description" content="随机主键拖垮写入，UUID v7 救场">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"别拿 UUID v4 当数据库主键：一次写到崩的教训，和 v7 怎么救场","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-06-02","dateModified":"2026-06-02","publisher":{"@type":"Organization","name":"DevUtils"}}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="siteHeader"></div>
+
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
+
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>UUID 主键</span>
+    </nav>
+
+    <header class="post-header">
+      <span class="category">后端 · 数据库</span>
+      <h1>别拿 UUID v4 当数据库主键：一次写到崩的教训，和 v7 怎么救场</h1>
+      <p class="lede">那张表上线半年都好好的。直到行数过了一千万，深夜的批量导入开始超时，写入 p99 从十几毫秒飙到大半秒。改的不是业务代码——是主键。我们把 <code>UUID v4</code> 换成了带时间前缀的 v7，写入曲线当天就平了。这篇说清楚中间到底发生了什么。</p>
+      <div class="post-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>约 9 分钟阅读</span>
+      </div>
+    </header>
+
+    <p>先把结论摆这儿，赶时间的可以只看这段：<strong>用随机 UUID（v4）做 InnoDB 主键，在表小的时候没事，表一大就会因为聚簇索引页分裂把写入性能拖垮。</strong>问题不在 UUID 本身，在于它<em>随机</em>。换成时间有序的 UUID v7、或者干脆用自增主键 + 单独的 UUID 业务列，都能绕开。</p>
+
+    <h2>为什么"随机"这件事在主键上是致命的</h2>
+    <p>得先讲一个很多人没意识到的事：InnoDB 的主键不是普通索引，它是<strong>聚簇索引</strong>。意思是整张表的数据行，物理上就是按主键顺序排在一棵 B+ 树的叶子节点里的。主键的值决定了一行数据被塞到磁盘的哪个位置。</p>
+    <p>自增主键插入时，新行永远追加到 B+ 树最右边那个页。写满了就开一个新页，老页再也不动。顺序、紧凑、缓存友好。</p>
+    <p>UUID v4 是 122 位随机数。新插入的主键值落在哪儿完全随机——可能要插到三个月前那批数据中间。那个页早就写满了，于是 InnoDB 得做<strong>页分裂</strong>（page split）：把一个满页劈成两个半空的页，腾出位置。</p>
+
+    <div class="callout callout-warn">
+      <span class="ic">⚠️</span>
+      <div class="body"><p>页分裂的连锁反应有三层：① 一次插入变成多次页 I/O；② 页只填了一半，空间利用率掉到 ~60%，同样的数据占更多磁盘、吃更多内存；③ 被随机命中的老页不停被换进换出 buffer pool，命中率崩盘。表越大、buffer pool 装不下整棵树时，最后一条尤其要命。</p></div>
+    </div>
+
+    <p>表小的时候整棵索引树都在内存里，页分裂的代价被内存吃掉了，你根本看不出来。等数据量超过 buffer pool（<code>innodb_buffer_pool_size</code>），随机写开始频繁穿透到磁盘——这就是为什么问题总在"跑了大半年、突然有一天"爆发，而不是上线第一天。</p>
+
+    <h2>到底慢多少</h2>
+    <p>不想引用别人的跑分，就说我们自己那张表的观感：同样的批量导入脚本，自增主键时稳定在十几毫秒一批；换 UUID v4 主键、表过千万行之后，p99 摸到了五六百毫秒，而且抖动极大——取决于这一批的随机值是不是正好命中了冷页。磁盘 IOPS 被写放大顶满，CPU 倒还闲着。</p>
+    <p>这是随机写的典型画像：<strong>瓶颈不在算力，在于你逼着数据库到处乱跳着写。</strong></p>
+
+    <h2>还有个隐藏成本：你可能把它存成了字符串</h2>
+    <p>UUID 长这样：<code>550e8400-e29b-41d4-a716-446655440000</code>。很多人图省事，直接拿 <code>CHAR(36)</code> 或 <code>VARCHAR(36)</code> 存。</p>
+    <pre data-lang="sql"><code class="language-sql">-- ❌ 36 字节，还是个字符串比较
+id CHAR(36) PRIMARY KEY
+
+-- ✅ 16 字节二进制，比较更快
+id BINARY(16) PRIMARY KEY</code></pre>
+    <p>差的不止是 36 比 16 这点字节。InnoDB 的<strong>每一个二级索引都会把主键值带上</strong>——你建 5 个二级索引，这个臃肿的主键就被复制 5 份。主键从 16 字节涨到 36 字节，整库的索引体积跟着膨胀一大圈，内存里能缓存的索引项变少，又反过来加重前面说的换页问题。</p>
+    <p>想看一个 UUID 拆开后每一段是什么含义、或者快速生成几个测试用的 UUID，可以直接用 <a href="/tools/uuid-generator.html">在线 UUID 生成器</a>，v1/v4 都能出。</p>
+
+    <h2>UUID v7：把时间戳放进前缀</h2>
+    <p>2024 年 5 月，<strong>RFC 9562</strong> 正式发布，取代了用了二十年的 RFC 4122，新增了 v6、v7、v8 三个版本。其中真正解决问题的是 <strong>v7</strong>。</p>
+    <p>它的设计简单粗暴：把 128 位的<strong>前 48 位</strong>换成 Unix 毫秒时间戳，剩下的位填随机数和版本标记。</p>
+    <pre data-lang="text"><code class="language-text">UUID v7 结构（128 位）
+┌─────────────────────────┬──────┬────────────────────┐
+│  48 位 Unix 毫秒时间戳    │ 版本 │   74 位随机 / 序列   │
+└─────────────────────────┴──────┴────────────────────┘
+ 0190f8a2-3b4c-7xxx-xxxx-xxxxxxxxxxxx
+ └── 时间在最高位 → 字典序≈时间序 → 插入接近顺序追加</code></pre>
+    <p>因为时间戳在最高位，新生成的 UUID v7 在排序上总是比旧的大。插进 B+ 树时又回到了"往最右边追加"的模式——页分裂没了，写放大没了。同时它还保留了 UUID 的核心优点：客户端就能生成、全局唯一、不暴露自增 ID 那种"猜得到下一个"的顺序。</p>
+
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p>主流库都跟上了：PostgreSQL 18 内置 <code>uuidv7()</code> 函数；Java 用 <code>java.util.UUID</code> 之外的库或 Hibernate 6 的生成器；Node 生态有 <code>uuidv7</code> 包；Python 3.14 的 <code>uuid</code> 模块加了 <code>uuid7()</code>。生成不出 v7 的老环境，自己拼时间戳前缀也就几行代码。</p></div>
+    </div>
+
+    <pre data-lang="js"><code class="language-js">// Node.js，零依赖手搓一个够用的 v7
+import { randomBytes } from "crypto";
+
+function uuidv7() {
+  const ts = Date.now();              // 48 位毫秒时间戳
+  const b = randomBytes(16);
+  b[0] = (ts / 2 ** 40) &amp; 0xff;
+  b[1] = (ts / 2 ** 32) &amp; 0xff;
+  b[2] = (ts / 2 ** 24) &amp; 0xff;
+  b[3] = (ts / 2 ** 16) &amp; 0xff;
+  b[4] = (ts / 2 ** 8) &amp; 0xff;
+  b[5] = ts &amp; 0xff;
+  b[6] = (b[6] &amp; 0x0f) | 0x70;        // version = 7
+  b[8] = (b[8] &amp; 0x3f) | 0x80;        // variant
+  const h = b.toString("hex");
+  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
+}</code></pre>
+
+    <h2>那 v4 是不是就该扔了</h2>
+    <p>不是。v4 没问题的地方多了去了——它只是<strong>不该当聚簇索引的主键</strong>而已。</p>
+    <ul>
+      <li><strong>对外暴露的 ID</strong>：v7 的前缀泄露了创建时间，竞品能从你的订单号推算出每天下了多少单。要防这个，对外用 v4，库里另存。</li>
+      <li><strong>密码重置 token、一次性链接</strong>：要的就是不可预测，v4 的全随机正合适。</li>
+      <li><strong>分布式 trace ID、幂等键</strong>：不进数据库主键，随机就好。</li>
+    </ul>
+    <p>一句话区分：<strong>进 B+ 树当聚簇主键的，要有序（v7 或自增）；要不可预测的，要随机（v4）。</strong>这俩需求天生打架，所以很多团队干脆两列分开——内部主键用自增 <code>BIGINT</code>，对外业务 ID 用 v4 单独建唯一索引。</p>
+
+    <div class="callout callout-danger">
+      <span class="ic">🚫</span>
+      <div class="body"><p>别看见"v7 更好"就连夜给老表改主键。改聚簇主键 = 整张表数据物理重排 + 所有二级索引重建，大表上是个停机级操作。存量表更现实的做法：新表用 v7，老表维持现状，或者排个维护窗口慢慢迁。</p></div>
+    </div>
+
+    <h2>如果你正在做技术选型</h2>
+    <p>三选一，按场景：</p>
+    <table>
+      <thead><tr><th>方案</th><th>适合</th><th>代价</th></tr></thead>
+      <tbody>
+        <tr><td>自增 <code>BIGINT</code></td><td>纯内部表、单库</td><td>分库分表会撞 ID、对外暴露顺序</td></tr>
+        <tr><td><code>UUID v7</code> + <code>BINARY(16)</code></td><td>要分布式生成又要写入快</td><td>前缀泄露时间</td></tr>
+        <tr><td>自增主键 + v4 业务列</td><td>既要写入快又要对外不可预测</td><td>两列、两个索引</td></tr>
+      </tbody>
+    </table>
+    <p>大多数新项目我会直接选第二个：v7 存成二进制。够快，够唯一，客户端能生成，省掉了自增主键在分库时的那一堆破事。</p>
+
+    <div class="cta">
+      <h3>在线 UUID 生成器</h3>
+      <p>批量生成 UUID，查看版本与各字段含义，全部本地计算不上传</p>
+      <a href="/tools/uuid-generator.html" class="btn btn-primary">打开 UUID 生成器</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/json-tips.html" class="related-card">
+          <div class="related-cat">后端 · 数据格式</div>
+          <div class="related-title">JSON 的 10 个坑：文档不写的那些</div>
+          <p class="related-desc">大整数精度、循环引用、jq 实战。</p>
+        </a>
+        <a href="/blog/hash-algorithm-guide.html" class="related-card">
+          <div class="related-cat">安全 · 哈希</div>
+          <div class="related-title">MD5、SHA-1、SHA-256 怎么选</div>
+          <p class="related-desc">按场景倒推该用哪个哈希。</p>
+        </a>
+        <a href="/blog/timestamp-guide.html" class="related-card">
+          <div class="related-cat">后端 · 时间</div>
+          <div class="related-title">Unix 时间戳：秒级还是毫秒级</div>
+          <p class="related-desc">前后端各踩各的坑。</p>
+        </a>
+        <a href="/blog/regex-redos.html" class="related-card">
+          <div class="related-cat">安全 · 性能</div>
+          <div class="related-title">一个正则打满线上 CPU</div>
+          <p class="related-desc">ReDoS 是怎么发生的，怎么排查。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
+</div>
+
+<div id="siteFooter"></div>
+<script type="module" src="/js/blog-post.js?v=2"></script>
+</body>
+</html>

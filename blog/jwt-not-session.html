@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>为什么我把 JWT 从生产环境删了：无状态鉴权的真实代价 | DevUtils</title>
+<meta name="description" content="JWT 不是 session 的升级版。这篇讲清楚拿 JWT 当登录态的四个真实代价：撤销难、改密码旧 token 仍有效、令牌膨胀、密钥轮换，外加 alg:none 和 RS256/HS256 混淆两个经典漏洞，以及什么时候 JWT 才真正合适。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/jwt-not-session.html">
+<meta property="og:title" content="为什么我把 JWT 从生产环境删了：无状态鉴权的真实代价">
+<meta property="og:description" content="拿 JWT 当 session 的四个代价和两个经典漏洞">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/jwt-not-session.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="为什么我把 JWT 从生产环境删了">
+<meta name="twitter:description" content="无状态鉴权的真实代价">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"为什么我把 JWT 从生产环境删了：无状态鉴权的真实代价","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-06-02","dateModified":"2026-06-02","publisher":{"@type":"Organization","name":"DevUtils"}}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="siteHeader"></div>
+
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
+
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>JWT 鉴权</span>
+    </nav>
+
+    <header class="post-header">
+      <span class="category">安全 · 鉴权</span>
+      <h1>为什么我把 JWT 从生产环境删了：无状态鉴权的真实代价</h1>
+      <p class="lede">有个用户半夜来工单：账号被盗了，改了密码，但对方还在登录状态下转移数据。我们改了密码、清了 session——然后想起来，登录态是 JWT，签发出去的那张令牌在过期前谁也拦不住。那一刻我盯着代码意识到，我们用错工具了。JWT 没毛病，是我们把它放在了不该放的位置。</p>
+      <div class="post-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>约 10 分钟阅读</span>
+      </div>
+    </header>
+
+    <p>先说立场，省得你看半天：<strong>对绝大多数 Web 应用，拿 JWT 当登录态（替代服务端 session）是个性价比很差的选择。</strong>它解决的是"无状态、跨服务"的问题，而大多数单体应用根本没这个问题，却要替它的缺点买单。下面是这些缺点具体长什么样。</p>
+
+    <h2>先分清两个概念，很多争论是在这儿错位的</h2>
+    <p>JWT（JSON Web Token）只是一种<strong>自包含、带签名的令牌格式</strong>：服务端把用户信息编码进 payload，签个名发给客户端；之后客户端每次带上它，服务端验签就信。它本身没错，错的是用法。</p>
+    <p>而"登录态管理"有两条路：</p>
+    <ul>
+      <li><strong>服务端 session</strong>：服务端存登录状态（内存 / Redis / 库），发给客户端一个无意义的 session id。状态在服务端，随时能改能删。</li>
+      <li><strong>JWT（无状态）</strong>：状态编码在令牌里，服务端不存。签出去就管不着了，只能等它自己过期。</li>
+    </ul>
+    <p>注意"签出去就管不着了"这句——它是后面所有麻烦的根源。</p>
+
+    <h2>代价一：撤销，几乎做不到</h2>
+    <p>这是最痛的一条，也是开头那个工单的根。JWT 一旦签发，在 <code>exp</code> 到期之前<strong>天然有效</strong>，服务端没有任何状态可以让它提前失效。</p>
+    <p>账号被盗要强制下线？改了密码要让旧令牌作废？管理员要封一个用户？——这些在 session 模式下就是删一行 Redis 的事，在 JWT 模式下你做不到。</p>
+    <p>于是大家的"解决方案"是：维护一张<strong>黑名单</strong>，每次请求都去查这个令牌在不在黑名单里。</p>
+    <div class="callout callout-warn">
+      <span class="ic">⚠️</span>
+      <div class="body"><p>停一下品品这个方案：你为了"无状态"选了 JWT，结果为了能撤销，又给每个请求加了一次<strong>有状态的</strong>黑名单查询。那你跟直接查 session 表区别在哪？无状态这个唯一卖点，被你自己亲手取消了，还多扛了 JWT 的一身缺点。</p></div>
+    </div>
+
+    <h2>代价二：改了密码，旧令牌照样能用</h2>
+    <p>这是代价一的具体化，但太常见了值得单拎出来。用户改密码这个动作，下意识地大家都认为"会让所有旧登录失效"——这是几十年 session 模式养成的预期。JWT 默认不会。改完密码，之前在另一台设备上签发的令牌，到期前继续畅通无阻。</p>
+    <p>要修，又得回到服务端存状态：比如记一个 <code>password_changed_at</code> 时间戳，验令牌时比对签发时间。每次都查。无状态再一次名存实亡。</p>
+
+    <h2>代价三：令牌膨胀，每个请求都在搬运它</h2>
+    <p>session id 就是个几十字节的随机串。JWT 不一样——它把用户 id、角色、权限、签发/过期时间全塞进去，再 Base64 编码，动辄几百字节到 1KB+。</p>
+    <p>而这坨东西<strong>每一个请求</strong>都要塞在 <code>Authorization</code> 头里发一遍。接口调用量大的时候，这是实打实的带宽和解析开销。顺带提一句，Base64 不是压缩也不是加密，它只会让体积比原始 JSON 还<strong>大约 33%</strong>。payload 里的内容是明文可读的，谁都能解开看——</p>
+    <pre data-lang="bash"><code class="language-bash"># 把一个 JWT 的中段（payload）单独 base64 解码，明文就出来了
+echo 'eyJ1c2VyIjoiYWxpY2UiLCJyb2xlIjoiYWRtaW4ifQ' | base64 -d
+# {"user":"alice","role":"admin"}</code></pre>
+    <p>想拆开看一个 JWT 三段分别是什么、或者改改 payload 测接口，用 <a href="/tools/jwt-editor.html">在线 JWT 编辑器</a> 比敲命令直观，签名段也能本地重算。</p>
+
+    <div class="callout callout-danger">
+      <span class="ic">🚫</span>
+      <div class="body"><p>正因为 payload 是明文，<strong>千万别往 JWT 里放敏感信息</strong>——身份证号、手机号、内部用户标识，放进去等于明文发给客户端。签名只保证"没被篡改"，不保证"看不见"。</p></div>
+    </div>
+
+    <h2>代价四：密钥轮换是个工程</h2>
+    <p>签名密钥泄露了要换，或者按规范定期轮换——session 模式下你换了就换了，存量 session 不受影响。JWT 模式下，换密钥意味着所有用旧密钥签的令牌瞬间全部验签失败，全站用户被踢下线。</p>
+    <p>要平滑过渡，得同时持有新旧两套密钥、按 <code>kid</code>(key id) 头区分、维护一个轮换窗口。能做，但又是一摊本来不需要的复杂度。</p>
+
+    <h2>顺便：两个把人坑惨的经典漏洞</h2>
+    <p>JWT 的坑不止性能和运维，还有安全。这两个都是被反复利用过的真实漏洞，不是理论。</p>
+
+    <h3>alg: none —— 直接绕过验签</h3>
+    <p>JWT 头里有个 <code>alg</code> 字段声明签名算法。早年很多库（2015 年 Tim McLean 那篇著名的披露集中点名过一批）有个致命默认：如果攻击者把 <code>alg</code> 改成 <code>"none"</code>，库就<strong>跳过签名校验</strong>直接放行。</p>
+    <pre data-lang="text"><code class="language-text">攻击者把头部改成：{"alg":"none","typ":"JWT"}
+payload 改成：    {"user":"alice","role":"admin"}
+签名段：          留空
+→ 有缺陷的库：验签通过，alice 成了 admin</code></pre>
+    <p>修法：服务端<strong>固定写死</strong>接受的算法，绝不读令牌里的 <code>alg</code> 来决定怎么验。</p>
+
+    <h3>RS256 → HS256 密钥混淆</h3>
+    <p>这个更阴。RS256 是非对称的：私钥签名、公钥验签，公钥本来就是公开的。攻击者把头部的 <code>alg</code> 从 <code>RS256</code> 改成对称的 <code>HS256</code>，然后<strong>用那把公开的公钥当作 HMAC 的密钥</strong>去签名。</p>
+    <p>有缺陷的库看到 <code>HS256</code>，就拿它手里的公钥当对称密钥来验——而这把公钥攻击者也有。于是伪造的令牌验签通过。一个"公开的公钥"摇身变成了"共享密钥"。修法同上：算法白名单写死，不信令牌自报的算法。</p>
+
+    <h2>那 JWT 什么时候是对的</h2>
+    <p>把它放回它擅长的位置，JWT 是好东西：</p>
+    <table>
+      <thead><tr><th>场景</th><th>为什么 JWT 合适</th></tr></thead>
+      <tbody>
+        <tr><td>服务间调用的短时令牌</td><td>几分钟就过期，撤销需求几乎为零，无状态省掉共享 session 存储</td></tr>
+        <tr><td>OAuth 的 access token</td><td>本就设计成短命（如 15 分钟）+ 配长效 refresh token，撤销靠 refresh 环节</td></tr>
+        <tr><td>跨域 / 跨子系统 SSO</td><td>一处签发多处验签，不必所有系统共享一个 session 库</td></tr>
+        <tr><td>纯无状态 API、无登出概念</td><td>比如对接第三方的机器对机器接口</td></tr>
+      </tbody>
+    </table>
+    <p>共同点：<strong>令牌短命，且不需要"立刻强制失效"</strong>。撤销需求一旦出现，JWT 的优势就开始倒贴。</p>
+
+    <h2>我现在的默认选择</h2>
+    <p>普通的有用户登录的 Web 应用，我直接上<strong>服务端 session</strong>：HttpOnly + Secure 的 cookie 装一个 session id，状态存 Redis。强制登出、改密下线、封号，全是删 key 的一行操作。简单、安全、符合所有人的直觉。</p>
+    <p>真要无状态架构，就走 OAuth 那套成熟模式：<strong>短命 access token（JWT）+ 长效 refresh token</strong>，撤销作用在 refresh 环节，access token 短到来不及被滥用。</p>
+    <p>JWT 是把好锤子。开头那次返工教会我的，是别把每个登录态都看成钉子。</p>
+
+    <div class="cta">
+      <h3>在线 JWT 编辑器</h3>
+      <p>解析、编辑、重新签名 JWT，查看三段结构，全程本地不上传</p>
+      <a href="/tools/jwt-editor.html" class="btn btn-primary">打开 JWT 编辑器</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/hash-algorithm-guide.html" class="related-card">
+          <div class="related-cat">安全 · 哈希</div>
+          <div class="related-title">MD5、SHA-1、SHA-256 怎么选</div>
+          <p class="related-desc">HS256 的 H 就是哈希。</p>
+        </a>
+        <a href="/blog/regex-redos.html" class="related-card">
+          <div class="related-cat">安全 · 性能</div>
+          <div class="related-title">一个正则打满线上 CPU</div>
+          <p class="related-desc">ReDoS 原理与排查。</p>
+        </a>
+        <a href="/blog/choose-password-generator.html" class="related-card">
+          <div class="related-cat">安全 · 密码</div>
+          <div class="related-title">怎么挑一个真正安全的密码生成器</div>
+          <p class="related-desc">随机源、熵评估、本地 vs 远程。</p>
+        </a>
+        <a href="/blog/uuid-primary-key.html" class="related-card">
+          <div class="related-cat">后端 · 数据库</div>
+          <div class="related-title">别拿 UUID v4 当数据库主键</div>
+          <p class="related-desc">随机主键怎么拖垮写入。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
+</div>
+
+<div id="siteFooter"></div>
+<script type="module" src="/js/blog-post.js?v=2"></script>
+</body>
+</html>

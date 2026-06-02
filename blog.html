@@ -59,7 +59,7 @@
 
   <!-- 筛选 -->
   <div class="blog-filters" id="blogFilters">
-    <button class="filter-btn active" data-filter="all">全部<span class="count">11</span></button>
+    <button class="filter-btn active" data-filter="all">全部<span class="count">14</span></button>
     <button class="filter-btn" data-filter="前端">前端</button>
     <button class="filter-btn" data-filter="后端">后端</button>
     <button class="filter-btn" data-filter="工具推荐">工具推荐</button>
@@ -70,6 +70,42 @@
 
   <!-- 卡片网格 -->
   <div class="blog-grid" id="blogGrid">
+
+    <article class="blog-card" data-category="后端">
+      <span class="category">后端 · 数据库</span>
+      <h3><a href="/blog/uuid-primary-key.html">别拿 UUID v4 当数据库主键：写到崩的教训，和 v7 怎么救场</a></h3>
+      <p class="excerpt">随机 UUID 主键为什么在表变大后拖垮写入——聚簇索引页分裂讲清楚，RFC 9562 的 v7 怎么用时间前缀解决。</p>
+      <div class="card-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>9 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">数据库</span><span class="tag">UUID</span><span class="tag">索引</span></div>
+    </article>
+
+    <article class="blog-card" data-category="安全">
+      <span class="category">安全 · 性能</span>
+      <h3><a href="/blog/regex-redos.html">一个正则打满线上 CPU：ReDoS 是怎么发生的，怎么排查</a></h3>
+      <p class="excerpt">从 Cloudflare 2019 全球宕机说起：灾难性回溯的原理、怎么一眼看出风险正则、CPU 打满怎么定位，三种修法。</p>
+      <div class="card-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>8 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">正则</span><span class="tag">性能</span><span class="tag">安全</span></div>
+    </article>
+
+    <article class="blog-card" data-category="安全">
+      <span class="category">安全 · 鉴权</span>
+      <h3><a href="/blog/jwt-not-session.html">为什么我把 JWT 从生产环境删了：无状态鉴权的真实代价</a></h3>
+      <p class="excerpt">撤销难、改密旧令牌仍有效、令牌膨胀、密钥轮换，外加 alg:none 和 RS256/HS256 混淆两个经典漏洞，以及 JWT 真正合适的场景。</p>
+      <div class="card-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>10 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">JWT</span><span class="tag">鉴权</span><span class="tag">安全</span></div>
+    </article>
 
     <article class="blog-card" data-category="后端">
       <span class="category">后端 · 调试</span>

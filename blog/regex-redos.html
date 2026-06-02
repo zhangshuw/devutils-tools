@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>一个正则打满线上 CPU：ReDoS 是怎么发生的，怎么排查 | DevUtils</title>
+<meta name="description" content="2019 年 Cloudflare 全球宕机 27 分钟，元凶是一行正则。这篇讲清楚灾难性回溯（ReDoS）的原理：哪种正则会爆炸、怎么一眼看出风险、怎么排查线上 CPU 打满，以及 RE2、原子组、超时三种修法。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/regex-redos.html">
+<meta property="og:title" content="一个正则打满线上 CPU：ReDoS 是怎么发生的，怎么排查">
+<meta property="og:description" content="灾难性回溯原理、识别方法与三种修法">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/regex-redos.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="一个正则打满线上 CPU">
+<meta name="twitter:description" content="ReDoS 原理与排查">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"一个正则打满线上 CPU：ReDoS 是怎么发生的，怎么排查","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-06-02","dateModified":"2026-06-02","publisher":{"@type":"Organization","name":"DevUtils"}}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="siteHeader"></div>
+
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
+
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>正则与 ReDoS</span>
+    </nav>
+
+    <header class="post-header">
+      <span class="category">安全 · 性能</span>
+      <h1>一个正则打满线上 CPU：ReDoS 是怎么发生的，怎么排查</h1>
+      <p class="lede">2019 年 7 月 2 日，Cloudflare 全球范围 502 了大概 27 分钟，一大半互联网跟着抖了一下。事后复盘，根因是一条新上线的 WAF 规则里的正则——它在某些输入下会触发灾难性回溯，单核 CPU 瞬间打满。一行正则，放倒了一家做基础设施的公司。这事比想象中常见。</p>
+      <div class="post-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>约 8 分钟阅读</span>
+      </div>
+    </header>
+
+    <p>ReDoS 全称 Regular expression Denial of Service，正则表达式拒绝服务。攻击方式简单到离谱：找到一个写得有缺陷的正则，构造一段特定字符串发给它，让匹配过程的耗时随输入长度<strong>指数级</strong>增长。几十个字符就能让一个 CPU 核卡死几秒甚至几分钟。</p>
+    <p>它的危险在于隐蔽——正则本身功能完全正确，测试全过，code review 也看不出毛病。直到某天有人（或某个扫描器）发来一个特定输入。</p>
+
+    <h2>回溯：正则引擎到底在干什么</h2>
+    <p>大多数语言自带的正则引擎（JavaScript、Java、Python、PHP、.NET 这些）走的是<strong>回溯式</strong>实现。遇到 <code>*</code>、<code>+</code> 这种量词时，它先尽量多匹配，发现后面对不上了，就回退一个字符再试，对不上再退……这个"试错—回退"的过程就是回溯。</p>
+    <p>正常情况下回溯次数有限。但当量词嵌套量词时，回溯路径会组合爆炸。看这个经典的炸弹：</p>
+    <pre data-lang="text"><code class="language-text">正则：  (a+)+$
+输入：  aaaaaaaaaaaaaaaaaaaaaaaa!   ← 一串 a 后面跟个不匹配的字符</code></pre>
+    <p>问题出在 <code>(a+)+</code>：内层 <code>a+</code> 能匹配的 a，外层 <code>+</code> 又能再切一刀。"24 个 a 怎么分组"这件事有指数级种方案。引擎匹配到结尾发现 <code>$</code> 前面是 <code>!</code> 对不上，于是<strong>把每一种分组方案都回溯试一遍</strong>才肯认输。</p>
+
+    <div class="callout callout-danger">
+      <span class="ic">🚫</span>
+      <div class="body"><p>这个例子里，每多加一个 <code>a</code>，匹配时间翻一倍。20 个 a 还能秒回，30 个 a 要算一秒多，40 个 a 直接卡到几分钟。指数曲线的特点就是——在某个点之前你毫无感觉，过了那个点瞬间原地爆炸。</p></div>
+    </div>
+
+    <h2>怎么一眼看出一个正则有风险</h2>
+    <p>不需要背理论。记住一个特征：<strong>两个量词作用在同一段可重叠的字符上</strong>，就要警惕。常见的危险形态：</p>
+    <ul>
+      <li><code>(a+)+</code>、<code>(a*)*</code> —— 量词套量词，最典型</li>
+      <li><code>(a|aa)+</code> —— 分支之间有重叠，<code>aa</code> 既可以是一个分支也可以是两个</li>
+      <li><code>(\d+)*</code>、<code>(\w+\s?)*</code> —— 换个皮，本质一样</li>
+      <li><code>^(\w+@\w+\.\w+)+$</code> 这类"看着很专业"的邮箱/URL 校验，最容易藏雷</li>
+    </ul>
+    <p>Stack Overflow 在 2016 年 7 月 20 日也吃过一模一样的亏：一个用来 trim 帖子首尾空白的正则，遇到一行约 2 万个连续空格的帖子，单条请求把 CPU 跑满 10 分钟，整站瘫了 34 分钟。那个正则简单到没人会怀疑它。</p>
+
+    <h2>排查：线上 CPU 打满，怎么定位到是它</h2>
+    <p>现象很有辨识度，先对症状：</p>
+    <ul>
+      <li><strong>单核 100%、其它核闲着</strong>——正则匹配是单线程同步的，卡死的是处理那个请求的线程。多核机器上表现为某一个核被顶满。</li>
+      <li><strong>Node.js 上事件循环完全冻住</strong>——同步正则会阻塞 event loop，健康检查、其它请求全部超时。这是 Node 上 ReDoS 格外致命的原因。</li>
+      <li><strong>CPU 飙高但内存、I/O 正常</strong>——纯算力空转，不是泄漏也不是慢查询。</li>
+    </ul>
+    <p>定位手段：</p>
+    <pre data-lang="bash"><code class="language-bash"># Node：抓一份 CPU profile，火焰图上会有一根又高又孤独的栈，
+# 栈顶是 RegExp.prototype.test 或 exec
+node --prof app.js
+# 或线上用 0x / clinic flame 直接出火焰图
+
+# Java：jstack 连打几次，总能抓到某个线程卡在 Pattern$... .match
+jstack <pid> | grep -A 20 'java.util.regex'</code></pre>
+    <p>火焰图里那根扎眼的栈，栈顶常驻正则匹配函数，基本就实锤了。接下来把那个正则和触发它的输入捞出来。</p>
+
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p>怀疑某个正则有问题，又不敢拿生产试？把它和构造的恶意输入丢进 <a href="/tools/regex-tester.html">在线正则测试器</a> 跑一下——如果几十个字符就明显卡顿，那就是它。测试时从短输入开始逐步加长，观察是不是每加几个字符耗时就翻倍。</p></div>
+    </div>
+
+    <h2>三种修法，从最优到兜底</h2>
+
+    <h3>1. 换一个不会回溯的引擎（最优）</h3>
+    <p>Google 的 <strong>RE2</strong> 用的是另一套实现（基于自动机），保证匹配时间和输入长度<strong>线性相关</strong>，从原理上就不存在灾难性回溯。代价是不支持反向引用这类需要回溯的高级特性——但日常校验用不到。</p>
+    <pre data-lang="js"><code class="language-js">// Node：用 re2 包替换内置 RegExp
+import RE2 from "re2";
+const re = new RE2("(a+)+$");
+re.test("aaaaaaaaaaaaaaaaaaaa!");  // 立即返回，不会爆炸</code></pre>
+    <p>Go 的标准库 <code>regexp</code> 直接就是 RE2，天生免疫。这也是为什么用 Go 写的服务很少听说 ReDoS。</p>
+
+    <h3>2. 重写正则，消掉嵌套量词</h3>
+    <p>如果不能换引擎，就把有缺陷的写法改掉。<code>(a+)+</code> 想表达的无非是"一个或多个 a"，那直接 <code>a+</code> 就够了。要锁死回溯，支持的引擎里可以用<strong>原子组</strong> <code>(?&gt;...)</code> 或<strong>占有量词</strong> <code>a++</code>，告诉引擎"匹配了就别回退"。</p>
+    <pre data-lang="text"><code class="language-text">(a+)+$      ❌ 灾难性回溯
+a+$         ✅ 等价且安全
+(?&gt;a+)$      ✅ 原子组，匹配后不回溯（Java/PCRE/.NET 支持）</code></pre>
+
+    <h3>3. 加超时和输入长度限制（兜底）</h3>
+    <p>实在改不动祖传正则，至少给它套个笼子。Java 没有内置正则超时，但可以在独立线程里跑匹配、超时就中断。最简单粗暴又最有效的一招：<strong>在跑正则之前先限制输入长度</strong>。</p>
+    <pre data-lang="js"><code class="language-js">// 用户名再长也不该超过 64 字符，先卡长度
+if (input.length > 64) return reject();
+return USERNAME_RE.test(input);</code></pre>
+    <p>ReDoS 的伤害来自"长输入 × 指数增长"。把输入长度焊死在一个上限，指数曲线就被截断在可接受的范围内。这一条几乎零成本，建议所有对外接受文本的接口都加。</p>
+
+    <h2>顺手说一句</h2>
+    <p>真正的教训不是"正则危险"。正则没问题，<strong>同步阻塞 + 指数复杂度 + 接受不可信输入</strong>这三样凑齐才危险。Cloudflare 那次，前两样早就在那儿，缺的只是第三样——一条恰好能触发回溯的规则上线。所以凡是对外接收文本、又用了自带回溯引擎的地方，默认就该假设有人会拿恶意输入来试探。</p>
+
+    <div class="cta">
+      <h3>在线正则测试器</h3>
+      <p>实时匹配、高亮分组、性能直观可感——拿可疑正则和长输入跑一跑</p>
+      <a href="/tools/regex-tester.html" class="btn btn-primary">打开正则测试器</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/regex-common-patterns.html" class="related-card">
+          <div class="related-cat">速查表</div>
+          <div class="related-title">10 个能直接用的正则</div>
+          <p class="related-desc">附 ✓/✗ 测试样例。</p>
+        </a>
+        <a href="/blog/jwt-not-session.html" class="related-card">
+          <div class="related-cat">安全 · 鉴权</div>
+          <div class="related-title">为什么我把 JWT 从生产环境删了</div>
+          <p class="related-desc">无状态鉴权的真实代价。</p>
+        </a>
+        <a href="/blog/hash-algorithm-guide.html" class="related-card">
+          <div class="related-cat">安全 · 哈希</div>
+          <div class="related-title">MD5、SHA-1、SHA-256 怎么选</div>
+          <p class="related-desc">按场景倒推该用哪个哈希。</p>
+        </a>
+        <a href="/blog/uuid-primary-key.html" class="related-card">
+          <div class="related-cat">后端 · 数据库</div>
+          <div class="related-title">别拿 UUID v4 当数据库主键</div>
+          <p class="related-desc">随机主键怎么拖垮写入。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
+</div>
+
+<div id="siteFooter"></div>
+<script type="module" src="/js/blog-post.js?v=2"></script>
+</body>
+</html>
