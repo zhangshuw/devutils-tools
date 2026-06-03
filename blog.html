@@ -59,7 +59,7 @@
 
   <!-- 筛选 -->
   <div class="blog-filters" id="blogFilters">
-    <button class="filter-btn active" data-filter="all">全部<span class="count">17</span></button>
+    <button class="filter-btn active" data-filter="all">全部<span class="count">19</span></button>
     <button class="filter-btn" data-filter="前端">前端</button>
     <button class="filter-btn" data-filter="后端">后端</button>
     <button class="filter-btn" data-filter="工具推荐">工具推荐</button>
@@ -70,6 +70,30 @@
 
   <!-- 卡片网格 -->
   <div class="blog-grid" id="blogGrid">
+
+    <article class="blog-card" data-category="后端">
+      <span class="category">后端 · 运维</span>
+      <h3><a href="/blog/cron-pitfalls.html">Cron 的三个坑：星期和日期是 OR、夏令时漏跑、任务重叠</a></h3>
+      <p class="excerpt">日和星期同时写为什么是并集、只判首字符导致 */2 翻车、DST 那两小时的漏跑与重跑，以及为什么该用 UTC 和 systemd timer。</p>
+      <div class="card-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>9 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">cron</span><span class="tag">运维</span><span class="tag">定时任务</span></div>
+    </article>
+
+    <article class="blog-card" data-category="编码">
+      <span class="category">编码 · Base64</span>
+      <h3><a href="/blog/base64-real-cost.html">Base64 不是压缩也不是加密：33% 膨胀和 data URL 的真实代价</a></h3>
+      <p class="excerpt">4/3 膨胀的原理、base64url 和 JWT 为何去填充、HTTP/2 后内联图片为何多半是亏的、btoa 遇中文为何抛错。</p>
+      <div class="card-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>8 分钟</span>
+      </div>
+      <div class="tags"><span class="tag">Base64</span><span class="tag">编码</span><span class="tag">性能</span></div>
+    </article>
 
     <article class="blog-card" data-category="后端">
       <span class="category">后端 · 时间</span>

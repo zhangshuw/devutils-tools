@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>Cron 的三个坑：星期和日期是 OR、夏令时漏跑、任务重叠 | DevUtils</title>
+<meta name="description" content="Cron 表达式里同时写了星期和日期，它是 OR 不是 AND——这是 1970 年代留下的设计。这篇讲清楚 DOM/DOW 的并集语义、只判首字符导致 */2 失效的实现 bug、夏令时那两小时的漏跑与重跑，以及为什么该用 UTC 和 systemd timer。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/cron-pitfalls.html">
+<meta property="og:title" content="Cron 的三个坑：星期和日期是 OR、夏令时漏跑、任务重叠">
+<meta property="og:description" content="DOM/DOW 并集语义、实现 bug 与 DST 漏跑">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/cron-pitfalls.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Cron 的三个坑">
+<meta name="twitter:description" content="星期和日期是 OR、夏令时漏跑、任务重叠">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"Cron 的三个坑：星期和日期是 OR、夏令时漏跑、任务重叠","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-06-02","dateModified":"2026-06-02","publisher":{"@type":"Organization","name":"DevUtils"}}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="siteHeader"></div>
+
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
+
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>Cron 的坑</span>
+    </nav>
+
+    <header class="post-header">
+      <span class="category">后端 · 运维</span>
+      <h1>Cron 的三个坑：星期和日期是 OR、夏令时漏跑、任务重叠</h1>
+      <p class="lede">"每月 15 号、并且是周五，才执行"——有人这么写了 <code>0 4 15 * 5</code>，结果它在每个 15 号<em>和</em>每个周五都跑了。不是写错，是 cron 在这种情况下用的是 OR，不是 AND。这个行为从 1970 年代留到现在，还写进了标准。Cron 看着简单，能埋人的地方比想象中多。这篇挑三个最常见的。</p>
+      <div class="post-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>约 9 分钟阅读</span>
+      </div>
+    </header>
+
+    <p>先快速对一下五个字段，后面都用得上：</p>
+    <pre data-lang="text"><code class="language-text">┌── 分钟 (0-59)
+│ ┌── 小时 (0-23)
+│ │ ┌── 日 DOM (1-31)
+│ │ │ ┌── 月 (1-12)
+│ │ │ │ ┌── 星期 DOW (0-7，0 和 7 都是周日)
+│ │ │ │ │
+* * * * *  要执行的命令</code></pre>
+
+    <h2>坑一：日和星期同时写，是并集不是交集</h2>
+    <p>这是最反直觉、也最容易上线后才发现的一条。规则是这样的：</p>
+    <ul>
+      <li>日（DOM）和星期（DOW）<strong>有一个是 <code>*</code></strong> → 取交集（正常理解）</li>
+      <li>两个<strong>都不是 <code>*</code></strong> → 取<strong>并集</strong>，哪个匹配上都跑</li>
+    </ul>
+    <pre data-lang="text"><code class="language-text">30 4 1,15 * 5
+# 你以为：每月 1 号和 15 号里，恰好是周五的那天 4:30 跑
+# 实际上：每月 1 号、每月 15 号、外加每个周五，都跑</code></pre>
+    <p>这不是某个版本的 bug，是 Paul Vixie 的 cron（也就是现在主流的 ISC cron）从 1980 年代就定下的语义，POSIX 也照此写进了标准。Vixie 自己都形容它"bizarre（古怪）"，但"它就是标准"。</p>
+
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p>真要"日期 AND 星期"，cron 表达式本身做不到，把判断挪进命令里：<br><code>0 4 15 * * [ "$(date +\%u)" = "5" ] &amp;&amp; /path/to/job</code><br>意思是"每月 15 号 4:00 触发，但只有当天是周五（<code>%u</code>=5）才真正执行"。注意 crontab 里 <code>%</code> 要转义成 <code>\%</code>。</p></div>
+    </div>
+
+    <h2>坑二：只看第一个字符，让 */2 这种写法翻车</h2>
+    <p>上面那个"判断 DOM/DOW 是不是 <code>*</code>"的逻辑，实现得很潦草——Vixie cron 只检查字段的<strong>第一个字符</strong>是不是 <code>*</code>。1988 年那会儿没有步进语法，这么写没问题。但现在你能写 <code>*/2</code> 这种值，它的第一个字符也是 <code>*</code>……</p>
+    <pre data-lang="text"><code class="language-text">30 4 */2 * 5
+# */2 第一个字符是 *，于是 cron 判定"DOM 是通配" → 走交集分支
+# 结果："每隔一天" 和 "周五" 的关系，跟你直觉的又不一样</code></pre>
+    <p>POSIX 写的是字段"是（is）一个星号"，Vixie 实现成了"以（starts with）星号开头"——一个潜伏了三十多年的标准偏差。结论很简单：<strong>DOM 和 DOW 别同时用非 <code>*</code> 的值</strong>，尤其别和步进混着写。想验证一个表达式到底在哪些时刻触发，别靠脑补，丢进 <a href="/tools/cron-generator.html">在线 Cron 表达式生成器</a> 看它列出的实际执行时间。</p>
+
+    <h2>坑三：夏令时那两个小时，漏跑或重跑</h2>
+    <p><a href="/blog/timezone-leap-second.html">时间那篇</a>讲过 DST 会让本地时钟跳一小时。落到 cron 上就是：春季前拨，02:00–02:59 这一小时不存在，定在这里的任务可能<strong>不触发</strong>；秋季回拨，01:00–01:59 走两遍，任务可能<strong>跑两次</strong>。</p>
+    <p>各实现的处理还不一样，这是最坑的地方——你没法假设换台机器行为一致：</p>
+    <table>
+      <thead><tr><th>实现</th><th>DST 处理</th></tr></thead>
+      <tbody>
+        <tr><td>Vixie cron / cronie</td><td>对 &lt;3 小时的调整特殊处理：前拨跳过的固定时间任务<strong>事后补跑一次</strong>，回拨则<strong>避免重复</strong>。但仅限"固定时间、粒度大于 1 小时"的任务；高频任务按新时间正常跑</td></tr>
+        <tr><td>Quartz（Java）</td><td>前拨的空隙里<strong>跳过</strong>；回拨的重叠区间<strong>跑两次</strong></td></tr>
+        <tr><td>systemd timer</td><td>原生正确处理：前拨跳过缺失小时，回拨不重复触发</td></tr>
+        <tr><td>旧版 AIX</td><td>有过 DST 期间不触发的真实 bug（APAR IV27424）</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-danger">
+      <span class="ic">🚫</span>
+      <div class="body"><p>对账、结算、备份这类<strong>一天只能跑一次、且必须跑</strong>的任务，绝不要排在 DST 切换的 01:00–03:00 之间。回拨那天跑两次的对账任务，能把账算乱；前拨那天没跑的备份，等你发现时已经少了一天的数据。</p></div>
+    </div>
+
+    <h2>把这三个坑一次性绕开</h2>
+    <ul>
+      <li><strong>服务器和 cron 都用 UTC。</strong>UTC 不存在夏令时，坑三直接消失。需要"北京时间凌晨 3 点"就自己换算成 UTC 19:00 写进去。这是最省心的一条。</li>
+      <li><strong>DOM 和 DOW 不要同时填非 <code>*</code> 值</strong>，需要"且"的逻辑放命令里判断，绕开坑一和坑二。</li>
+      <li><strong>给任务加锁防重叠。</strong>cron 不管上一次有没有跑完就到点再起一个，长任务会叠在一起。用 <code>flock</code> 兜底：<br><code>* * * * * flock -n /tmp/job.lock /path/to/job</code></li>
+      <li><strong>现代 Linux 优先考虑 systemd timer。</strong>它原生处理 DST、自带日志（<code>journalctl</code>）、能设依赖和资源限制，比 cron 健壮得多。</li>
+    </ul>
+
+    <h2>顺带：cron 方言不止一种</h2>
+    <p>别以为天下 cron 一个样。<strong>Quartz</strong>（Java 生态）是 6–7 个字段，最前面多一个<strong>秒</strong>，最后可选<strong>年</strong>，而且星期编号是 1=周日，跟 Unix 的 0=周日错开一位。很多人把 Linux 的五字段表达式直接贴进 Spring 的 <code>@Scheduled</code>，要么报错，要么时间错位。<strong>标准 cron 没有"秒"这一级</strong>——要秒级调度，得换 Quartz 或专门的调度器，别指望 crontab。</p>
+    <p>跨平台/跨框架抄表达式之前，先确认对方是哪种方言、几个字段、星期怎么编号。</p>
+
+    <div class="cta">
+      <h3>在线 Cron 表达式生成器</h3>
+      <p>可视化生成、解析 cron 表达式，并列出接下来的实际执行时间</p>
+      <a href="/tools/cron-generator.html" class="btn btn-primary">打开 Cron 生成器</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/timezone-leap-second.html" class="related-card">
+          <div class="related-cat">后端 · 时间</div>
+          <div class="related-title">只存 UTC 还不够</div>
+          <p class="related-desc">夏令时、闰秒与跳秒事故。</p>
+        </a>
+        <a href="/blog/timestamp-guide.html" class="related-card">
+          <div class="related-cat">后端 · 时间</div>
+          <div class="related-title">Unix 时间戳：秒级还是毫秒级</div>
+          <p class="related-desc">前后端各踩各的坑。</p>
+        </a>
+        <a href="/blog/regex-redos.html" class="related-card">
+          <div class="related-cat">安全 · 性能</div>
+          <div class="related-title">一个正则打满线上 CPU</div>
+          <p class="related-desc">ReDoS 原理与排查。</p>
+        </a>
+        <a href="/blog/uuid-primary-key.html" class="related-card">
+          <div class="related-cat">后端 · 数据库</div>
+          <div class="related-title">别拿 UUID v4 当数据库主键</div>
+          <p class="related-desc">随机主键怎么拖垮写入。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
+</div>
+
+<div id="siteFooter"></div>
+<script type="module" src="/js/blog-post.js?v=2"></script>
+</body>
+</html>

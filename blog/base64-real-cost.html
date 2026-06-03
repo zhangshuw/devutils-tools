@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>Base64 不是压缩也不是加密：33% 膨胀和 data URL 的真实代价 | DevUtils</title>
+<meta name="description" content="Base64 把数据撑大 33%，既不加密也不压缩。这篇讲清楚 4/3 膨胀的数学原理、base64url 和 JWT 为什么去掉填充、把图片内联进 data URL 在 HTTP/2 时代为什么常常是亏的，以及 btoa 遇到中文为什么直接抛错。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/base64-real-cost.html">
+<meta property="og:title" content="Base64 不是压缩也不是加密：33% 膨胀和 data URL 的真实代价">
+<meta property="og:description" content="4/3 膨胀、base64url、data URL 取舍与 btoa 中文坑">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/base64-real-cost.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Base64 不是压缩也不是加密">
+<meta name="twitter:description" content="33% 膨胀与 data URL 的真实代价">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"Base64 不是压缩也不是加密：33% 膨胀和 data URL 的真实代价","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-06-02","dateModified":"2026-06-02","publisher":{"@type":"Organization","name":"DevUtils"}}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="siteHeader"></div>
+
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
+
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>Base64 真实代价</span>
+    </nav>
+
+    <header class="post-header">
+      <span class="category">编码 · Base64</span>
+      <h1>Base64 不是压缩也不是加密：33% 膨胀和 data URL 的真实代价</h1>
+      <p class="lede">见过有人把密码 Base64 一下当"加密"存进库，也见过把首屏所有图标内联成 data URL "省请求"，结果首屏更慢了。Base64 是个被严重误解的东西——它不缩小数据，反而撑大约 33%；它不保护数据，谁都能一秒解开。它只解决一个问题：让二进制安全地走过只认文本的通道。这篇说清楚它的代价该花在哪。</p>
+      <div class="post-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>约 8 分钟阅读</span>
+      </div>
+    </header>
+
+    <p>Base64 干的事只有一件：把任意二进制数据，重新编码成 64 个"安全"可见字符（<code>A-Z a-z 0-9 + /</code>）。这样它能塞进 JSON 字符串、URL、邮件正文、HTML 这些只接受文本的地方而不被破坏。仅此而已。它不是给人看的，也不是给数据上锁的。</p>
+
+    <h2>33% 从哪来：4 个字符装 3 个字节</h2>
+    <p>原理是进制重组。原始数据按 8 位一字节，Base64 按 6 位一组（2⁶=64 正好对应 64 个字符）。每 <strong>3 字节（24 位）</strong>切成 <strong>4 组 6 位</strong>，编成 4 个字符。</p>
+    <pre data-lang="text"><code class="language-text">3 字节  →  4 字符      膨胀率 4/3 ≈ 1.333
+即每 100KB 的原始数据，Base64 后约 133KB</code></pre>
+    <p>当原始字节数不是 3 的倍数时，末尾用 <code>=</code> 补齐到 4 的倍数——这就是 Base64 串结尾常见一两个 <code>=</code> 的原因。它是<strong>填充</strong>，不是数据。</p>
+
+    <div class="callout callout-warn">
+      <span class="ic">⚠️</span>
+      <div class="body"><p>别在 Base64 之后再指望 gzip/brotli 帮你省回来。压缩算法吃的是原始字节里的规律，Base64 重组后规律被打散，<strong>压缩率反而比直接压原始二进制更差</strong>。正确顺序是先压缩、再 Base64（如果非传文本不可），不是反过来。</p></div>
+    </div>
+
+    <h2>base64url：URL 和 JWT 里的那个变种</h2>
+    <p>标准 Base64 的 <code>+</code>、<code>/</code>、<code>=</code> 在 URL 里有特殊含义：<code>+</code> 会被解析成空格，<code>/</code> 是路径分隔，<code>=</code> 是查询参数赋值。直接把 Base64 塞进 URL 会被搅乱。于是有了 <strong>base64url</strong>（RFC 4648 的 URL-safe 变体）：</p>
+    <pre data-lang="text"><code class="language-text">标准:    +  /  =(填充)
+URL 安全: -  _  （通常直接省略填充）</code></pre>
+    <p>JWT 就是典型——它的三段都是 <strong>base64url 且不带填充</strong>。这也是为什么你把 JWT 中段直接拿标准 Base64 解码偶尔会失败：字符集和填充都不一样。处理 JWT、URL 参数里的 token 时，认准 base64url。要拆开看一个 JWT 三段分别编码了什么，用 <a href="/tools/jwt-editor.html">JWT 编辑器</a> 比手动解码省事。</p>
+
+    <h2>data URL 内联图片：HTTP/2 之后大多是亏的</h2>
+    <p>把小图标编成 <code>data:image/png;base64,...</code> 直接写进 HTML/CSS，曾经是性能优化的常规操作——省掉一次 HTTP 请求。在 HTTP/1.1 时代，每个请求都有排队和连接开销，这么换划算。</p>
+    <p>但到了 <strong>HTTP/2</strong>，多路复用让同一连接上并发几十个请求几乎没有额外开销，"省一个请求"这点收益基本归零。而 Base64 内联的代价却一个没少，还更明显了：</p>
+    <ul>
+      <li><strong>体积涨 33%</strong>，而且这部分撑大的是 HTML/CSS 本身——首屏关键资源变大，直接拖慢首次渲染。</li>
+      <li><strong>无法被单独缓存</strong>。外链图片浏览器能缓存、能复用；内联进 HTML 的图，每次 HTML 变了就得整个重新下载，跨页面也没法共享。</li>
+      <li><strong>CSS 里的 data URL 会阻塞渲染</strong>。CSS 是渲染阻塞资源，把大图塞进 CSS 等于让渲染等这坨 Base64 下载完。</li>
+      <li>不能并行解码、不利于懒加载。</li>
+    </ul>
+
+    <div class="callout callout-tip">
+      <span class="ic">💡</span>
+      <div class="body"><p>现在的经验法则：只对<strong>极小（约 1–2KB 以内）、且几乎每页都要、又不常变</strong>的资源考虑内联，比如一两个关键 SVG 图标。稍大的图老老实实走外链，交给 CDN 和浏览器缓存。别再无脑"内联省请求"了——HTTP/2 之后那笔账已经反过来了。</p></div>
+    </div>
+
+    <h2>btoa 遇到中文直接抛错</h2>
+    <p>浏览器自带 <code>btoa</code>/<code>atob</code>，但它们只认 Latin1（每字符 0–255）。传个中文或 emoji 进去，直接报错：</p>
+    <pre data-lang="js"><code class="language-js">btoa("hello")     // "aGVsbG8="  ✓
+btoa("你好")       // ❌ InvalidCharacterError: 字符超出 Latin1 范围</code></pre>
+    <p>正确做法是先用 <code>TextEncoder</code> 把字符串编成 UTF-8 字节，再对字节做 Base64：</p>
+    <pre data-lang="js"><code class="language-js">// 编码：字符串 → UTF-8 字节 → Base64
+function b64encode(str) {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  bytes.forEach(b =&gt; bin += String.fromCharCode(b));
+  return btoa(bin);
+}
+// 解码反过来：Base64 → 字节 → 字符串
+function b64decode(b64) {
+  const bin = atob(b64);
+  const bytes = Uint8Array.from(bin, c =&gt; c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+b64encode("你好")            // "5L2g5aW9"
+b64decode("5L2g5aW9")        // "你好"</code></pre>
+    <p>这个坑的根源还是<a href="/blog/unicode-string-length.html">字符和字节的混淆</a>——<code>btoa</code> 要的是字节，你给了它字符。Node 里则用 <code>Buffer.from(str, "utf8").toString("base64")</code>，没这个问题。</p>
+
+    <h2>最后纠正那个最危险的误解</h2>
+    <p><strong>Base64 不提供任何安全性。</strong>它是公开、可逆、无密钥的编码，任何人拿到都能一行命令还原：</p>
+    <pre data-lang="bash"><code class="language-bash">echo "cGFzc3dvcmQxMjM=" | base64 -d
+# password123</code></pre>
+    <p>把密码、token、敏感配置 Base64 一下就当"处理过了"，等于没处理。要保密用加密（AES 等），要校验完整性用<a href="/blog/hash-algorithm-guide.html">哈希/HMAC</a>。Base64 只负责"能安全地放进文本通道"，安全性这词跟它没关系。需要快速编解码一段文本或文件，用 <a href="/tools/base64.html">在线 Base64 工具</a>，本地计算不上传。</p>
+
+    <div class="cta">
+      <h3>在线 Base64 编解码</h3>
+      <p>文本与文件的 Base64 编码、解码，支持 URL-safe 变体，全本地计算</p>
+      <a href="/tools/base64.html" class="btn btn-primary">打开 Base64 工具</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/unicode-string-length.html" class="related-card">
+          <div class="related-cat">前端 · 编码</div>
+          <div class="related-title">为什么 "👨‍👩‍👧‍👦".length 是 11</div>
+          <p class="related-desc">码点、代理对与字素簇。</p>
+        </a>
+        <a href="/blog/jwt-not-session.html" class="related-card">
+          <div class="related-cat">安全 · 鉴权</div>
+          <div class="related-title">为什么我把 JWT 从生产环境删了</div>
+          <p class="related-desc">payload 是明文 base64url。</p>
+        </a>
+        <a href="/blog/url-encoding-guide.html" class="related-card">
+          <div class="related-cat">编码 · URL</div>
+          <div class="related-title">URL 编码：哪些字符要编码</div>
+          <p class="related-desc">和 Base64 的区别。</p>
+        </a>
+        <a href="/blog/hash-algorithm-guide.html" class="related-card">
+          <div class="related-cat">安全 · 哈希</div>
+          <div class="related-title">MD5、SHA-1、SHA-256 怎么选</div>
+          <p class="related-desc">要校验完整性用哈希。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
+</div>
+
+<div id="siteFooter"></div>
+<script type="module" src="/js/blog-post.js?v=2"></script>
+</body>
+</html>
