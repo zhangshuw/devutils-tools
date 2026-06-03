@@ -326,7 +326,7 @@
 .cta>*{position:relative}
 .cta h3{color:var(--color-text-primary);margin:0 0 8px;font-size:1.18rem}
 .cta p{color:var(--color-text-secondary);margin:0 0 18px}
-.cta .btn-primary{text-decoration:none;border:none;font-weight:600;padding:10px 24px}
+.cta .btn-primary{color:#fff;text-decoration:none;border:none;font-weight:600;padding:10px 24px}
 
 /* 分享栏 */
 .share-bar{
