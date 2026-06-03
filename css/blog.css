@@ -436,3 +436,41 @@
   .j-entry h2{font-size:1.4rem}
   .j-entry.lead h2{font-size:1.7rem}
 }
+
+/* ===== Journal v2：分类配色 + 入场动画 + 文章页衬线标题 ===== */
+/* 分类色板（首页文章流的分类小标 + 选中的筛选标签） */
+.j-entry[data-category="前端"] .cat{color:#ec4899}
+.j-entry[data-category="后端"] .cat{color:#818cf8}
+.j-entry[data-category="安全"] .cat{color:#f87171}
+.j-entry[data-category="编码"] .cat{color:#fbbf24}
+.j-entry[data-category="工具推荐"] .cat{color:#34d399}
+.j-entry[data-category="速查表"] .cat{color:#22d3ee}
+.journal-filters .f[data-filter="前端"].active{color:#ec4899;border-bottom-color:#ec4899}
+.journal-filters .f[data-filter="后端"].active{color:#818cf8;border-bottom-color:#818cf8}
+.journal-filters .f[data-filter="安全"].active{color:#f87171;border-bottom-color:#f87171}
+.journal-filters .f[data-filter="编码"].active{color:#fbbf24;border-bottom-color:#fbbf24}
+.journal-filters .f[data-filter="工具推荐"].active{color:#34d399;border-bottom-color:#34d399}
+.journal-filters .f[data-filter="速查表"].active{color:#22d3ee;border-bottom-color:#22d3ee}
+/* 头条左侧细竖线点缀 */
+.j-entry.lead{position:relative}
+.j-entry.lead .cat{color:var(--color-accent)}
+/* 列表项 hover 轻微背景 + 左移强调 */
+.j-entry{transition:transform .2s ease}
+.j-entry:hover{transform:translateX(3px)}
+/* 入场动画（首页文章流逐条淡入上移） */
+@keyframes j-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.journal-list .j-entry{animation:j-rise .55s cubic-bezier(.2,.7,.3,1) both}
+.journal-list .j-entry:nth-child(1){animation-delay:.03s}
+.journal-list .j-entry:nth-child(2){animation-delay:.08s}
+.journal-list .j-entry:nth-child(3){animation-delay:.13s}
+.journal-list .j-entry:nth-child(4){animation-delay:.18s}
+.journal-list .j-entry:nth-child(5){animation-delay:.23s}
+.journal-list .j-entry:nth-child(6){animation-delay:.28s}
+.journal-list .j-entry:nth-child(n+7){animation-delay:.32s}
+.journal-masthead{animation:j-rise .5s ease both}
+.journal-filters{animation:j-rise .5s ease both;animation-delay:.02s}
+@media (prefers-reduced-motion:reduce){.journal-list .j-entry,.journal-masthead,.journal-filters{animation:none}.j-entry:hover{transform:none}}
+/* 文章页标题改用衬线，与首页统一刊物质感 */
+.post-header h1{font-family:"Newsreader","Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;font-weight:500;letter-spacing:-.01em}
+.post h2{font-family:"Newsreader","Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;font-weight:500}
+.post h3{font-family:"Newsreader","Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif;font-weight:600}
