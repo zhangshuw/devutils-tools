@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6366f1">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>HTML 实体编码不是万能解药：XSS 要按上下文转义 | DevUtils</title>
+<meta name="description" content="把 &lt; &gt; &amp; 转成实体就以为防住了 XSS？那只在 HTML 正文上下文成立。这篇讲清楚 HTML 正文、属性、JavaScript、URL、CSS 五种上下文各自的转义规则，innerHTML 与 textContent 的区别，javascript: 协议绕过，以及为什么 React 也会被 XSS。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/html-entity-xss.html">
+<meta property="og:title" content="HTML 实体编码不是万能解药：XSS 要按上下文转义">
+<meta property="og:description" content="五种上下文的转义规则与常见绕过">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/html-entity-xss.html">
+<meta property="og:site_name" content="DevUtils">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HTML 实体编码不是万能解药">
+<meta name="twitter:description" content="XSS 要按上下文转义">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","headline":"HTML 实体编码不是万能解药：XSS 要按上下文转义","author":{"@type":"Organization","name":"DevUtils"},"datePublished":"2026-06-02","dateModified":"2026-06-02","publisher":{"@type":"Organization","name":"DevUtils"}}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="siteHeader"></div>
+
+<div class="post-layout">
+  <aside class="post-aside-left">
+    <nav class="toc" data-toc></nav>
+  </aside>
+
+  <article class="post">
+    <nav class="breadcrumb">
+      <a href="/">首页</a><span class="breadcrumb-sep">/</span>
+      <a href="/blog.html">博客</a><span class="breadcrumb-sep">/</span>
+      <span>实体编码与 XSS</span>
+    </nav>
+
+    <header class="post-header">
+      <span class="category">安全 · 前端</span>
+      <h1>HTML 实体编码不是万能解药：XSS 要按上下文转义</h1>
+      <p class="lede">"用户输入都做了 HTML 转义，XSS 就防住了"——这句话只对了一半，而剩下那一半正是出事的地方。把 <code>&lt; &gt; &amp;</code> 转成实体，只在"HTML 正文"这一种上下文里有效。同样一段输入放进 HTML 属性、放进 <code>&lt;script&gt;</code>、放进 <code>href</code>、放进内联样式，需要的是完全不同的转义。用错地方的转义，等于没转。</p>
+      <div class="post-meta">
+        <span>2026-06-02</span>
+        <span class="sep">·</span>
+        <span>约 10 分钟阅读</span>
+      </div>
+    </header>
+
+    <p>XSS（跨站脚本）的本质就一句话：<strong>把用户提供的数据，当成代码执行了。</strong>防御的核心不是"过滤坏字符"，而是"在输出的那一刻，按所在的上下文把数据转义成纯数据"。先记住一个反直觉的原则：<strong>转义发生在输出时，按输出位置定规则；不是在输入时一刀切。</strong></p>
+
+    <h2>HTML 实体编码到底转了什么</h2>
+    <p>最常见的那套转义，是把这几个在 HTML 里有特殊含义的字符替换成实体：</p>
+    <table>
+      <thead><tr><th>字符</th><th>实体</th><th>为什么危险</th></tr></thead>
+      <tbody>
+        <tr><td><code>&lt;</code></td><td><code>&amp;lt;</code></td><td>开启标签，能注入 <code>&lt;script&gt;</code></td></tr>
+        <tr><td><code>&gt;</code></td><td><code>&amp;gt;</code></td><td>闭合标签</td></tr>
+        <tr><td><code>&amp;</code></td><td><code>&amp;amp;</code></td><td>实体本身的起始符</td></tr>
+        <tr><td><code>"</code></td><td><code>&amp;quot;</code></td><td>闭合双引号属性值</td></tr>
+        <tr><td><code>'</code></td><td><code>&amp;#39;</code></td><td>闭合单引号属性值</td></tr>
+      </tbody>
+    </table>
+    <p>这套规则对应的是"数据放在 HTML 标签之间的正文里"这一种场景。<code>&lt;div&gt;这里&lt;/div&gt;</code>，把上面五个字符转义掉，用户就没法注入新标签。到此为止，它是对的。问题是大部分输出并不在正文里。</p>
+
+    <h2>五种上下文，五套规则</h2>
+
+    <h3>1. HTML 正文 —— 实体编码（前面那套）</h3>
+    <pre data-lang="html"><code class="language-html">&lt;div&gt;{{ 这里 }}&lt;/div&gt;   ← 用 HTML 实体编码</code></pre>
+
+    <h3>2. HTML 属性 —— 必须带引号 + 转义引号</h3>
+    <p>属性值不加引号是灾难。看这个：</p>
+    <pre data-lang="html"><code class="language-html">&lt;!-- 危险：属性没加引号 --&gt;
+&lt;img src=头像 alt={{name}}&gt;
+&lt;!-- 攻击者 name 传入：x onerror=alert(1) --&gt;
+&lt;img src=头像 alt=x onerror=alert(1)&gt;   ← 凭空多出一个事件属性</code></pre>
+    <p>就算做了 HTML 实体编码，<code>onerror=alert(1)</code> 里一个特殊字符都没有，实体编码根本拦不住。<strong>属性值一律用引号包起来</strong>，并转义对应的引号，才能锁住边界。</p>
+
+    <h3>3. JavaScript 上下文 —— 实体编码完全无效</h3>
+    <p>把数据拼进 <code>&lt;script&gt;</code> 里，是 HTML 实体编码最典型的失效点：</p>
+    <pre data-lang="html"><code class="language-html">&lt;script&gt;
+  var name = "{{name}}";   ← 这里 HTML 实体不会被浏览器解码
+&lt;/script&gt;
+&lt;!-- name 传入：";alert(1);// --&gt;
+  var name = "";alert(1);//";   ← 脚本被注入</code></pre>
+    <p>在 <code>&lt;script&gt;</code> 内部，浏览器不解析 HTML 实体，<code>&amp;quot;</code> 会原样变成字符串里的 <code>&amp;quot;</code>，而真正的 <code>"</code> 照样闭合字符串。正确做法是<strong>别拼字符串</strong>——把数据用 <code>JSON.stringify</code> 序列化，或干脆通过 <code>data-*</code> 属性 + <code>dataset</code> 读取，绕开拼接。</p>
+
+    <h3>4. URL 上下文 —— 用 URL 编码，还要防 javascript:</h3>
+    <pre data-lang="html"><code class="language-html">&lt;a href="{{url}}"&gt;链接&lt;/a&gt;
+&lt;!-- url 传入：javascript:alert(1) --&gt;
+&lt;a href="javascript:alert(1)"&gt;链接&lt;/a&gt;   ← 点一下就执行</code></pre>
+    <p>放进 URL 的参数要用 <a href="/blog/url-encoding-guide.html">URL 编码</a>（<code>encodeURIComponent</code>），但这还不够——还得<strong>校验协议</strong>，只允许 <code>http:</code>/<code>https:</code>，拒绝 <code>javascript:</code>、<code>data:</code> 这类能执行代码的伪协议。</p>
+
+    <h3>5. CSS 上下文 —— 别让用户数据进样式</h3>
+    <p>把用户数据拼进内联 <code>style</code> 或 <code>&lt;style&gt;</code>，能通过 <code>expression()</code>（老 IE）、<code>url()</code> 等方式触发。原则简单：<strong>尽量不让用户输入进入 CSS</strong>；非要进，只允许白名单内的值（比如校验过的颜色码、数字）。</p>
+
+    <div class="callout callout-danger">
+      <span class="ic">🚫</span>
+      <div class="body"><p>一句话总结这五种：<strong>同一段输入，转义方式取决于它最终落在哪。</strong>全站统一用一套 HTML 实体编码，是真实世界里最普遍的 XSS 成因——它在正文里有效，给了你"已经处理过"的错觉，但属性、脚本、URL、样式那几个口子全开着。</p></div>
+    </div>
+
+    <h2>前端最实用的两条：textContent 和别碰 innerHTML</h2>
+    <p>手动转义容易漏。浏览器其实给了你天然安全的 API——<code>textContent</code> 会把内容当纯文本插入，自动转义：</p>
+    <pre data-lang="js"><code class="language-js">// ❌ 危险：innerHTML 把字符串当 HTML 解析
+el.innerHTML = userInput;            // &lt;img onerror&gt; 直接生效
+
+// ✅ 安全：textContent 当纯文本，浏览器自动转义
+el.textContent = userInput;          // 标签变成可见的文字
+
+// 需要构建结构就用 DOM API，而不是拼 HTML 字符串
+const a = document.createElement("a");
+a.textContent = userName;            // 文本安全
+a.href = safeUrl;                    // href 单独校验协议</code></pre>
+    <p>能用 <code>textContent</code> 就不要用 <code>innerHTML</code>。真要插入富文本，用经过审计的库（如 DOMPurify）做净化，别自己写正则过滤——XSS 的 payload 变体多到正则永远追不上。</p>
+
+    <h2>连 React 都能被 XSS</h2>
+    <p>"我用 React，JSX 自动转义，不用管 XSS"——这是另一个常见误解。React 确实对 JSX 正文里的 <code>{value}</code> 自动做 HTML 转义，但有几个口子它管不到：</p>
+    <ul>
+      <li><code>dangerouslySetInnerHTML</code> —— 名字里都写了 dangerously，等于手动 <code>innerHTML</code>，不净化就是洞。</li>
+      <li><code>&lt;a href={userInput}&gt;</code> —— React 不校验协议，<code>javascript:</code> 照样能进。</li>
+      <li>把用户数据塞进 <code>&lt;script&gt;</code>、<code>style</code>、或 <code>ref</code> 回调里手动操作 DOM。</li>
+    </ul>
+    <p>框架的自动转义只覆盖"正文"这一种上下文——又绕回了本文的主线。</p>
+
+    <h2>最后：纵深防御</h2>
+    <p>转义是第一道，也是最重要的一道，但别只靠它。再加两层成本很低的兜底：</p>
+    <ul>
+      <li><strong>CSP（内容安全策略）</strong>：用 HTTP 头限制脚本来源、禁掉内联脚本。就算有一处转义漏了，CSP 能拦住注入脚本的执行。</li>
+      <li><strong>Cookie 加 <code>HttpOnly</code></strong>：让 JS 读不到会话 Cookie，即便被 XSS，也偷不走登录态（这点和 <a href="/blog/jwt-not-session.html">登录态怎么存</a>相关）。</li>
+    </ul>
+    <p>要快速把一段文本转成 HTML 实体、或把实体还原看真实内容，用 <a href="/tools/html-entity.html">在线 HTML 实体编码工具</a>，本地计算不上传。</p>
+
+    <div class="cta">
+      <h3>在线 HTML 实体编码</h3>
+      <p>HTML 实体编码与解码，特殊字符一键转换，全本地计算</p>
+      <a href="/tools/html-entity.html" class="btn btn-primary">打开 HTML 实体工具</a>
+    </div>
+
+    <div class="share-bar">
+      <span class="label">分享</span>
+      <button class="share-btn" data-share="copy">🔗 复制链接</button>
+      <button class="share-btn" data-share="twitter">𝕏 Twitter</button>
+      <button class="share-btn" data-share="weibo">📱 微博</button>
+    </div>
+
+    <div class="related-posts">
+      <div class="section-title">继续阅读</div>
+      <div class="related-grid">
+        <a href="/blog/url-encoding-guide.html" class="related-card">
+          <div class="related-cat">编码 · URL</div>
+          <div class="related-title">URL 编码：哪些字符要编码</div>
+          <p class="related-desc">URL 上下文的转义。</p>
+        </a>
+        <a href="/blog/jwt-not-session.html" class="related-card">
+          <div class="related-cat">安全 · 鉴权</div>
+          <div class="related-title">为什么我把 JWT 从生产环境删了</div>
+          <p class="related-desc">HttpOnly 与登录态。</p>
+        </a>
+        <a href="/blog/base64-real-cost.html" class="related-card">
+          <div class="related-cat">编码 · Base64</div>
+          <div class="related-title">Base64 不是压缩也不是加密</div>
+          <p class="related-desc">编码不等于安全。</p>
+        </a>
+        <a href="/blog/regex-redos.html" class="related-card">
+          <div class="related-cat">安全 · 性能</div>
+          <div class="related-title">一个正则打满线上 CPU</div>
+          <p class="related-desc">别用正则过滤 XSS。</p>
+        </a>
+      </div>
+    </div>
+  </article>
+
+  <aside class="post-aside-right"></aside>
+</div>
+
+<div id="siteFooter"></div>
+<script type="module" src="/js/blog-post.js?v=2"></script>
+</body>
+</html>
