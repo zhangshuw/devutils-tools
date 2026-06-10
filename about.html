@@ -17,7 +17,6 @@
 <meta name="twitter:title" content="关于 DevUtils">
 <meta name="twitter:description" content="一个个人维护的工具站">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9507746892285276" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/reset.css">
 <link rel="stylesheet" href="/css/layout.css">
@@ -54,8 +53,8 @@
 <p>反过来说：<strong>需要上传到服务器的事情我就不做</strong>。比如 IP 地理位置查询、汇率换算——那些必须调 API，可能涉及第三方数据收集，我不做这类。</p>
 
 <h2 style="color:var(--color-text-primary);font-size:1.4rem;margin:40px 0 14px;letter-spacing:-.01em">关于收入</h2>
-<p>这站挂了 Google AdSense。开发工具站的 CPM 不高（开发者用 Adblock 比例高），实际收益月均几十块钱——勉强能 cover 服务器+域名。</p>
-<p>没有 Premium 版本、没有 Pro 套餐、没有限频。<strong>免费用、随便用、嫌广告碍眼装 uBlock 我完全不介意</strong>。如果工具帮到你了，分享给同事就是最好的支持。</p>
+<p>这站不挂横幅广告，收入来自页面底部带"推广"标识的联盟链接（比如我自己在用的 VPS 服务商）。你通过链接注册，我拿一点佣金，你不多花钱。能 cover 服务器+域名就算回本。</p>
+<p>没有 Premium 版本、没有 Pro 套餐、没有限频。<strong>免费用、随便用</strong>。如果工具帮到你了，分享给同事就是最好的支持。</p>
 
 <h2 style="color:var(--color-text-primary);font-size:1.4rem;margin:40px 0 14px;letter-spacing:-.01em">技术栈</h2>
 <p>纯 HTML / CSS / JS，<strong>没有任何打包工具</strong>。每个 <code style="background:var(--color-bg-elevated);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;color:var(--color-accent)">tools/&lt;name&gt;.html</code> 就是一个独立页面——直接 View Source 就能看到完整代码。这种做法在 2026 年算返祖，但好处是页面加载快（首屏 1KB CSS + 4KB HTML），代码可审计，永远不会"项目跑不起来"。</p>
@@ -66,7 +65,7 @@
   <li><strong>用户系统 / 登录</strong>——工具不需要知道是谁</li>
   <li><strong>历史记录同步</strong>——如果非要持久化，浏览器 localStorage 够用</li>
   <li><strong>付费功能</strong>——免费的核心是没有付费版逼你升级</li>
-  <li><strong>跟踪分析</strong>——只有 AdSense 必须的 GA 用于审计，没有自己的埋点</li>
+  <li><strong>跟踪分析</strong>——没有自己的埋点，联盟链接也不在本站植入追踪 Cookie</li>
 </ul>
 
 <h2 style="color:var(--color-text-primary);font-size:1.4rem;margin:40px 0 14px;letter-spacing:-.01em">联系方式</h2>
@@ -81,6 +80,11 @@
 
 </main>
 
+<aside class="aff-promo" style="max-width:860px;margin:48px auto 0;padding:16px 20px;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:0.875rem;color:var(--color-text-secondary);line-height:1.7">
+  <span style="flex-shrink:0;padding:2px 8px;border:1px solid var(--color-border-light);border-radius:9999px;font-size:0.75rem;color:var(--color-text-muted)">推广</span>
+  <span style="flex:1;min-width:240px">需要海外 VPS 跑项目？我们一直在用 <strong style="color:var(--color-text-primary)">CloudCone</strong>：洛杉矶机房，按小时计费，PayPal 付款，经常放出 $20 以内的年付闪购。通过这个链接注册，本站能拿到一点佣金，这些工具就能一直免费开下去。</span>
+  <a href="https://app.cloudcone.com/?ref=14322" target="_blank" rel="nofollow sponsored noopener" style="flex-shrink:0;padding:8px 16px;background:var(--color-accent);color:#fff;border-radius:8px;text-decoration:none;font-weight:600">去看看 →</a>
+</aside>
 <div id="siteFooter"></div>
 <script type="module">import{initLayout}from'/js/layout.js';initLayout()</script>
 </body>
