@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>JWT 弱密钥检测器 — 本地爆破 HS256 签名密钥 | DevUtils</title>
+  <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <meta name="description" content="检测你的 HS256/384/512 JWT 是不是用了弱密钥签名：在浏览器本地用上百个最常见的弱密钥字典逐个验签，命中就说明任何人都能伪造你的 token。secret 和 token 全程不离开本机。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/jwt-weak-key.html">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"JWT 弱密钥检测器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .wk-intro { color:var(--color-text-secondary); margin-bottom:var(--space-lg); line-height:1.65; max-width:64ch; }
+    .wk-textarea { width:100%; min-height:130px; background:#0c0e15; border:1px solid var(--color-border); border-radius:var(--radius-md); padding:14px 16px; color:#d4d4d4; font-family:"JetBrains Mono",monospace; font-size:.85rem; line-height:1.6; resize:vertical; white-space:pre-wrap; word-break:break-all; }
+    .wk-textarea:focus { outline:none; border-color:var(--color-accent); }
+    .wk-actions { display:flex; gap:var(--space-sm); margin-top:var(--space-md); flex-wrap:wrap; align-items:center; }
+    .wk-btn { padding:var(--space-sm) var(--space-lg); background:var(--color-primary); color:#fff; border:none; border-radius:var(--radius-sm); font-size:0.95rem; font-weight:600; cursor:pointer; }
+    .wk-btn:disabled { opacity:.6; cursor:not-allowed; }
+    .wk-btn.ghost { background:transparent; color:var(--color-text); border:1px solid var(--color-border); }
+    .wk-meta { font-size:.82rem; color:var(--color-text-secondary); font-family:monospace; }
+    .wk-status { margin-top:var(--space-md); font-size:.9rem; color:var(--color-text-secondary); font-family:monospace; }
+    .wk-error { color:var(--color-error); font-size:.9rem; padding:var(--space-sm); background:rgba(220,38,38,.08); border-radius:var(--radius-sm); margin-top:var(--space-md); }
+
+    .wk-verdict { margin-top:var(--space-xl); padding:var(--space-lg); border-radius:var(--radius-md); border:1px solid var(--color-border); display:none; }
+    .wk-verdict.show { display:block; }
+    .wk-verdict .vt-head { display:flex; align-items:center; gap:var(--space-sm); font-size:1.15rem; font-weight:700; }
+    .wk-verdict .vt-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+    .wk-verdict .vt-sub { margin-top:var(--space-xs); font-size:.9rem; color:var(--color-text-secondary); line-height:1.6; }
+    .wk-verdict.cracked { background:rgba(220,38,38,.08); border-color:rgba(220,38,38,.5); }
+    .wk-verdict.cracked .vt-dot { background:#dc2626; }
+    .wk-verdict.safe { background:rgba(22,163,74,.07); border-color:rgba(22,163,74,.4); }
+    .wk-verdict.safe .vt-dot { background:#16a34a; }
+    .wk-verdict.na { background:var(--color-bg-elevated); border-color:var(--color-border); }
+    .wk-verdict.na .vt-dot { background:var(--color-text-muted); }
+
+    .wk-cracked-key { margin-top:var(--space-md); font-family:"JetBrains Mono",monospace; font-size:1.05rem; background:#0c0e15; border:1px solid #dc2626; border-radius:var(--radius-sm); padding:var(--space-md); color:#fda4af; display:flex; gap:var(--space-sm); align-items:center; }
+    .wk-cracked-key .label { color:var(--color-text-muted); font-size:.85rem; }
+    .wk-cracked-key code { color:#fff; font-weight:700; flex:1; word-break:break-all; }
+    .wk-copy { flex-shrink:0; font-size:.78rem; padding:3px 10px; border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text); cursor:pointer; }
+
+    .wk-section { margin-top:var(--space-xl); }
+    .wk-section h2 { font-size:1.05rem; font-weight:600; margin-bottom:var(--space-sm); }
+    .wk-fix { font-size:.92rem; line-height:1.7; color:var(--color-text); }
+    .wk-fix code { background:var(--color-bg-alt); padding:1px 6px; border-radius:3px; font-size:.85rem; }
+    .wk-fix ul { margin:var(--space-sm) 0 0 var(--space-lg); }
+    .wk-fix li { margin-bottom:6px; }
+    .wk-decoded { font-family:"JetBrains Mono",monospace; font-size:.82rem; background:#0c0e15; border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:var(--space-md); color:#d4d4d4; white-space:pre-wrap; word-break:break-all; line-height:1.6; }
+    details.wk-dict { background:var(--color-bg-surface); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:12px 16px; margin-top:var(--space-md); }
+    details.wk-dict summary { cursor:pointer; font-size:.9rem; color:var(--color-text); }
+    details.wk-dict textarea { width:100%; min-height:90px; margin-top:10px; background:var(--color-bg-elevated); border:1px solid var(--color-border); border-radius:6px; padding:10px; color:var(--color-text); font-family:monospace; font-size:.8rem; resize:vertical; }
+  </style>
+  <meta property="og:title" content="JWT 弱密钥检测器 — 本地爆破 HS256 签名密钥 | DevUtils">
+  <meta property="og:description" content="检测 JWT 是否用了弱密钥签名，本地字典爆破，命中即可伪造任意 token。secret 不上传。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/jwt-weak-key.html">
+  <meta property="og:site_name" content="DevUtils">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="JWT 弱密钥检测器 — 本地爆破 HS256 签名密钥">
+  <meta name="twitter:description" content="检测 JWT 是否用了弱密钥签名，本地运行不上传。">
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>JWT 弱密钥检测器</span></nav>
+    <h1>JWT 弱密钥检测器</h1>
+    <p class="wk-intro">
+      HS256 这类对称签名的 JWT，签名密钥就是「一个字符串」。一旦这个密钥是 <code style="background:var(--color-bg-alt);padding:1px 5px;border-radius:3px">secret</code>、<code style="background:var(--color-bg-alt);padding:1px 5px;border-radius:3px">123456</code>、<code style="background:var(--color-bg-alt);padding:1px 5px;border-radius:3px">keyboard cat</code> 这种常见值，
+      任何人都能离线猜出来，然后<strong>伪造出任意身份的合法 token</strong>——把自己的 <code style="background:var(--color-bg-alt);padding:1px 5px;border-radius:3px">role</code> 改成 <code style="background:var(--color-bg-alt);padding:1px 5px;border-radius:3px">admin</code> 也照样能通过验证。
+      这个工具在你浏览器本地，用上百个最常见的弱密钥逐个验签你的 token；命中，就说明你的鉴权形同虚设。<strong>token 和密钥全程不离开本机。</strong>
+    </p>
+
+    <textarea class="wk-textarea" id="jwtInput" spellcheck="false" placeholder="把 JWT 粘进来，例如 eyJhbGciOiJIUzI1Ni...（仅支持 HS256/384/512）"></textarea>
+    <div class="wk-actions">
+      <button class="wk-btn" id="runBtn">检测弱密钥</button>
+      <button class="wk-btn ghost" id="exampleBtn">载入示例</button>
+      <button class="wk-btn ghost" id="clearBtn">清空</button>
+      <span class="wk-meta" id="dictMeta"></span>
+    </div>
+
+    <details class="wk-dict">
+      <summary>追加自定义候选密钥（每行一个，会和内置字典一起试）</summary>
+      <textarea id="customDict" spellcheck="false" placeholder="company-name-2024&#10;our-internal-secret&#10;..."></textarea>
+    </details>
+
+    <div class="wk-status" id="status"></div>
+    <div class="wk-error" id="errorBox" style="display:none"></div>
+
+    <div class="wk-verdict" id="verdict">
+      <div class="vt-head"><span class="vt-dot"></span><span id="vtTitle"></span></div>
+      <div class="vt-sub" id="vtSub"></div>
+      <div class="wk-cracked-key" id="crackedKey" style="display:none">
+        <span class="label">破解出的密钥：</span><code id="crackedVal"></code>
+        <button class="wk-copy" id="copyKey">复制</button>
+      </div>
+    </div>
+
+    <div class="wk-section" id="decodedSection" style="display:none">
+      <h2>这个 token 解出来是什么</h2>
+      <div class="wk-decoded" id="decoded"></div>
+    </div>
+
+    <div class="wk-section" id="fixSection" style="display:none">
+      <h2>怎么修</h2>
+      <div class="wk-fix" id="fixBody"></div>
+    </div>
+
+    <aside class="tool-related" style="max-width:760px;margin:var(--space-xl) auto 0;padding-top:var(--space-lg);border-top:1px solid var(--color-border)">
+      <div style="font-size:var(--text-sm);color:var(--color-text-secondary);margin-bottom:var(--space-sm)">深入阅读</div>
+      <a href="/blog/jwt-not-session.html" style="display:block;margin-bottom:6px;color:var(--color-accent);font-weight:600;text-decoration:none">为什么我把 JWT 从生产环境删了：无状态鉴权的代价 →</a>
+      <a href="/tools/jwt-editor.html" style="display:block;margin-bottom:6px;color:var(--color-accent);font-weight:600;text-decoration:none">配套：JWT 编辑器（解码 / 验签 / 重签）→</a>
+    </aside>
+  </main>
+
+  <aside class="aff-promo" style="max-width:860px;margin:48px auto 0;padding:16px 20px;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:0.875rem;color:var(--color-text-secondary);line-height:1.7">
+    <span style="flex-shrink:0;padding:2px 8px;border:1px solid var(--color-border-light);border-radius:9999px;font-size:0.75rem;color:var(--color-text-muted)">推广</span>
+    <span style="flex:1;min-width:240px">需要海外 VPS 跑项目？我们一直在用 <strong style="color:var(--color-text-primary)">CloudCone</strong>：洛杉矶机房，按小时计费，PayPal 付款，经常放出 $20 以内的年付闪购。通过这个链接注册，本站能拿到一点佣金，这些工具就能一直免费开下去。</span>
+    <a href="https://app.cloudcone.com/?ref=14322" target="_blank" rel="nofollow sponsored noopener" style="flex-shrink:0;padding:8px 16px;background:var(--color-accent);color:#fff;border-radius:8px;text-decoration:none;font-weight:600">去看看 →</a>
+  </aside>
+  <div id="siteFooter"></div>
+
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    // 与 .scratch/jwt-weak-gen.js 一致的弱密钥字典（189 个最常见值）
+    const DICT = [
+      "secret","your-256-bit-secret","your-512-bit-secret","secretkey","secret_key","mysecret","mysecretkey",
+      "jwtsecret","jwt_secret","jwtSecret","jwt-secret","supersecret","super-secret","topsecret","secretpassword",
+      "123456","1234567","12345678","123456789","1234567890","12345","password","password1","password123","passw0rd",
+      "admin","administrator","root","toor","qwerty","qwerty123","letmein","changeme","change-me","changeit",
+      "test","test123","testing","abc123","abcdef","iloveyou","welcome","welcome1","monkey","dragon","master",
+      "jwt","key","token","hmac","signature","sign","default","example","demo","sample","dev","development",
+      "production","prod","staging","stage","local","app","application","api","apikey","api_key","apiKey",
+      "private","privatekey","private_key","public","publickey","none","null","undefined","string",
+      "keyboard cat","keyboardcat","shhhhh","shh","cat","secret123","s3cr3t","s3cret","s3cr3t!","p@ssw0rd","p@ssword",
+      "thisisasecret","this-is-a-secret","thisismysecret","mypassword","myp@ssword","passwordpassword",
+      "ChangeMe123","Change_Me","please-change-me","please_change_me","CHANGE_THIS","changethis","change_this",
+      "0000","1111","2222","000000","111111","666666","888888","aaaaaa","qazwsx","zxcvbn","asdfgh","123123",
+      "secretsecret","supersecretkey","mysupersecret","verysecret","reallysecret","notsosecret","nosecret",
+      "jsonwebtoken","jwttoken","bearer","auth","authentication","authsecret","auth_secret","sessionsecret","session_secret",
+      "hello","helloworld","hello123","foobar","foo","bar","baz","qux","temp","temporary","placeholder",
+      "a","1","12","ab","abc","aaa","111","x","xx","xxx","z","zz","secret!","Secret","SECRET","Password","PASSWORD",
+      "django-insecure","insecure","INSECURE","do-not-use","donotuse","replace-me","REPLACE_ME","fixme","FIXME",
+      "nodejs","express","flask","spring","laravel","rails","react","vue","angular","golang","python","java",
+      "company","companyname","mycompany","acme","acme-corp","internal","intranet","backend","frontend","server"
+    ];
+
+    const ALG_MAP = { HS256: "SHA-256", HS384: "SHA-384", HS512: "SHA-512" };
+    const enc = s => new TextEncoder().encode(s);
+
+    function b64urlDecode(s) {
+      const pad = "=".repeat((4 - s.length % 4) % 4);
+      const b64 = (s + pad).replace(/-/g, "+").replace(/_/g, "/");
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return new TextDecoder().decode(bytes);
+    }
+    function b64urlEncodeBytes(uint8) {
+      let s = "";
+      for (let i = 0; i < uint8.length; i++) s += String.fromCharCode(uint8[i]);
+      return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    }
+
+    async function hmacSign(secret, alg, data) {
+      const key = await crypto.subtle.importKey("raw", enc(secret), { name: "HMAC", hash: ALG_MAP[alg] }, false, ["sign"]);
+      const sig = await crypto.subtle.sign("HMAC", key, enc(data));
+      return b64urlEncodeBytes(new Uint8Array(sig));
+    }
+
+    const $ = id => document.getElementById(id);
+
+    function setDictMeta() {
+      const extra = ($("customDict").value.split("\n").map(s => s.trim()).filter(Boolean)).length;
+      $("dictMeta").textContent = `字典：内置 ${DICT.length} 个常见弱密钥` + (extra ? ` + 自定义 ${extra} 个` : "");
+    }
+
+    function reset() {
+      $("errorBox").style.display = "none";
+      $("verdict").classList.remove("show");
+      ["decodedSection", "fixSection"].forEach(id => $(id).style.display = "none");
+      $("crackedKey").style.display = "none";
+    }
+
+    let busy = false;
+    async function run() {
+      if (busy) return;
+      reset();
+      const raw = $("jwtInput").value.trim().replace(/^Bearer\s+/i, "");
+      if (!raw) { $("errorBox").textContent = "请先粘贴一个 JWT"; $("errorBox").style.display = "block"; return; }
+      const parts = raw.split(".");
+      if (parts.length !== 3) { $("errorBox").textContent = "JWT 必须是 3 段（header.payload.signature），用 . 分隔"; $("errorBox").style.display = "block"; return; }
+
+      let header, payload;
+      try { header = JSON.parse(b64urlDecode(parts[0])); }
+      catch { $("errorBox").textContent = "Header 不是合法的 base64url JSON"; $("errorBox").style.display = "block"; return; }
+      try { payload = JSON.parse(b64urlDecode(parts[1])); }
+      catch { payload = null; }
+
+      const alg = (header.alg || "").toUpperCase();
+      // 解出来给用户看
+      $("decodedSection").style.display = "";
+      $("decoded").textContent = "header = " + JSON.stringify(header, null, 2) + "\n\npayload = " + (payload ? JSON.stringify(payload, null, 2) : "(无法解析)");
+
+      const vEl = $("verdict");
+      if (!ALG_MAP[alg]) {
+        vEl.className = "wk-verdict show na";
+        $("vtTitle").textContent = "不适用 — 这不是 HMAC 签名的 token";
+        $("vtSub").textContent = `这个 token 的算法是 ${header.alg || "(未声明)"}。本工具只能爆破对称密钥的 HS256/384/512；RS256/ES256 等用的是非对称私钥，无法靠字典猜。` + (alg === "NONE" ? " 另外 alg=none 本身就是一个高危漏洞，等于没有签名。" : "");
+        return;
+      }
+
+      busy = true; $("runBtn").disabled = true;
+      $("status").textContent = "本地爆破中…";
+      const data = parts[0] + "." + parts[1];
+      const sig = parts[2];
+      const extra = $("customDict").value.split("\n").map(s => s.trim()).filter(Boolean);
+      const fullDict = [...extra, ...DICT];
+
+      let cracked = null;
+      try {
+        const signed = await Promise.all(fullDict.map(async k => ({ k, s: await hmacSign(k, alg, data) })));
+        const hit = signed.find(r => r.s === sig);
+        cracked = hit ? hit.k : null;
+      } catch (e) {
+        $("errorBox").textContent = "爆破出错：" + e.message; $("errorBox").style.display = "block";
+        busy = false; $("runBtn").disabled = false; $("status").textContent = ""; return;
+      }
+      busy = false; $("runBtn").disabled = false; $("status").textContent = "";
+
+      $("fixSection").style.display = "";
+      if (cracked !== null) {
+        vEl.className = "wk-verdict show cracked";
+        $("vtTitle").textContent = "高危 — 签名密钥已被破解";
+        $("vtSub").textContent = `这个 token 用的就是一个常见弱密钥。拿到它，任何人都能伪造任意 payload 的合法 token（比如把 role 改成 admin），你的 JWT 鉴权等于不设防。`;
+        $("crackedKey").style.display = "";
+        $("crackedVal").textContent = cracked === "" ? "(空字符串)" : cracked;
+        $("copyKey").onclick = () => copyToClipboard(cracked);
+        $("fixBody").innerHTML = "立刻处理：<ul>"
+          + "<li><strong>马上换密钥</strong>，并让所有已签发的旧 token 失效（轮换密钥即可，旧签名自然作废）。</li>"
+          + "<li>新密钥用<strong>足够长的高熵随机串</strong>：HS256 至少 32 字节随机值，如 <code>openssl rand -base64 32</code> 生成，绝不要用任何「单词 / 短语 / 默认值」。</li>"
+          + "<li>密钥从环境变量 / 密钥管理服务注入，<strong>不要硬编码</strong>进代码或配置仓库。</li>"
+          + "<li>条件允许就改用 <code>RS256</code>/<code>ES256</code> 非对称签名：验证方只拿公钥，私钥不外泄、也无法被字典爆破。</li>"
+          + "</ul>";
+      } else {
+        vEl.className = "wk-verdict show safe";
+        $("vtTitle").textContent = "未命中 — 不在常见弱密钥字典里";
+        $("vtSub").textContent = `用 ${fullDict.length} 个最常见的弱密钥都没签出相同的签名。这说明密钥不是这些烂大街的值，但不等于密钥就一定强——真正的字典 / 暴力攻击会用大得多的词表。下面的建议仍值得对照。`;
+        $("fixBody").innerHTML = "保持并加固：<ul>"
+          + "<li>确认密钥是<strong>高熵随机串</strong>而非某个有意义的单词或公司名（这类词在更大的词表里仍可能被猜中）。</li>"
+          + "<li>HS256 密钥长度建议 ≥ 32 字节；定期轮换。</li>"
+          + "<li>密钥放环境变量 / KMS，别进代码仓库。</li>"
+          + "<li>更高安全场景考虑 <code>RS256</code>/<code>ES256</code> 非对称签名。</li>"
+          + "</ul>";
+      }
+    }
+
+    const EXAMPLE = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFsaWNlIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzE2MzQwMDAwfQ.rInHoq2WwruEDNv-Fj4bHmnNMpVjjXninSswcjjatxg";
+
+    $("runBtn").addEventListener("click", run);
+    $("exampleBtn").addEventListener("click", () => { $("jwtInput").value = EXAMPLE; run(); });
+    $("clearBtn").addEventListener("click", () => { $("jwtInput").value = ""; reset(); });
+    $("customDict").addEventListener("input", setDictMeta);
+    setDictMeta();
+  </script>
+</body>
+</html>

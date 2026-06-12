@@ -3,6 +3,7 @@ import { renderHeader, renderFooter } from "./layout.js";
 
 const TOOLS = [
   { id: "redos-checker", name: "redos check", desc: "实测正则有没有灾难性回溯（ReDoS），画耗时曲线、生成攻击串", cat: "security", badge: "招牌" },
+  { id: "jwt-weak-key", name: "jwt 弱密钥", desc: "本地字典爆破，检测 HS256 JWT 是不是用了弱密钥签名", cat: "security", badge: "招牌" },
   { id: "json-to-typescript", name: "json → ts", desc: "粘贴 JSON 自动推导 TypeScript interface", cat: "encoding", badge: "新" },
   { id: "curl-converter", name: "curl → code", desc: "DevTools 的 curl 一键转 fetch/axios/Python/Go", cat: "encoding", badge: "新" },
   { id: "jwt-editor", name: "jwt edit", desc: "解码 + 本地验签 + 重签，比单纯解码强一档", cat: "security", badge: "新" },
