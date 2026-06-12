@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>正则 ReDoS 检测器 — 实测灾难性回溯 | DevUtils</title>
+  <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+  <meta name="description" content="在浏览器里实测你的正则是否存在 ReDoS（灾难性回溯）漏洞：递增 pump 字符串实测匹配耗时、画出增长曲线、自动生成攻击字符串、定位危险结构并给出修复建议。全程本地运行，不上传。">
+  <link rel="canonical" href="https://devtool.blueblueliu.com/tools/redos-checker.html">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"正则 ReDoS 检测器","applicationCategory":"DeveloperApplication","operatingSystem":"All","offers":{"@type":"Offer","price":"0"}}
+  </script>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/reset.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .rd-intro { color:var(--color-text-secondary); margin-bottom:var(--space-lg); line-height:1.65; max-width:64ch; }
+    .rd-input-row { display:flex; gap:var(--space-sm); align-items:center; flex-wrap:wrap; }
+    .rd-slash { font-family:monospace; font-size:1.3rem; color:var(--color-text-muted); }
+    .rd-regex { flex:1; min-width:220px; font-family:monospace; font-size:1rem; padding:var(--space-sm) var(--space-md); border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text); }
+    .rd-regex:focus { outline:none; border-color:var(--color-primary); }
+    .rd-flags { width:80px; font-family:monospace; font-size:1rem; padding:var(--space-sm); border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text); }
+    .rd-flags:focus { outline:none; border-color:var(--color-primary); }
+    .rd-btn { padding:var(--space-sm) var(--space-lg); background:var(--color-primary); color:#fff; border:none; border-radius:var(--radius-sm); font-size:0.95rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+    .rd-btn:disabled { opacity:0.6; cursor:not-allowed; }
+    .rd-examples { margin-top:var(--space-md); display:flex; gap:var(--space-xs); flex-wrap:wrap; align-items:center; }
+    .rd-examples span.lbl { font-size:0.85rem; color:var(--color-text-secondary); }
+    .rd-chip { font-family:monospace; font-size:0.8rem; padding:3px 9px; border:1px solid var(--color-border); border-radius:9999px; background:var(--color-bg-alt); color:var(--color-text); cursor:pointer; }
+    .rd-chip:hover { border-color:var(--color-primary); color:var(--color-primary); }
+    .rd-chip.danger { color:var(--color-error); }
+
+    .rd-verdict { margin-top:var(--space-xl); padding:var(--space-lg); border-radius:var(--radius-md); border:1px solid var(--color-border); display:none; }
+    .rd-verdict.show { display:block; }
+    .rd-verdict .vt-head { display:flex; align-items:center; gap:var(--space-sm); font-size:1.15rem; font-weight:700; }
+    .rd-verdict .vt-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+    .rd-verdict .vt-sub { margin-top:var(--space-xs); font-size:0.9rem; color:var(--color-text-secondary); line-height:1.6; }
+    .rd-verdict.safe { background:rgba(22,163,74,0.07); border-color:rgba(22,163,74,0.4); }
+    .rd-verdict.safe .vt-dot { background:#16a34a; }
+    .rd-verdict.polynomial { background:rgba(217,119,6,0.08); border-color:rgba(217,119,6,0.45); }
+    .rd-verdict.polynomial .vt-dot { background:#d97706; }
+    .rd-verdict.exponential { background:rgba(220,38,38,0.08); border-color:rgba(220,38,38,0.5); }
+    .rd-verdict.exponential .vt-dot { background:#dc2626; }
+
+    .rd-section { margin-top:var(--space-xl); }
+    .rd-section h2 { font-size:1.05rem; font-weight:600; margin-bottom:var(--space-sm); }
+    .rd-chart { width:100%; height:200px; border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); }
+    .rd-chart-note { font-size:0.8rem; color:var(--color-text-secondary); margin-top:var(--space-xs); }
+    .rd-table { width:100%; border-collapse:collapse; font-size:0.88rem; font-family:monospace; }
+    .rd-table th, .rd-table td { padding:var(--space-xs) var(--space-sm); border:1px solid var(--color-border); text-align:right; }
+    .rd-table th { background:var(--color-bg-alt); font-weight:600; text-align:right; }
+    .rd-table td.lbl, .rd-table th.lbl { text-align:left; }
+    .rd-attack { font-family:monospace; font-size:0.85rem; background:var(--color-bg-alt); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:var(--space-sm) var(--space-md); word-break:break-all; line-height:1.6; display:flex; gap:var(--space-sm); align-items:flex-start; }
+    .rd-attack code { flex:1; }
+    .rd-copy { flex-shrink:0; font-size:0.78rem; padding:3px 10px; border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-bg); color:var(--color-text); cursor:pointer; }
+    .rd-copy:hover { border-color:var(--color-primary); color:var(--color-primary); }
+    .rd-findings { list-style:none; padding:0; margin:0; }
+    .rd-findings li { padding:var(--space-sm) var(--space-md); border:1px solid var(--color-border); border-radius:var(--radius-sm); margin-bottom:var(--space-sm); }
+    .rd-findings .ft { font-family:monospace; font-weight:600; color:var(--color-error); }
+    .rd-findings .fd { font-size:0.88rem; color:var(--color-text-secondary); margin-top:3px; line-height:1.55; }
+    .rd-fix { font-size:0.92rem; line-height:1.7; color:var(--color-text); }
+    .rd-fix code { background:var(--color-bg-alt); padding:1px 6px; border-radius:3px; font-size:0.85rem; }
+    .rd-fix ul { margin:var(--space-sm) 0 0 var(--space-lg); }
+    .rd-fix li { margin-bottom:6px; }
+    .rd-status { margin-top:var(--space-md); font-size:0.9rem; color:var(--color-text-secondary); font-family:monospace; }
+    .rd-error { color:var(--color-error); font-size:0.9rem; padding:var(--space-sm); background:rgba(220,38,38,0.08); border-radius:var(--radius-sm); margin-top:var(--space-md); }
+    .rd-muted { color:var(--color-text-secondary); }
+  </style>
+  <meta property="og:title" content="正则 ReDoS 检测器 — 实测灾难性回溯 | DevUtils">
+  <meta property="og:description" content="实测你的正则是否存在 ReDoS 灾难性回溯：递增 pump 串测匹配耗时、画增长曲线、生成攻击串、给修复建议，全程本地运行。">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://devtool.blueblueliu.com/tools/redos-checker.html">
+  <meta property="og:site_name" content="DevUtils">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="正则 ReDoS 检测器 — 实测灾难性回溯 | DevUtils">
+  <meta name="twitter:description" content="实测正则是否存在 ReDoS 灾难性回溯，本地运行不上传。">
+</head>
+<body>
+  <div id="siteHeader"></div>
+  <main class="container">
+    <nav class="breadcrumb"><a href="../index.html">首页</a><span class="breadcrumb-sep">/</span><span>正则 ReDoS 检测器</span></nav>
+    <h1>正则 ReDoS 检测器</h1>
+    <p class="rd-intro">
+      一行写得不好的正则，能让一个长度只有几十个字符的请求把线上 CPU 跑满几秒甚至几分钟——这就是 <strong>ReDoS（正则表达式拒绝服务）</strong>，根因是「灾难性回溯」。
+      这个工具不靠猜：它在你浏览器的后台线程里，用长度递增的攻击字符串<strong>真实地跑你的正则</strong>，测出匹配耗时随输入长度怎么增长，从而判定是安全、多项式级慢、还是指数级灾难性回溯。数据全程不离开本机。
+    </p>
+
+    <div class="rd-input-row">
+      <span class="rd-slash">/</span>
+      <input type="text" class="rd-regex" id="regexInput" placeholder="把你的正则粘进来，如 (a+)+$" spellcheck="false" autocomplete="off">
+      <span class="rd-slash">/</span>
+      <input type="text" class="rd-flags" id="flagsInput" placeholder="gimsu" spellcheck="false" autocomplete="off">
+      <button class="rd-btn" id="runBtn">分析安全性</button>
+    </div>
+
+    <div class="rd-examples">
+      <span class="lbl">试试经典案例：</span>
+      <span class="rd-chip danger" data-re="(a+)+$">(a+)+$</span>
+      <span class="rd-chip danger" data-re="^(\w+\s?)*$">^(\w+\s?)*$</span>
+      <span class="rd-chip danger" data-re="(\d+)*#$">(\d+)*#$</span>
+      <span class="rd-chip danger" data-re="^([a-zA-Z]+)*$">^([a-zA-Z]+)*$</span>
+      <span class="rd-chip" data-re="^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$">邮箱</span>
+      <span class="rd-chip" data-re="^\d{4}-\d{2}-\d{2}$">安全示例</span>
+    </div>
+
+    <div class="rd-status" id="status"></div>
+    <div class="rd-error" id="errorBox" style="display:none"></div>
+
+    <!-- 总评级 -->
+    <div class="rd-verdict" id="verdict">
+      <div class="vt-head"><span class="vt-dot"></span><span id="vtTitle"></span></div>
+      <div class="vt-sub" id="vtSub"></div>
+    </div>
+
+    <!-- 实测曲线 -->
+    <div class="rd-section" id="chartSection" style="display:none">
+      <h2>匹配耗时 vs 输入长度（实测）</h2>
+      <svg class="rd-chart" id="chart" viewBox="0 0 600 200" preserveAspectRatio="none"></svg>
+      <div class="rd-chart-note" id="chartNote"></div>
+    </div>
+
+    <!-- 数据表 -->
+    <div class="rd-section" id="dataSection" style="display:none">
+      <h2>实测数据点</h2>
+      <table class="rd-table" id="dataTable"></table>
+    </div>
+
+    <!-- 攻击字符串 -->
+    <div class="rd-section" id="attackSection" style="display:none">
+      <h2>触发它的攻击字符串</h2>
+      <div class="rd-attack">
+        <code id="attackStr"></code>
+        <button class="rd-copy" id="copyAttack">复制</button>
+      </div>
+      <p class="rd-chart-note">把这个字符串喂给用了上面这个正则的接口，就能复现卡顿。仅用于在你自己的系统上验证与修复。</p>
+    </div>
+
+    <!-- 静态结构分析 -->
+    <div class="rd-section" id="findingSection" style="display:none">
+      <h2>可疑结构（静态分析）</h2>
+      <ul class="rd-findings" id="findings"></ul>
+      <p class="rd-chart-note">静态分析是启发式提示，用来解释「危险出在哪」；最终结论以上方实测为准。</p>
+    </div>
+
+    <!-- 修复建议 -->
+    <div class="rd-section" id="fixSection" style="display:none">
+      <h2>怎么修</h2>
+      <div class="rd-fix" id="fixBody"></div>
+    </div>
+
+    <aside class="tool-related" style="max-width:760px;margin:var(--space-xl) auto 0;padding-top:var(--space-lg);border-top:1px solid var(--color-border)">
+      <div style="font-size:var(--text-sm);color:var(--color-text-secondary);margin-bottom:var(--space-sm)">深入阅读</div>
+      <a href="/blog/regex-redos.html" style="display:block;margin-bottom:6px;color:var(--color-accent);font-weight:600;text-decoration:none">一个正则打满线上 CPU：ReDoS 排查实录 →</a>
+      <a href="/tools/regex-tester.html" style="display:block;margin-bottom:6px;color:var(--color-accent);font-weight:600;text-decoration:none">配套：正则测试器（实时匹配高亮）→</a>
+    </aside>
+  </main>
+
+  <aside class="aff-promo" style="max-width:860px;margin:48px auto 0;padding:16px 20px;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:0.875rem;color:var(--color-text-secondary);line-height:1.7">
+    <span style="flex-shrink:0;padding:2px 8px;border:1px solid var(--color-border-light);border-radius:9999px;font-size:0.75rem;color:var(--color-text-muted)">推广</span>
+    <span style="flex:1;min-width:240px">需要海外 VPS 跑项目？我们一直在用 <strong style="color:var(--color-text-primary)">CloudCone</strong>：洛杉矶机房，按小时计费，PayPal 付款，经常放出 $20 以内的年付闪购。通过这个链接注册，本站能拿到一点佣金，这些工具就能一直免费开下去。</span>
+    <a href="https://app.cloudcone.com/?ref=14322" target="_blank" rel="nofollow sponsored noopener" style="flex-shrink:0;padding:8px 16px;background:var(--color-accent);color:#fff;border-radius:8px;text-decoration:none;font-weight:600">去看看 →</a>
+  </aside>
+  <div id="siteFooter"></div>
+
+  <script type="module">
+    import { initLayout, showToast, copyToClipboard } from "../js/layout.js";
+    initLayout();
+
+    // ---------- Web Worker：在隔离线程里实测匹配耗时 ----------
+    const WORKER_SRC = `
+      self.onmessage = function(e) {
+        var pattern = e.data.pattern, flags = e.data.flags, inputs = e.data.inputs;
+        var re;
+        try { re = new RegExp(pattern, flags); }
+        catch (err) { self.postMessage({ error: err.message }); return; }
+        for (var i = 0; i < inputs.length; i++) {
+          var t0 = performance.now();
+          re.test(inputs[i]);
+          var ms = performance.now() - t0;
+          self.postMessage({ len: inputs[i].length, ms: ms });
+        }
+        self.postMessage({ done: true });
+      };
+    `;
+    const workerUrl = URL.createObjectURL(new Blob([WORKER_SRC], { type: "application/javascript" }));
+
+    const REPS = [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 33, 36, 40, 48, 60, 80, 110, 160, 240, 360, 540, 820, 1240, 1900, 2900, 4400, 6700, 10000, 15000, 23000];
+    const WATCHDOG_MS = 1000;
+
+    // 根据正则猜测可能触发回溯的重复字符
+    function buildPumps(pattern) {
+      const pumps = [{ label: "a", char: "a", suffix: "!" }];
+      if (/\\d|\[0-9\]|\\w/.test(pattern)) pumps.push({ label: "数字", char: "1", suffix: "!" });
+      if (/\\w|a-z|A-Z/.test(pattern)) pumps.push({ label: "字母", char: "x", suffix: "!" });
+      if (/\\s| /.test(pattern)) pumps.push({ label: "空格", char: " ", suffix: "!" });
+      return pumps;
+    }
+
+    // 跑一个 pump 策略：逐档加长，看门狗超时即判卡死
+    function measureStrategy(pattern, flags, pump, onProgress) {
+      return new Promise((resolve) => {
+        const inputs = REPS.map(r => pump.char.repeat(r) + pump.suffix);
+        const worker = new Worker(workerUrl);
+        const series = [];
+        let watchdog;
+        const arm = () => {
+          clearTimeout(watchdog);
+          watchdog = setTimeout(() => {
+            worker.terminate();
+            const stuckLen = series.length < inputs.length ? inputs[series.length].length : null;
+            resolve({ pump, series, timedOut: true, stuckLen });
+          }, WATCHDOG_MS);
+        };
+        worker.onmessage = (e) => {
+          const m = e.data;
+          if (m.error) { clearTimeout(watchdog); worker.terminate(); resolve({ pump, series, error: m.error }); return; }
+          if (m.done) { clearTimeout(watchdog); worker.terminate(); resolve({ pump, series, timedOut: false }); return; }
+          series.push(m);
+          if (onProgress) onProgress(pump, m);
+          arm();
+        };
+        worker.onerror = () => { clearTimeout(watchdog); worker.terminate(); resolve({ pump, series, errored: true }); };
+        worker.postMessage({ pattern, flags, inputs });
+        arm();
+      });
+    }
+
+    // 综合所有策略判定等级
+    function classify(results) {
+      let level = "safe", worst = null, detail = "";
+      for (const r of results) {
+        if (r.error) return { level: "error", detail: r.error };
+        // 指数铁证：很短输入就卡死看门狗
+        if (r.timedOut && r.stuckLen != null && r.stuckLen < 2000) {
+          return { level: "exponential", worst: r, detail: `pump='${r.pump.label}'：输入长度仅 ${r.stuckLen} 字符，单次匹配就超过 ${WATCHDOG_MS}ms 仍未完成。` };
+        }
+        // 指数次级证据：长度 <500 时单次 >300ms
+        const bad = r.series.find(p => p.len < 500 && p.ms > 300);
+        if (bad) return { level: "exponential", worst: r, detail: `pump='${r.pump.label}'：输入长度 ${bad.len} 时单次匹配耗时 ${bad.ms.toFixed(0)}ms。` };
+        // 多项式：长度数千时耗时显著且超线性增长
+        const big = r.series.filter(p => p.ms > 15);
+        if (big.length >= 2) {
+          const a = big[0], b = big[big.length - 1];
+          const superLinear = (b.ms / a.ms) / (b.len / a.len);
+          if (b.ms > 80 && superLinear > 1.8) {
+            level = level === "safe" ? "polynomial" : level;
+            worst = r;
+            detail = `pump='${r.pump.label}'：输入长度从 ${a.len} 增到 ${b.len}，耗时从 ${a.ms.toFixed(1)}ms 涨到 ${b.ms.toFixed(0)}ms，明显超过线性。`;
+          }
+        }
+      }
+      return { level, worst, detail };
+    }
+
+    // ---------- 静态结构分析（启发式，解释为什么危险）----------
+    function staticScan(pattern) {
+      const findings = [];
+      // 不含嵌套括号的分组 + 紧跟的量词
+      const groupRe = /\(([^()]*)\)\s*(\*|\+|\{\d+(?:,\d*)?\})(\?)?/g;
+      let m;
+      while ((m = groupRe.exec(pattern)) !== null) {
+        const body = m[1], outerQ = m[2], lazy = m[3];
+        if (lazy) continue;
+        const innerQuant = /[*+]|\{\d+,?\d*\}/.test(body.replace(/\\[dwsDWS]/g, ""));
+        if (innerQuant) {
+          findings.push({
+            text: m[0],
+            desc: "嵌套量词：分组内部已有 + / * / {n,}，整个分组外面又套了一层量词。同一段输入能被「内层多吃一点、外层少吃一点」拆分出指数种组合，匹配失败时引擎会把这些组合全部回溯一遍。"
+          });
+        } else if (body.includes("|")) {
+          const branches = body.split("|");
+          const overlap = branches.some((b1, i) => branches.some((b2, j) => i !== j && b1 && b2 && (b1[0] === b2[0] || b1.startsWith(b2) || b2.startsWith(b1))));
+          findings.push({
+            text: m[0],
+            desc: overlap
+              ? "可重叠的交替 + 量词：分组里的几个分支能匹配相同的输入（如 (a|a)、(a|ab)），外层量词让同一段串有多种切分方式，触发回溯爆炸。"
+              : "量词作用于交替分组：如果几个分支存在输入重叠，会有回溯风险，建议结合实测确认。"
+          });
+        }
+      }
+      // 相邻同类量词：如 \d+\d+ 、.*.* 、a*a*
+      const adj = /(\\[dwsDWS]|\[[^\]]+\]|\.|\\?[a-zA-Z0-9])\s*([*+])\s*\1\s*([*+])/;
+      if (adj.test(pattern)) {
+        findings.push({ text: pattern.match(adj)[0], desc: "相邻的同类量词（如 \\d+\\d+、.*.*）：两个量词争抢同一段字符，存在多项式级回溯风险。" });
+      }
+      return findings;
+    }
+
+    function fixAdvice(level, findings) {
+      if (level === "safe") {
+        return "实测下来这个正则在长输入和强制失败的攻击串面前耗时都是线性的，没有发现灾难性回溯。继续保持：尽量用具体字符类、避免给已含量词的分组再套量词即可。";
+      }
+      const items = [
+        "把嵌套量词拆掉：<code>(a+)+</code> 等价于 <code>a+</code>，<code>(a*)*</code> 等价于 <code>a*</code>，外层量词通常是多余的。",
+        "让交替分支互斥、不重叠：<code>(a|ab)</code> 改成 <code>(ab?)</code> 这类只有一种切分的写法。",
+        "用具体字符类替代 <code>.*</code>：能写 <code>[^\"]*</code> 就不要写 <code>.*</code>，缩小回溯空间。",
+        "需要时改用「占有量词」或「原子分组」<code>(?&gt;...)</code> 禁止回溯（Java/PCRE/.NET 支持；JS 原生不支持，可用 RE2 引擎）。",
+        "把不受信任输入的正则换成线性时间引擎：Go 的 regexp、Rust regex、Google RE2，它们用 DFA，结构上不会发生灾难性回溯。",
+        "兜底：给正则匹配加超时，或先用长度上限挡掉超长输入。"
+      ];
+      return "实测确认存在回溯风险，按下面任一思路改写都能消除或大幅缓解：<ul>" + items.map(i => `<li>${i}</li>`).join("") + "</ul>";
+    }
+
+    // ---------- 渲染 ----------
+    const $ = id => document.getElementById(id);
+    function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+    function drawChart(series) {
+      const svg = $("chart");
+      const W = 600, H = 200, padX = 24, padY = 16;
+      const pts = series.filter(p => p.ms >= 0);
+      if (pts.length < 2) { svg.innerHTML = ""; return; }
+      const maxLen = Math.max(...pts.map(p => p.len), 1);
+      // 纵轴用对数刻度：指数级回溯在 log 轴上呈一条上升直线，线性轴会把前段压扁
+      const logv = v => Math.log10(Math.max(v, 0.01));
+      const lo = Math.min(...pts.map(p => logv(p.ms)));
+      const hi = Math.max(...pts.map(p => logv(p.ms)));
+      const span = (hi - lo) || 1;
+      const x = v => padX + (v / maxLen) * (W - 2 * padX);
+      const y = v => H - padY - ((logv(v) - lo) / span) * (H - 2 * padY);
+      const path = pts.map((p, i) => (i ? "L" : "M") + x(p.len).toFixed(1) + " " + y(p.ms).toFixed(1)).join(" ");
+      const dots = pts.map(p => `<circle cx="${x(p.len).toFixed(1)}" cy="${y(p.ms).toFixed(1)}" r="3" fill="#6366f1"/>`).join("");
+      svg.innerHTML = `<path d="${path}" fill="none" stroke="#6366f1" stroke-width="2" vector-effect="non-scaling-stroke"/>${dots}`;
+      const maxMs = Math.max(...pts.map(p => p.ms));
+      $("chartNote").textContent = `横轴：攻击串长度（0–${maxLen} 字符，线性）　纵轴：单次匹配耗时（峰值 ${maxMs.toFixed(1)} ms，对数刻度）。指数级回溯在这里是一条向上的直线——长度每增一点，耗时翻好几倍。`;
+    }
+
+    function renderTable(series) {
+      const rows = series.map(p => `<tr><td>${p.len}</td><td>${p.ms < 0.05 ? "<0.05" : p.ms.toFixed(2)}</td></tr>`).join("");
+      $("dataTable").innerHTML = `<thead><tr><th class="lbl">输入长度</th><th>匹配耗时 (ms)</th></tr></thead><tbody>${rows}</tbody>`;
+    }
+
+    const VERDICT_TEXT = {
+      safe: ["安全 — 未发现灾难性回溯", "实测耗时随输入长度线性增长，可放心用于不受信任的输入。"],
+      polynomial: ["注意 — 多项式级回溯", "耗时随输入长度超线性增长。普通输入没事，但攻击者构造的超长输入仍可能拖慢服务，建议优化。"],
+      exponential: ["高危 — 指数级灾难性回溯（ReDoS）", "极短的攻击字符串就能让匹配耗时爆炸式增长。这个正则一旦用在处理外部输入的地方，等于给服务装了个拒绝服务开关，务必修复。"]
+    };
+
+    let busy = false;
+    async function run() {
+      if (busy) return;
+      const pattern = $("regexInput").value;
+      const flags = $("flagsInput").value.trim();
+      $("errorBox").style.display = "none";
+      ["verdict","chartSection","dataSection","attackSection","findingSection","fixSection"].forEach(id => {
+        const el = $(id); el.classList?.remove("show"); el.style.display = id === "verdict" ? "" : "none";
+      });
+      $("verdict").classList.remove("show");
+      if (!pattern) { $("errorBox").textContent = "请先输入正则表达式"; $("errorBox").style.display = "block"; return; }
+      try { new RegExp(pattern, flags); }
+      catch (e) { $("errorBox").textContent = "正则语法错误：" + e.message; $("errorBox").style.display = "block"; return; }
+
+      busy = true; $("runBtn").disabled = true;
+      const pumps = buildPumps(pattern);
+      const results = [];
+      try {
+        for (const p of pumps) {
+          $("status").textContent = `实测中… 用 pump='${p.label}' 构造递增攻击串跑你的正则`;
+          // eslint-disable-next-line no-await-in-loop
+          const r = await measureStrategy(pattern, flags, p);
+          results.push(r);
+          if (r.timedOut && r.stuckLen != null && r.stuckLen < 2000) break; // 已确认指数，提前结束
+        }
+      } finally {
+        busy = false; $("runBtn").disabled = false; $("status").textContent = "";
+      }
+
+      const verdict = classify(results);
+      if (verdict.level === "error") { $("errorBox").textContent = "正则语法错误：" + verdict.detail; $("errorBox").style.display = "block"; return; }
+
+      // 选最坏的一条序列展示
+      const shown = verdict.worst || results.reduce((a, b) => (b.series.length ? b : a), results[0]);
+
+      const vEl = $("verdict");
+      vEl.className = "rd-verdict show " + verdict.level;
+      $("vtTitle").textContent = VERDICT_TEXT[verdict.level][0];
+      $("vtSub").textContent = VERDICT_TEXT[verdict.level][1] + (verdict.detail ? "　" + verdict.detail : "");
+
+      if (shown && shown.series.length) {
+        $("chartSection").style.display = "";
+        drawChart(shown.series);
+        $("dataSection").style.display = "";
+        renderTable(shown.series);
+      }
+
+      // 攻击串：超时点或最坏序列末档
+      if (verdict.level !== "safe" && shown) {
+        const len = shown.stuckLen || (shown.series.length ? shown.series[shown.series.length - 1].len : 0);
+        const reps = Math.max(0, len - shown.pump.suffix.length);
+        const display = shown.pump.char.repeat(Math.min(reps, 40)) + (reps > 40 ? "…(" + reps + "×) " : "") + shown.pump.suffix;
+        const full = shown.pump.char.repeat(reps) + shown.pump.suffix;
+        $("attackSection").style.display = "";
+        $("attackStr").textContent = display;
+        $("copyAttack").onclick = () => copyToClipboard(full);
+      }
+
+      const findings = staticScan(pattern);
+      if (findings.length) {
+        $("findingSection").style.display = "";
+        $("findings").innerHTML = findings.map(f => `<li><div class="ft">${esc(f.text)}</div><div class="fd">${f.desc}</div></li>`).join("");
+      }
+
+      $("fixSection").style.display = "";
+      $("fixBody").innerHTML = fixAdvice(verdict.level, findings);
+    }
+
+    $("runBtn").addEventListener("click", run);
+    $("regexInput").addEventListener("keydown", e => { if (e.key === "Enter") run(); });
+    document.querySelectorAll(".rd-chip").forEach(chip => {
+      chip.addEventListener("click", () => { $("regexInput").value = chip.dataset.re; run(); });
+    });
+  </script>
+</body>
+</html>
