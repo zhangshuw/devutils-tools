@@ -200,7 +200,7 @@
 .post p code,.post li code,.post td code,.post h2 code,.post h3 code{
   background:var(--color-bg-elevated);
   padding:2px 8px;border-radius:5px;
-  color:#f0a878;
+  color: var(--color-accent);
   font-family:"JetBrains Mono","Fira Code","Consolas",monospace;
   font-size:.86em;
   border:1px solid var(--color-border);

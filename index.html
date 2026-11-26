@@ -3,465 +3,99 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#6366f1">
+<meta name="theme-color" content="#f4f0e8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<title>DevUtils — 开发工具，不上传也能用</title>
-<meta name="description" content="浏览器本地运行的 30 个开发工具——JSON 格式化、cURL 转代码、SQL 美化、图片压缩。不上传、不登录、不收钱。">
+<title>DevUtils 小报 — 开发者新闻与教程</title>
+<meta name="description" content="每天一条开发者新闻，加上能照着做的教程。JSON、JWT、正则这些在线工具还在工具箱里。">
 <link rel="canonical" href="https://devtool.blueblueliu.com/">
-<meta property="og:title" content="DevUtils — 开发工具，不上传也能用">
-<meta property="og:description" content="30 个浏览器本地运行的开发工具。不上传、不登录、不收钱。">
+<meta property="og:title" content="DevUtils 小报 — 开发者新闻与教程">
+<meta property="og:description" content="每天一条开发者新闻，加上能照着做的教程。JSON、JWT、正则这些在线工具还在工具箱里。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://devtool.blueblueliu.com/">
-<meta property="og:site_name" content="DevUtils">
+<meta property="og:site_name" content="DevUtils 小报">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="DevUtils — 开发工具，不上传也能用">
-<meta name="twitter:description" content="30 个浏览器本地运行的开发工具。不上传、不登录、不收钱。">
+<meta name="twitter:title" content="DevUtils 小报 — 开发者新闻与教程">
+<meta name="twitter:description" content="每天一条开发者新闻，加上能照着做的教程。JSON、JWT、正则这些在线工具还在工具箱里。">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="google-site-verification" content="1hdAlnY_EX_FiRYppycKDYJklnmKGdFYAZYAnOK3FAk">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebApplication","name":"DevUtils","url":"https://devtool.blueblueliu.com","applicationCategory":"DeveloperApplication","operatingSystem":"All"}
+{"@context":"https://schema.org","@type":"Blog","name":"DevUtils 小报","description":"开发者新闻与教程","url":"https://devtool.blueblueliu.com/"}
 </script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/variables.css">
-<link rel="stylesheet" href="css/reset.css">
-<link rel="stylesheet" href="css/layout.css">
-<link rel="stylesheet" href="css/components.css">
-<meta name="google-site-verification" content="1hdAlnY_EX_FiRYppycKDYJklnmKGdFYAZYAnOK3FAk" />
-<style>
-/* ========== HOMEPAGE ONLY — industrial/utilitarian ========== */
-:root {
-  --font-sans: 'DM Sans', -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-}
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<link rel="stylesheet" href="/css/publication.css">
 
-/* Dot-grid texture */
-body::before {
-  content: "";
-  position: fixed; inset: 0;
-  background-image: radial-gradient(circle, rgba(99,102,241,.06) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none;
-  z-index: -1;
-}
-
-/* --- Hero --- */
-.hero-workshop {
-  padding: 64px 0 40px;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 32px;
-  align-items: end;
-  border-bottom: 1px solid var(--color-border);
-  margin-bottom: 0;
-}
-.hero-left { max-width: 640px; }
-.hero-eyebrow {
-  font-family: var(--font-mono);
-  font-size: .72rem;
-  letter-spacing: .16em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-  font-weight: 500;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.hero-eyebrow::before {
-  content: "";
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  box-shadow: 0 0 8px var(--color-accent);
-  animation: blink 2.5s ease-in-out infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
-
-.hero-workshop h1 {
-  font-family: var(--font-sans);
-  font-size: 3.2rem;
-  font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: -.035em;
-  color: var(--color-text-primary);
-  margin: 0 0 16px;
-}
-.hero-workshop h1 .accent {
-  color: var(--color-accent);
-  font-family: var(--font-mono);
-  font-weight: 500;
-}
-.hero-lede {
-  font-size: 1.08rem;
-  line-height: 1.65;
-  color: var(--color-text-secondary);
-  margin: 0 0 24px;
-  max-width: 52ch;
-}
-
-/* Search */
-.hero-search {
-  position: relative;
-  max-width: 420px;
-}
-.hero-search input {
-  width: 100%;
-  padding: 10px 14px 10px 38px;
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  color: var(--color-text-primary);
-  font-family: var(--font-mono);
-  font-size: .88rem;
-  transition: border-color .15s;
-}
-.hero-search input:focus {
-  outline: none;
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-subtle);
-}
-.hero-search input::placeholder { color: var(--color-text-muted); }
-.hero-search .search-glyph {
-  position: absolute;
-  left: 12px; top: 50%; transform: translateY(-50%);
-  color: var(--color-text-muted);
-  font-family: var(--font-mono);
-  font-size: .85rem;
-  pointer-events: none;
-}
-
-/* Right side — terminal snippet */
-.hero-terminal {
-  background: var(--color-bg-elevated);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  padding: 20px 22px;
-  font-family: var(--font-mono);
-  font-size: .82rem;
-  line-height: 1.8;
-  color: var(--color-text-secondary);
-  min-width: 260px;
-  position: relative;
-  overflow: hidden;
-}
-.hero-terminal::before {
-  content: "";
-  position: absolute; top: -40px; right: -40px;
-  width: 120px; height: 120px;
-  background: radial-gradient(circle, rgba(99,102,241,.15), transparent 70%);
-  pointer-events: none;
-}
-.hero-terminal .prompt { color: var(--color-accent); }
-.hero-terminal .cmd { color: var(--color-text-primary); }
-.hero-terminal .comment { color: var(--color-text-muted); }
-
-/* --- New tools spotlight --- */
-.spotlight {
-  padding: 36px 0 28px;
-  border-bottom: 1px solid var(--color-border);
-}
-.spotlight-label {
-  font-family: var(--font-mono);
-  font-size: .7rem;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-  color: var(--color-accent);
-  font-weight: 500;
-  margin-bottom: 18px;
-}
-.spotlight-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 14px;
-}
-.spotlight-card {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 16px;
-  align-items: start;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  padding: 18px 20px;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color .15s, transform .15s;
-  position: relative;
-}
-.spotlight-card:hover {
-  border-color: var(--color-accent);
-  transform: translateY(-2px);
-}
-.spotlight-glyph {
-  font-family: var(--font-mono);
-  font-size: 1.5rem;
-  width: 44px; height: 44px;
-  border-radius: 8px;
-  background: var(--color-accent-subtle);
-  border: 1px solid rgba(99,102,241,.2);
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.spotlight-body { min-width: 0; }
-.spotlight-body .name {
-  font-weight: 600;
-  font-size: .98rem;
-  color: var(--color-text-primary);
-  margin-bottom: 3px;
-}
-.spotlight-body .desc {
-  color: var(--color-text-secondary);
-  font-size: .84rem;
-  line-height: 1.5;
-}
-.spotlight-body .new-chip {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: .62rem;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: #fff;
-  background: var(--color-accent);
-  padding: 1px 8px;
-  border-radius: 4px;
-  margin-right: 6px;
-  vertical-align: middle;
-}
-
-/* --- Tool sections --- */
-.tool-section {
-  padding: 28px 0 8px;
-}
-.section-head {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 16px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--color-border);
-}
-.section-name {
-  font-family: var(--font-sans);
-  font-size: .88rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  letter-spacing: -.01em;
-}
-.section-count {
-  font-family: var(--font-mono);
-  font-size: .7rem;
-  color: var(--color-text-muted);
-}
-
-/* --- Tool cards v2 --- */
-.tool-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 2px;
-}
-.tool-link {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 14px 16px;
-  text-decoration: none;
-  color: inherit;
-  border-radius: 6px;
-  transition: background .12s;
-  position: relative;
-}
-.tool-link:hover {
-  background: var(--color-bg-elevated);
-}
-.tool-link .t-name {
-  font-family: var(--font-mono);
-  font-size: .88rem;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  transition: color .12s;
-}
-.tool-link:hover .t-name { color: var(--color-accent); }
-.tool-link .t-desc {
-  font-size: .78rem;
-  color: var(--color-text-muted);
-  line-height: 1.45;
-}
-.tool-link .t-badge {
-  position: absolute;
-  top: 10px; right: 10px;
-  font-family: var(--font-mono);
-  font-size: .58rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-  color: #fff;
-  background: var(--color-accent);
-  padding: 1px 7px;
-  border-radius: 3px;
-}
-
-/* --- CTA strip --- */
-.cta-strip {
-  margin-top: 40px;
-  padding: 28px 0;
-  border-top: 1px solid var(--color-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.cta-strip p {
-  font-size: .92rem;
-  color: var(--color-text-secondary);
-  margin: 0;
-}
-.cta-strip a {
-  font-family: var(--font-mono);
-  font-size: .88rem;
-  color: var(--color-accent);
-  text-decoration: none;
-  border: 1px solid var(--color-accent);
-  padding: 8px 20px;
-  border-radius: 6px;
-  transition: background .15s, color .15s;
-  white-space: nowrap;
-}
-.cta-strip a:hover {
-  background: var(--color-accent);
-  color: #fff;
-}
-
-/* --- Hero message for filter mode --- */
-.hero-filter-msg {
-  font-family: var(--font-mono);
-  font-size: .85rem;
-  color: var(--color-text-secondary);
-  padding: 8px 0;
-  margin: 0;
-}
-.hero-filter-msg strong {
-  color: var(--color-accent);
-  font-weight: 500;
-}
-
-/* --- Staggered load --- */
-.tool-link, .spotlight-card {
-  opacity: 0;
-  animation: fadeUp .35s ease forwards;
-}
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* --- Responsive --- */
-@media (max-width: 900px) {
-  .hero-workshop {
-    grid-template-columns: 1fr;
-    padding: 40px 0 28px;
-  }
-  .hero-terminal { display: none; }
-  .hero-workshop h1 { font-size: 2.2rem; }
-  .tool-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
-  .spotlight-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 560px) {
-  .hero-workshop h1 { font-size: 1.8rem; }
-  .tool-grid { grid-template-columns: 1fr; }
-}
-</style>
 </head>
 <body>
 <div id="siteHeader"></div>
-
-<main class="container">
-  <!-- Hero -->
-  <div class="hero-workshop">
-    <div class="hero-left">
-      <div class="hero-eyebrow">browser-native dev tools</div>
-      <h1>开发工具，<span class="accent">不上传</span>也能用</h1>
-      <p class="hero-lede">30 个工具全部跑在你浏览器里。数据不离开本机——不登录、不收钱、不留痕。</p>
-      <div class="hero-search">
-        <span class="search-glyph">⌗</span>
-        <input type="text" id="searchInput" placeholder="json、base64、curl …" autocomplete="off">
-      </div>
-      <p class="hero-filter-msg" id="filterMsg" style="display:none"></p>
+<main class="paper">
+  <header class="mast">
+    <div>
+      <p class="kicker">DevUtils Journal · 最近更新 2026-11-26</p>
+      <h1>给开发者的新闻和教程</h1>
+      <p class="dek">每天留一条值得再看的变化，再加上能照着做完的教程。在线工具还在，收到工具箱里。</p>
     </div>
-    <div class="hero-terminal">
-      <span class="comment"># 你的数据不会离开这台电脑</span><br>
-      <span class="prompt">$</span> <span class="cmd">curl -d 'secret' api.dev</span><br>
-      <span class="comment"># ↑ 上面的请求不会发生</span><br>
-      <span class="prompt">$</span> <span class="cmd">devutils format-sql</span><br>
-      <span class="comment"># 全部本地计算，零网络请求</span>
-    </div>
+  </header>
+  <article class="lead">
+    <p class="section-label"><span>最新新闻</span></p>
+    <h2><a href="/blog/site-is-a-journal.html">这个站改成小报了</a></h2>
+    <p class="excerpt">首页现在放新闻和教程。在线工具还在，收进了工具箱。新稿子用 Markdown 生成后写进站点。</p>
+    <p class="meta">2026-11-26 · 3 分钟阅读</p>
+  </article>
+  <div class="split">
+    <section>
+      <h2 class="section-label"><span>每日新闻</span><a href="/news.html">全部</a></h2>
+      <p class="empty">今天的头条在上面。后面的新闻会接在这里。</p>
+    </section>
+    <section>
+      <h2 class="section-label"><span>教程</span><a href="/tutorials.html">全部</a></h2>
+      <article class="story">
+  <h3><a href="/blog/uuid-primary-key.html">别拿 UUID v4 当数据库主键：写到崩的教训，和 v7 怎么救场</a></h3>
+  <p class="excerpt">随机 UUID 主键为什么会把聚簇索引写散，RFC 9562 的 v7 怎样用时间前缀把写入拉回来。</p>
+  <p class="meta">2026-06-02 · 后端 · 9 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/unicode-string-length.html">为什么 &quot;👨‍👩‍👧‍👦&quot;.length 是 11：码点、代理对与字素簇</a></h3>
+  <p class="excerpt">字节、码元、码点、字素簇四层长度的区别，以及 Intl.Segmenter 该在什么时候用。</p>
+  <p class="meta">2026-06-02 · 前端 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/jwt-not-session.html">为什么我把 JWT 从生产环境删了：无状态鉴权的真实代价</a></h3>
+  <p class="excerpt">撤销、改密、令牌体积和密钥轮换。再加上 alg:none 和 RS256/HS256 混淆这两个老漏洞。</p>
+  <p class="meta">2026-06-02 · 安全 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/regex-redos.html">一个正则打满线上 CPU：ReDoS 是怎么发生的，怎么排查</a></h3>
+  <p class="excerpt">从灾难性回溯看一个正则怎么吃满 CPU，以及怎么在上线前把这种写法认出来。</p>
+  <p class="meta">2026-06-02 · 安全 · 8 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/timezone-leap-second.html">只存 UTC 还不够：夏令时、闰秒和那次放倒半个互联网的跳秒</a></h3>
+  <p class="excerpt">未来的会议为什么不能只存 UTC、夏令时那一小时怎么凭空消失、2012 闰秒如何把 CPU 打满。</p>
+  <p class="meta">2026-06-02 · 后端 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/base64-real-cost.html">Base64 不是压缩也不是加密：33% 膨胀和 data URL 的真实代价</a></h3>
+  <p class="excerpt">4/3 膨胀从哪来、base64url 为什么去掉填充、HTTP/2 之后内联图片为什么常常更亏。</p>
+  <p class="meta">2026-06-02 · 编码 · 8 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/cron-pitfalls.html">Cron 的三个坑：星期和日期是 OR、夏令时漏跑、任务重叠</a></h3>
+  <p class="excerpt">日和星期同时写为什么是并集、只判首字符导致 */2 翻车、夏令时那两小时的漏跑与重跑。</p>
+  <p class="meta">2026-06-02 · 后端 · 9 分钟</p>
+</article>
+    </section>
   </div>
-
-  <!-- New tools spotlight -->
-  <div class="spotlight" id="spotlightSection">
-    <div class="spotlight-label">最近添加</div>
-    <div class="spotlight-grid" id="spotlightGrid"></div>
-  </div>
-
-  <!-- Tool sections (rendered by JS) -->
-  <div id="toolSections"></div>
-
-  <!-- CTA -->
-  <div class="cta-strip">
-    <p>有建议？想加工具？<a href="/blog.html">看博客</a> 或 <a href="/about.html">提反馈</a></p>
-    <a href="/blog.html">博客 →</a>
-  </div>
-
-  <!-- Noscript fallback -->
-  <noscript>
-  <div style="padding:20px 0">
-    <h2 style="margin-bottom:16px;font-size:1.2rem">全部工具</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px">
-      <a href="tools/redos-checker.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">正则 ReDoS 检测器</a>
-      <a href="tools/jwt-weak-key.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">JWT 弱密钥检测器</a>
-      <a href="tools/json-to-typescript.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">JSON → TypeScript</a>
-      <a href="tools/curl-converter.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">cURL → 代码</a>
-      <a href="tools/jwt-editor.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">JWT 编辑器</a>
-      <a href="tools/json-formatter.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">JSON 格式化</a>
-      <a href="tools/jwt-decoder.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">JWT 解码器</a>
-      <a href="tools/password-generator.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">密码生成器</a>
-      <a href="tools/base64.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">Base64 编解码</a>
-      <a href="tools/url-encode.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">URL 编解码</a>
-      <a href="tools/color-converter.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">颜色转换器</a>
-      <a href="tools/regex-tester.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">正则测试器</a>
-      <a href="tools/hash-generator.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">哈希生成器</a>
-      <a href="tools/uuid-generator.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">UUID 生成器</a>
-      <a href="tools/timestamp-converter.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">时间戳转换</a>
-      <a href="tools/css-gradient.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">CSS 渐变</a>
-      <a href="tools/box-shadow.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">CSS Box Shadow</a>
-      <a href="tools/qrcode-generator.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">二维码生成器</a>
-      <a href="tools/sql-formatter.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">SQL 格式化</a>
-      <a href="tools/image-compressor.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">图片压缩</a>
-      <a href="tools/text-diff.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">文本差异对比</a>
-      <a href="tools/code-minifier.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">代码压缩器</a>
-      <a href="tools/lorem-ipsum.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">Lorem Ipsum</a>
-      <a href="tools/case-converter.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">大小写转换</a>
-      <a href="tools/cron-generator.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">Cron 表达式</a>
-      <a href="tools/html-entity.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">HTML 实体</a>
-      <a href="tools/markdown-preview.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">Markdown 预览</a>
-      <a href="tools/number-base.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">数字进制转换</a>
-      <a href="tools/word-counter.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">字数统计</a>
-      <a href="tools/jsonpath-query.html" style="padding:10px;color:var(--color-text-primary);text-decoration:none">JSONPath 查询</a>
-    </div>
-  </div>
-  </noscript>
 </main>
-
-<aside class="aff-promo" style="max-width:860px;margin:48px auto 0;padding:16px 20px;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:0.875rem;color:var(--color-text-secondary);line-height:1.7">
-  <span style="flex-shrink:0;padding:2px 8px;border:1px solid var(--color-border-light);border-radius:9999px;font-size:0.75rem;color:var(--color-text-muted)">推广</span>
-  <span style="flex:1;min-width:240px">需要海外 VPS 跑项目？我们一直在用 <strong style="color:var(--color-text-primary)">CloudCone</strong>：洛杉矶机房，按小时计费，PayPal 付款，经常放出 $20 以内的年付闪购。通过这个链接注册，本站能拿到一点佣金，这些工具就能一直免费开下去。</span>
-  <a href="https://app.cloudcone.com/?ref=14322" target="_blank" rel="nofollow sponsored noopener" style="flex-shrink:0;padding:8px 16px;background:var(--color-accent);color:#fff;border-radius:8px;text-decoration:none;font-weight:600">去看看 →</a>
-</aside>
 <div id="siteFooter"></div>
-
-<script type="module" src="js/app.js?v=6"></script>
+<script type="module">
+import { initLayout } from "/js/layout.js";
+initLayout();
+</script>
 </body>
 </html>

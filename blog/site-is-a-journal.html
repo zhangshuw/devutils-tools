@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f4f0e8">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>这个站改成小报了 | DevUtils 小报</title>
+<meta name="description" content="首页现在放新闻和教程。在线工具还在，收进了工具箱。新稿子用 Markdown 生成后写进站点。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/blog/site-is-a-journal.html">
+<meta property="og:title" content="这个站改成小报了">
+<meta property="og:description" content="首页现在放新闻和教程。在线工具还在，收进了工具箱。新稿子用 Markdown 生成后写进站点。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://devtool.blueblueliu.com/blog/site-is-a-journal.html">
+<meta property="og:site_name" content="DevUtils 小报">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="这个站改成小报了">
+<meta name="twitter:description" content="首页现在放新闻和教程。在线工具还在，收进了工具箱。新稿子用 Markdown 生成后写进站点。">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"NewsArticle","headline":"这个站改成小报了","description":"首页现在放新闻和教程。在线工具还在，收进了工具箱。新稿子用 Markdown 生成后写进站点。","datePublished":"2026-11-26","dateModified":"2026-11-26","author":{"@type":"Organization","name":"DevUtils"},"publisher":{"@type":"Organization","name":"DevUtils"},"mainEntityOfPage":"https://devtool.blueblueliu.com/blog/site-is-a-journal.html"}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<link rel="stylesheet" href="/css/publication.css">
+</head>
+<body>
+<div id="siteHeader"></div>
+<div class="post-layout">
+  <aside class="post-aside-left"><nav class="toc" data-toc></nav></aside>
+  <article class="post">
+    <nav class="breadcrumb"><a href="/">首页</a><span class="breadcrumb-sep">/</span><a href="/news.html">每日新闻</a><span class="breadcrumb-sep">/</span><span>这个站改成小报了</span></nav>
+    <header class="post-header">
+      <span class="category">站务</span>
+      <h1>这个站改成小报了</h1>
+      <p class="lede">首页现在放新闻和教程。在线工具还在，收进了工具箱。新稿子用 Markdown 生成后写进站点。</p>
+      <div class="post-meta"><span>2026-11-26</span><span class="sep">·</span><span>约 3 分钟阅读</span></div>
+    </header>
+    <p>首页换成了一份小报。左边是新闻，右边是教程。原来的 JSON、JWT、正则这些页面都还在，地址也没变，只是从首页撤到了<a href="/tools.html">工具箱</a>。</p>
+<h2>为什么改</h2>
+<p>三十个工具挤在一页上，打开先看到搜索框和一排色块。功能彼此很像，也很少有人因为某个小工具再回来。真正还能再读一遍的，是那些把坑写清楚的教程。</p>
+<p>所以这个站接下来只做两栏：每天一条值得留档的变化，加上能照着做完的教程。</p>
+<h2>一篇稿怎么上去</h2>
+<p>稿子放在 <code>content/posts/</code>，文件名就是地址。这一篇是 <code>site-is-a-journal.md</code>，页面在 <code>/blog/site-is-a-journal.html</code>。</p>
+<p>在 <code>web-tools</code> 目录运行：</p>
+<pre data-lang="text"><code class="language-text">node scripts/site.mjs publish content/posts/site-is-a-journal.md</code></pre>
+<p>它会做三件事：</p>
+<ul><li>把 Markdown 渲染成文章页</li><li>写进 <code>content/catalog.json</code></li><li>重做首页、每日新闻、教程和归档</li></ul>
+<p>稿子开头要有这几行。<code>kind</code> 写成 <code>news</code> 进每日新闻，写成 <code>tutorial</code> 进教程。</p>
+<pre data-lang="text"><code class="language-text">---
+title: 标题
+description: 列表页上的那句摘要
+date: 2026-11-26
+kind: news
+section: 分类
+minutes: 4
+tags: [标签]
+---</code></pre>
+<p>改完已有的稿，再跑一次同一条命令即可，目录会按 slug 覆盖，不会多出一篇。</p>
+<p>生成的是静态文件。要让线上读者看到，还得把 <code>web-tools</code> 部署到现在的托管上。这条命令只负责写进仓库里的页面。</p>
+
+    
+  </article>
+</div>
+<div id="siteFooter"></div>
+<script type="module" src="/js/blog-post.js"></script>
+</body>
+</html>

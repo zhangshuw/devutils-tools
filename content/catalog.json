@@ -1,0 +1,289 @@
+[
+  {
+    "slug": "site-is-a-journal",
+    "title": "这个站改成小报了",
+    "description": "首页现在放新闻和教程。在线工具还在，收进了工具箱。新稿子用 Markdown 生成后写进站点。",
+    "date": "2026-11-26",
+    "kind": "news",
+    "section": "站务",
+    "minutes": 3,
+    "href": "/blog/site-is-a-journal.html",
+    "tags": [
+      "站点",
+      "写作"
+    ]
+  },
+  {
+    "slug": "uuid-primary-key",
+    "title": "别拿 UUID v4 当数据库主键：写到崩的教训，和 v7 怎么救场",
+    "description": "随机 UUID 主键为什么会把聚簇索引写散，RFC 9562 的 v7 怎样用时间前缀把写入拉回来。",
+    "date": "2026-06-02",
+    "kind": "tutorial",
+    "section": "后端",
+    "minutes": 9,
+    "href": "/blog/uuid-primary-key.html",
+    "tags": [
+      "数据库",
+      "UUID"
+    ]
+  },
+  {
+    "slug": "unicode-string-length",
+    "title": "为什么 \"👨‍👩‍👧‍👦\".length 是 11：码点、代理对与字素簇",
+    "description": "字节、码元、码点、字素簇四层长度的区别，以及 Intl.Segmenter 该在什么时候用。",
+    "date": "2026-06-02",
+    "kind": "tutorial",
+    "section": "前端",
+    "minutes": 10,
+    "href": "/blog/unicode-string-length.html",
+    "tags": [
+      "Unicode",
+      "JavaScript"
+    ]
+  },
+  {
+    "slug": "jwt-not-session",
+    "title": "为什么我把 JWT 从生产环境删了：无状态鉴权的真实代价",
+    "description": "撤销、改密、令牌体积和密钥轮换。再加上 alg:none 和 RS256/HS256 混淆这两个老漏洞。",
+    "date": "2026-06-02",
+    "kind": "tutorial",
+    "section": "安全",
+    "minutes": 10,
+    "href": "/blog/jwt-not-session.html",
+    "tags": [
+      "JWT",
+      "鉴权"
+    ]
+  },
+  {
+    "slug": "regex-redos",
+    "title": "一个正则打满线上 CPU：ReDoS 是怎么发生的，怎么排查",
+    "description": "从灾难性回溯看一个正则怎么吃满 CPU，以及怎么在上线前把这种写法认出来。",
+    "date": "2026-06-02",
+    "kind": "tutorial",
+    "section": "安全",
+    "minutes": 8,
+    "href": "/blog/regex-redos.html",
+    "tags": [
+      "正则",
+      "性能"
+    ]
+  },
+  {
+    "slug": "timezone-leap-second",
+    "title": "只存 UTC 还不够：夏令时、闰秒和那次放倒半个互联网的跳秒",
+    "description": "未来的会议为什么不能只存 UTC、夏令时那一小时怎么凭空消失、2012 闰秒如何把 CPU 打满。",
+    "date": "2026-06-02",
+    "kind": "tutorial",
+    "section": "后端",
+    "minutes": 10,
+    "href": "/blog/timezone-leap-second.html",
+    "tags": [
+      "时区",
+      "闰秒"
+    ]
+  },
+  {
+    "slug": "base64-real-cost",
+    "title": "Base64 不是压缩也不是加密：33% 膨胀和 data URL 的真实代价",
+    "description": "4/3 膨胀从哪来、base64url 为什么去掉填充、HTTP/2 之后内联图片为什么常常更亏。",
+    "date": "2026-06-02",
+    "kind": "tutorial",
+    "section": "编码",
+    "minutes": 8,
+    "href": "/blog/base64-real-cost.html",
+    "tags": [
+      "Base64",
+      "编码"
+    ]
+  },
+  {
+    "slug": "cron-pitfalls",
+    "title": "Cron 的三个坑：星期和日期是 OR、夏令时漏跑、任务重叠",
+    "description": "日和星期同时写为什么是并集、只判首字符导致 */2 翻车、夏令时那两小时的漏跑与重跑。",
+    "date": "2026-06-02",
+    "kind": "tutorial",
+    "section": "后端",
+    "minutes": 9,
+    "href": "/blog/cron-pitfalls.html",
+    "tags": [
+      "cron",
+      "运维"
+    ]
+  },
+  {
+    "slug": "html-entity-xss",
+    "title": "HTML 实体编码不是万能解药：XSS 要按上下文转义",
+    "description": "HTML 正文、属性、JavaScript、URL、CSS 五种上下文各自的转义规则，以及 textContent 和 innerHTML 的差别。",
+    "date": "2026-06-02",
+    "kind": "tutorial",
+    "section": "安全",
+    "minutes": 10,
+    "href": "/blog/html-entity-xss.html",
+    "tags": [
+      "XSS",
+      "安全",
+      "前端"
+    ]
+  },
+  {
+    "slug": "mysql-utf8mb4",
+    "title": "utf8 不是 UTF-8：MySQL 最坑的一次命名，和 emoji 变问号的真相",
+    "description": "MySQL 的 utf8 只是 3 字节的 utf8mb3，存不下 emoji。191 这个魔数从哪来，迁移时要改哪几处。",
+    "date": "2026-06-02",
+    "kind": "tutorial",
+    "section": "后端",
+    "minutes": 9,
+    "href": "/blog/mysql-utf8mb4.html",
+    "tags": [
+      "MySQL",
+      "字符集"
+    ]
+  },
+  {
+    "slug": "api-debug-guide",
+    "title": "API 调试实战：从 curl 到上线的 8 个排障手段",
+    "description": "状态码、JSON 解析、JWT 验签、时间戳偏移、URL 编码，串成一条能重复用的排障顺序。",
+    "date": "2026-05-26",
+    "kind": "tutorial",
+    "section": "后端",
+    "minutes": 8,
+    "href": "/blog/api-debug-guide.html",
+    "tags": [
+      "API",
+      "调试"
+    ]
+  },
+  {
+    "slug": "word-count-guide",
+    "title": "中英文混排到底怎么算字数？",
+    "description": "平台规则不一样，阅读时间也不是字数除以一个常数。这里把几种算法并排放开。",
+    "date": "2026-05-22",
+    "kind": "tutorial",
+    "section": "写作",
+    "minutes": 5,
+    "href": "/blog/word-count-guide.html",
+    "tags": [
+      "字数",
+      "写作"
+    ]
+  },
+  {
+    "slug": "css-box-shadow-guide",
+    "title": "CSS Box Shadow 完整指南：从基础到性能优化",
+    "description": "语法、常见阴影、和 drop-shadow 的差别，以及移动端上阴影为什么会卡。",
+    "date": "2026-05-22",
+    "kind": "tutorial",
+    "section": "前端",
+    "minutes": 7,
+    "href": "/blog/css-box-shadow-guide.html",
+    "tags": [
+      "CSS"
+    ]
+  },
+  {
+    "slug": "regex-common-patterns",
+    "title": "10 个最常用的正则表达式",
+    "description": "邮箱、手机号、URL、身份证、IP。每条都写了它漏掉的边界。",
+    "date": "2026-05-21",
+    "kind": "tutorial",
+    "section": "速查",
+    "minutes": 4,
+    "href": "/blog/regex-common-patterns.html",
+    "tags": [
+      "正则"
+    ]
+  },
+  {
+    "slug": "frontend-dev-tools",
+    "title": "前端日常 10 个在线工具（2026 版）",
+    "description": "格式化、编解码、正则、时间戳。每天打开的那几个页面，收成一份清单。",
+    "date": "2026-05-21",
+    "kind": "tutorial",
+    "section": "工具",
+    "minutes": 6,
+    "href": "/blog/frontend-dev-tools.html",
+    "tags": [
+      "前端",
+      "工具"
+    ]
+  },
+  {
+    "slug": "dev-efficiency-tools",
+    "title": "让开发效率翻倍的几个在线工具（2026 版）",
+    "description": "一组不用安装的小工具，覆盖格式化、编解码和正则。适合临时机器。",
+    "date": "2026-05-21",
+    "kind": "tutorial",
+    "section": "工具",
+    "minutes": 5,
+    "href": "/blog/dev-efficiency-tools.html",
+    "tags": [
+      "效率"
+    ]
+  },
+  {
+    "slug": "choose-password-generator",
+    "title": "怎么挑一个真正安全的在线密码生成器",
+    "description": "随机源、熵、生成发生在浏览器里还是别人的服务器上。",
+    "date": "2026-05-21",
+    "kind": "tutorial",
+    "section": "安全",
+    "minutes": 5,
+    "href": "/blog/choose-password-generator.html",
+    "tags": [
+      "密码"
+    ]
+  },
+  {
+    "slug": "json-tips",
+    "title": "JSON 的 10 个坑：文档不写，但上线后真会踩的那些",
+    "description": "大整数精度、循环引用、NaN、jq 和 Schema。写给已经在线上传过 JSON 的人。",
+    "date": "2026-05-21",
+    "kind": "tutorial",
+    "section": "后端",
+    "minutes": 9,
+    "href": "/blog/json-tips.html",
+    "tags": [
+      "JSON"
+    ]
+  },
+  {
+    "slug": "hash-algorithm-guide",
+    "title": "MD5、SHA-1、SHA-256：什么时候用哪个",
+    "description": "校验文件、存密码、做缓存键，三件事不该用同一个算法。",
+    "date": "2026-05-21",
+    "kind": "tutorial",
+    "section": "安全",
+    "minutes": 8,
+    "href": "/blog/hash-algorithm-guide.html",
+    "tags": [
+      "哈希"
+    ]
+  },
+  {
+    "slug": "timestamp-guide",
+    "title": "Unix 时间戳：秒级还是毫秒级，前后端各踩各的坑",
+    "description": "秒和毫秒差一千倍。各语言怎么取、前后端怎么对齐，用几个真实接口对一下。",
+    "date": "2026-05-21",
+    "kind": "tutorial",
+    "section": "后端",
+    "minutes": 6,
+    "href": "/blog/timestamp-guide.html",
+    "tags": [
+      "时间戳"
+    ]
+  },
+  {
+    "slug": "url-encoding-guide",
+    "title": "URL 编码：哪些字符需要编码，为什么",
+    "description": "保留字符和不安全字符、和 Base64 的差别，以及各语言 encode 一次还是两次。",
+    "date": "2026-05-21",
+    "kind": "tutorial",
+    "section": "编码",
+    "minutes": 5,
+    "href": "/blog/url-encoding-guide.html",
+    "tags": [
+      "URL"
+    ]
+  }
+]

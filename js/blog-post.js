@@ -86,26 +86,34 @@ function escapeHTML(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// 后一轮替换不能扫到已经写进去的 <span class="...">，否则 class 会被当成 JS 关键字，标签被拆开。
+function replaceOutsideTags(html, regex, replacement) {
+  return html.split(/(<[^>]+>)/g).map((part) => {
+    if (part.startsWith("<")) return part;
+    regex.lastIndex = 0;
+    return part.replace(regex, replacement);
+  }).join("");
+}
+
 function highlight(code, lang) {
   let html = escapeHTML(code);
   if (lang === "json") {
-    html = html.replace(/("(?:\\.|[^"\\])*")\s*:/g, '<span class="tk-key">$1</span>:')
-               .replace(/:\s*("(?:\\.|[^"\\])*")/g, ': <span class="tk-str">$1</span>')
-               .replace(/\b(true|false)\b/g, '<span class="tk-bool">$1</span>')
-               .replace(/\bnull\b/g, '<span class="tk-null">null</span>')
-               .replace(/:\s*(-?\d+\.?\d*)/g, ': <span class="tk-num">$1</span>');
+    html = html.replace(/("(?:\\.|[^"\\])*")\s*:/g, '<span class="tk-key">$1</span>:');
+    html = replaceOutsideTags(html, /:\s*("(?:\\.|[^"\\])*")/g, ': <span class="tk-str">$1</span>');
+    html = replaceOutsideTags(html, /\b(true|false)\b/g, '<span class="tk-bool">$1</span>');
+    html = replaceOutsideTags(html, /\bnull\b/g, '<span class="tk-null">null</span>');
+    html = replaceOutsideTags(html, /:\s*(-?\d+\.?\d*)/g, ': <span class="tk-num">$1</span>');
   } else if (lang === "js" || lang === "javascript" || lang === "ts" || lang === "typescript") {
-    // 注释先处理避免污染
-    html = html.replace(/(\/\/[^\n]*)/g, '<span class="tk-com">$1</span>')
-               .replace(/("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)/g, '<span class="tk-str">$1</span>')
-               .replace(JS_KW, '<span class="tk-kw">$1</span>')
-               .replace(JS_BOOL, '<span class="tk-bool">$1</span>')
-               .replace(/\b(\d+\.?\d*)\b/g, '<span class="tk-num">$1</span>');
+    html = html.replace(/(\/\/[^\n]*)/g, '<span class="tk-com">$1</span>');
+    html = replaceOutsideTags(html, /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)/g, '<span class="tk-str">$1</span>');
+    html = replaceOutsideTags(html, JS_KW, '<span class="tk-kw">$1</span>');
+    html = replaceOutsideTags(html, JS_BOOL, '<span class="tk-bool">$1</span>');
+    html = replaceOutsideTags(html, /\b(\d+\.?\d*)\b/g, '<span class="tk-num">$1</span>');
   } else if (lang === "bash" || lang === "sh" || lang === "shell") {
-    html = html.replace(/(#[^\n]*)/g, '<span class="tk-com">$1</span>')
-               .replace(/("(?:\\.|[^"\\])*"|'[^']*')/g, '<span class="tk-str">$1</span>')
-               .replace(BASH_KW, '<span class="tk-fn">$1</span>')
-               .replace(/(--?[\w-]+)/g, '<span class="tk-key">$1</span>');
+    html = html.replace(/(#[^\n]*)/g, '<span class="tk-com">$1</span>');
+    html = replaceOutsideTags(html, /("(?:\\.|[^"\\])*"|'[^']*')/g, '<span class="tk-str">$1</span>');
+    html = replaceOutsideTags(html, BASH_KW, '<span class="tk-fn">$1</span>');
+    html = replaceOutsideTags(html, /(--?[\w-]+)/g, '<span class="tk-key">$1</span>');
   }
   return html;
 }

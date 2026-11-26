@@ -3,208 +3,152 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#6366f1">
+<meta name="theme-color" content="#f4f0e8">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<title>DevUtils 博客 — 一个写工具的人，记录下他踩过的坑</title>
-<meta name="description" content="DevUtils 博客：在线工具背后的故事、生产环境踩过的坑、JSON / 正则 / 哈希 / URL 编码这些不起眼但每天都要用的东西。">
+<title>全部文章 — DevUtils 小报</title>
+<meta name="description" content="新闻和教程的总目录。">
 <link rel="canonical" href="https://devtool.blueblueliu.com/blog.html">
-<meta property="og:title" content="DevUtils 博客">
-<meta property="og:description" content="一个写工具的人，记录下他踩过的坑">
+<meta property="og:title" content="全部文章 — DevUtils 小报">
+<meta property="og:description" content="新闻和教程的总目录。">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://devtool.blueblueliu.com/blog.html">
-<meta property="og:site_name" content="DevUtils">
+<meta property="og:site_name" content="DevUtils 小报">
+<meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="DevUtils 博客">
-<meta name="twitter:description" content="一个写工具的人，记录下他踩过的坑">
+<meta name="twitter:title" content="全部文章 — DevUtils 小报">
+<meta name="twitter:description" content="新闻和教程的总目录。">
 <meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="google-site-verification" content="1hdAlnY_EX_FiRYppycKDYJklnmKGdFYAZYAnOK3FAk">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Blog","name":"DevUtils 博客","description":"在线工具背后的踩坑笔记","url":"https://devtool.blueblueliu.com/blog.html"}
+{"@context":"https://schema.org","@type":"CollectionPage","name":"全部文章","url":"https://devtool.blueblueliu.com/blog.html"}
 </script>
 <link rel="stylesheet" href="/css/variables.css">
 <link rel="stylesheet" href="/css/reset.css">
 <link rel="stylesheet" href="/css/layout.css">
 <link rel="stylesheet" href="/css/components.css">
-<link rel="stylesheet" href="/css/blog.css?v=20260603c">
-<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/blog.css">
+<link rel="stylesheet" href="/css/publication.css">
 
 </head>
 <body>
 <div id="siteHeader"></div>
-
-<main class="journal">
-
-  <header class="journal-masthead">
-    <span class="journal-eyebrow">DevUtils Journal</span>
-    <h1>写工具的人，记下他踩过的坑</h1>
-    <p class="subtitle">这里不是教程站。每篇都是在某个具体场景里被坑过、然后整理出来的笔记——JSON、正则、哈希、编码、那些每天都要用但从来没人讲清楚的东西。</p>
+<main class="paper">
+  <header class="listing-head">
+    <p class="kicker">Archive</p>
+    <h1>全部文章</h1>
+    <p class="dek">新闻和教程的总目录。</p>
   </header>
-
-  <nav class="journal-filters" id="journalFilters">
-    <button class="f active" data-filter="all">全部<span class="count"></span></button>
-    <button class="f" data-filter="前端">前端</button>
-    <button class="f" data-filter="后端">后端</button>
-    <button class="f" data-filter="工具推荐">工具推荐</button>
-    <button class="f" data-filter="速查表">速查表</button>
-    <button class="f" data-filter="安全">安全</button>
-    <button class="f" data-filter="编码">编码</button>
-  </nav>
-
-  <div class="journal-list" id="journalList">
-
-    <article class="j-entry lead" data-category="后端">
-      <span class="cat">编辑推荐</span>
-      <h2><a href="/blog/json-tips.html">JSON 的 10 个坑：文档不写，但上线后真会踩的那些</a></h2>
-      <p class="excerpt">不是 "JSON 入门 30 分钟"。如果你已经在线上 ship 过 JSON API，那大概率被里面这些坑里的一两个搞过——大整数精度、循环引用、jq 实战、Schema 真实用法。</p>
-      <div class="meta"><span>2026-05-21</span><span class="sep">·</span><span>9 分钟阅读</span></div>
-    </article>
-    <article class="j-entry" data-category="安全">
-      <span class="cat">安全 · 前端</span>
-      <h2><a href="/blog/html-entity-xss.html">HTML 实体编码不是万能解药：XSS 要按上下文转义</a></h2>
-      <p class="excerpt">HTML 正文/属性/JavaScript/URL/CSS 五种上下文各自的转义规则，textContent vs innerHTML，javascript: 绕过，以及为什么 React 也会被 XSS。</p>
-      <div class="meta"><span>2026-06-02</span><span class="sep">·</span><span>10 分钟</span><span class="sep">·</span><span class="tag">XSS</span><span class="sep">·</span><span class="tag">安全</span><span class="sep">·</span><span class="tag">前端</span></div>
-    </article>
-    <article class="j-entry" data-category="后端">
-      <span class="cat">后端 · 运维</span>
-      <h2><a href="/blog/cron-pitfalls.html">Cron 的三个坑：星期和日期是 OR、夏令时漏跑、任务重叠</a></h2>
-      <p class="excerpt">日和星期同时写为什么是并集、只判首字符导致 */2 翻车、DST 那两小时的漏跑与重跑，以及为什么该用 UTC 和 systemd timer。</p>
-      <div class="meta"><span>2026-06-02</span><span class="sep">·</span><span>9 分钟</span><span class="sep">·</span><span class="tag">cron</span><span class="sep">·</span><span class="tag">运维</span><span class="sep">·</span><span class="tag">定时任务</span></div>
-    </article>
-    <article class="j-entry" data-category="编码">
-      <span class="cat">编码 · Base64</span>
-      <h2><a href="/blog/base64-real-cost.html">Base64 不是压缩也不是加密：33% 膨胀和 data URL 的真实代价</a></h2>
-      <p class="excerpt">4/3 膨胀的原理、base64url 和 JWT 为何去填充、HTTP/2 后内联图片为何多半是亏的、btoa 遇中文为何抛错。</p>
-      <div class="meta"><span>2026-06-02</span><span class="sep">·</span><span>8 分钟</span><span class="sep">·</span><span class="tag">Base64</span><span class="sep">·</span><span class="tag">编码</span><span class="sep">·</span><span class="tag">性能</span></div>
-    </article>
-    <article class="j-entry" data-category="后端">
-      <span class="cat">后端 · 时间</span>
-      <h2><a href="/blog/timezone-leap-second.html">只存 UTC 还不够：夏令时、闰秒和那次放倒半个互联网的跳秒</a></h2>
-      <p class="excerpt">未来的会议为什么不能存 UTC、DST 那一小时怎么凭空消失、2012 闰秒如何触发 Linux 内核 futex 让 CPU 打满。</p>
-      <div class="meta"><span>2026-06-02</span><span class="sep">·</span><span>10 分钟</span><span class="sep">·</span><span class="tag">时区</span><span class="sep">·</span><span class="tag">夏令时</span><span class="sep">·</span><span class="tag">闰秒</span></div>
-    </article>
-    <article class="j-entry" data-category="后端">
-      <span class="cat">后端 · 数据库</span>
-      <h2><a href="/blog/mysql-utf8mb4.html">utf8 不是 UTF-8：MySQL 最坑的一次命名，和 emoji 变问号的真相</a></h2>
-      <p class="excerpt">MySQL 的 utf8 只是 3 字节的 utf8mb3，存不下 emoji。191 魔数怎么来的、767 字节索引上限、四处都要改的迁移清单。</p>
-      <div class="meta"><span>2026-06-02</span><span class="sep">·</span><span>9 分钟</span><span class="sep">·</span><span class="tag">MySQL</span><span class="sep">·</span><span class="tag">字符集</span><span class="sep">·</span><span class="tag">utf8mb4</span></div>
-    </article>
-    <article class="j-entry" data-category="前端">
-      <span class="cat">前端 · 编码</span>
-      <h2><a href="/blog/unicode-string-length.html">为什么 "👨‍👩‍👧‍👦".length 是 11：码点、代理对与字素簇</a></h2>
-      <p class="excerpt">字节/码元/码点/字素簇四层长度的区别，代理对怎么把 emoji 切成乱码，Intl.Segmenter 与 NFC 归一化实战。</p>
-      <div class="meta"><span>2026-06-02</span><span class="sep">·</span><span>10 分钟</span><span class="sep">·</span><span class="tag">Unicode</span><span class="sep">·</span><span class="tag">编码</span><span class="sep">·</span><span class="tag">JavaScript</span></div>
-    </article>
-    <article class="j-entry" data-category="后端">
-      <span class="cat">后端 · 数据库</span>
-      <h2><a href="/blog/uuid-primary-key.html">别拿 UUID v4 当数据库主键：写到崩的教训，和 v7 怎么救场</a></h2>
-      <p class="excerpt">随机 UUID 主键为什么在表变大后拖垮写入——聚簇索引页分裂讲清楚，RFC 9562 的 v7 怎么用时间前缀解决。</p>
-      <div class="meta"><span>2026-06-02</span><span class="sep">·</span><span>9 分钟</span><span class="sep">·</span><span class="tag">数据库</span><span class="sep">·</span><span class="tag">UUID</span><span class="sep">·</span><span class="tag">索引</span></div>
-    </article>
-    <article class="j-entry" data-category="安全">
-      <span class="cat">安全 · 性能</span>
-      <h2><a href="/blog/regex-redos.html">一个正则打满线上 CPU：ReDoS 是怎么发生的，怎么排查</a></h2>
-      <p class="excerpt">从 Cloudflare 2019 全球宕机说起：灾难性回溯的原理、怎么一眼看出风险正则、CPU 打满怎么定位，三种修法。</p>
-      <div class="meta"><span>2026-06-02</span><span class="sep">·</span><span>8 分钟</span><span class="sep">·</span><span class="tag">正则</span><span class="sep">·</span><span class="tag">性能</span><span class="sep">·</span><span class="tag">安全</span></div>
-    </article>
-    <article class="j-entry" data-category="安全">
-      <span class="cat">安全 · 鉴权</span>
-      <h2><a href="/blog/jwt-not-session.html">为什么我把 JWT 从生产环境删了：无状态鉴权的真实代价</a></h2>
-      <p class="excerpt">撤销难、改密旧令牌仍有效、令牌膨胀、密钥轮换，外加 alg:none 和 RS256/HS256 混淆两个经典漏洞，以及 JWT 真正合适的场景。</p>
-      <div class="meta"><span>2026-06-02</span><span class="sep">·</span><span>10 分钟</span><span class="sep">·</span><span class="tag">JWT</span><span class="sep">·</span><span class="tag">鉴权</span><span class="sep">·</span><span class="tag">安全</span></div>
-    </article>
-    <article class="j-entry" data-category="后端">
-      <span class="cat">后端 · 调试</span>
-      <h2><a href="/blog/api-debug-guide.html">API 调试实战：从 curl 到上线的 8 个排障手段</a></h2>
-      <p class="excerpt">HTTP 状态码、JSON 解析、JWT 验签、时间戳偏移、URL 编码——一条线串完 API 排障工作流。</p>
-      <div class="meta"><span>2026-05-26</span><span class="sep">·</span><span>8 分钟</span><span class="sep">·</span><span class="tag">API</span><span class="sep">·</span><span class="tag">调试</span><span class="sep">·</span><span class="tag">排障</span></div>
-    </article>
-    <article class="j-entry" data-category="前端">
-      <span class="cat">前端 · CSS</span>
-      <h2><a href="/blog/css-box-shadow-guide.html">CSS Box Shadow 完整指南：从基础到性能优化</a></h2>
-      <p class="excerpt">语法、8 种常见阴影、与 drop-shadow 的区别、移动端性能坑、配套在线生成器。</p>
-      <div class="meta"><span>2026-05-22</span><span class="sep">·</span><span>7 分钟</span><span class="sep">·</span><span class="tag">CSS</span><span class="sep">·</span><span class="tag">前端样式</span></div>
-    </article>
-    <article class="j-entry" data-category="速查表">
-      <span class="cat">速查 · 写作</span>
-      <h2><a href="/blog/word-count-guide.html">中英文混排到底怎么算字数？</a></h2>
-      <p class="excerpt">不同平台的字数规则差异、阅读时间估算公式、各种字数限制场景与实现代码。</p>
-      <div class="meta"><span>2026-05-22</span><span class="sep">·</span><span>5 分钟</span><span class="sep">·</span><span class="tag">字数统计</span><span class="sep">·</span><span class="tag">写作</span></div>
-    </article>
-    <article class="j-entry" data-category="后端">
-      <span class="cat">后端 · 时间</span>
-      <h2><a href="/blog/timestamp-guide.html">Unix 时间戳：秒级还是毫秒级，前后端各踩各的坑</a></h2>
-      <p class="excerpt">秒级 vs 毫秒级、各语言获取方法、前后端对接 case study、在线转换工具。</p>
-      <div class="meta"><span>2026-05-21</span><span class="sep">·</span><span>6 分钟</span><span class="sep">·</span><span class="tag">时间戳</span><span class="sep">·</span><span class="tag">开发技巧</span></div>
-    </article>
-    <article class="j-entry" data-category="编码">
-      <span class="cat">编码 · URL</span>
-      <h2><a href="/blog/url-encoding-guide.html">URL 编码：哪些字符需要编码，为什么</a></h2>
-      <p class="excerpt">URL 编码原理、保留字符与不安全字符、与 Base64 的区别、各语言实现差异。</p>
-      <div class="meta"><span>2026-05-21</span><span class="sep">·</span><span>5 分钟</span><span class="sep">·</span><span class="tag">URL 编码</span><span class="sep">·</span><span class="tag">编码转换</span></div>
-    </article>
-    <article class="j-entry" data-category="安全">
-      <span class="cat">安全 · 哈希</span>
-      <h2><a href="/blog/hash-algorithm-guide.html">MD5、SHA-1、SHA-256：什么时候用哪个</a></h2>
-      <p class="excerpt">从碰撞概率、计算开销到典型使用场景，一次说清四种主流哈希算法的取舍。</p>
-      <div class="meta"><span>2026-05-21</span><span class="sep">·</span><span>8 分钟</span><span class="sep">·</span><span class="tag">安全</span><span class="sep">·</span><span class="tag">哈希算法</span></div>
-    </article>
-    <article class="j-entry" data-category="工具推荐">
-      <span class="cat">工具 · 推荐</span>
-      <h2><a href="/blog/frontend-dev-tools.html">前端日常 10 个在线工具（2026 版）</a></h2>
-      <p class="excerpt">JSON 格式化、Base64、正则、时间戳——每天都要用的那批工具，省掉装一堆 App。</p>
-      <div class="meta"><span>2026-05-21</span><span class="sep">·</span><span>6 分钟</span><span class="sep">·</span><span class="tag">前端开发</span><span class="sep">·</span><span class="tag">工具推荐</span></div>
-    </article>
-    <article class="j-entry" data-category="速查表">
-      <span class="cat">速查 · 正则</span>
-      <h2><a href="/blog/regex-common-patterns.html">10 个最常用的正则表达式</a></h2>
-      <p class="excerpt">邮箱、手机号、URL、身份证、IP——复制即用，含解释和边界条件说明。</p>
-      <div class="meta"><span>2026-05-21</span><span class="sep">·</span><span>4 分钟</span><span class="sep">·</span><span class="tag">正则表达式</span><span class="sep">·</span><span class="tag">速查</span></div>
-    </article>
-    <article class="j-entry" data-category="安全">
-      <span class="cat">安全 · 密码</span>
-      <h2><a href="/blog/choose-password-generator.html">怎么挑一个真正安全的在线密码生成器</a></h2>
-      <p class="excerpt">看似简单的需求背后：随机源、熵评估、本地 vs 远程生成的取舍。</p>
-      <div class="meta"><span>2026-05-21</span><span class="sep">·</span><span>5 分钟</span><span class="sep">·</span><span class="tag">安全</span><span class="sep">·</span><span class="tag">密码</span></div>
-    </article>
-    <article class="j-entry" data-category="工具推荐">
-      <span class="cat">工具 · 效率</span>
-      <h2><a href="/blog/dev-efficiency-tools.html">让开发效率翻倍的几个在线工具（2026 版）</a></h2>
-      <p class="excerpt">JSON 格式化、Base64、正则测试——这批工具组合起来，能省掉大半天的环境配置。</p>
-      <div class="meta"><span>2026-05-21</span><span class="sep">·</span><span>5 分钟</span><span class="sep">·</span><span class="tag">效率提升</span><span class="sep">·</span><span class="tag">开发工具</span></div>
-    </article>
-
-  </div>
-
+  <article class="story">
+  <h3><a href="/blog/site-is-a-journal.html">这个站改成小报了</a></h3>
+  <p class="excerpt">首页现在放新闻和教程。在线工具还在，收进了工具箱。新稿子用 Markdown 生成后写进站点。</p>
+  <p class="meta">2026-11-26 · 站务 · 3 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/uuid-primary-key.html">别拿 UUID v4 当数据库主键：写到崩的教训，和 v7 怎么救场</a></h3>
+  <p class="excerpt">随机 UUID 主键为什么会把聚簇索引写散，RFC 9562 的 v7 怎样用时间前缀把写入拉回来。</p>
+  <p class="meta">2026-06-02 · 后端 · 9 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/unicode-string-length.html">为什么 &quot;👨‍👩‍👧‍👦&quot;.length 是 11：码点、代理对与字素簇</a></h3>
+  <p class="excerpt">字节、码元、码点、字素簇四层长度的区别，以及 Intl.Segmenter 该在什么时候用。</p>
+  <p class="meta">2026-06-02 · 前端 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/jwt-not-session.html">为什么我把 JWT 从生产环境删了：无状态鉴权的真实代价</a></h3>
+  <p class="excerpt">撤销、改密、令牌体积和密钥轮换。再加上 alg:none 和 RS256/HS256 混淆这两个老漏洞。</p>
+  <p class="meta">2026-06-02 · 安全 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/regex-redos.html">一个正则打满线上 CPU：ReDoS 是怎么发生的，怎么排查</a></h3>
+  <p class="excerpt">从灾难性回溯看一个正则怎么吃满 CPU，以及怎么在上线前把这种写法认出来。</p>
+  <p class="meta">2026-06-02 · 安全 · 8 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/timezone-leap-second.html">只存 UTC 还不够：夏令时、闰秒和那次放倒半个互联网的跳秒</a></h3>
+  <p class="excerpt">未来的会议为什么不能只存 UTC、夏令时那一小时怎么凭空消失、2012 闰秒如何把 CPU 打满。</p>
+  <p class="meta">2026-06-02 · 后端 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/base64-real-cost.html">Base64 不是压缩也不是加密：33% 膨胀和 data URL 的真实代价</a></h3>
+  <p class="excerpt">4/3 膨胀从哪来、base64url 为什么去掉填充、HTTP/2 之后内联图片为什么常常更亏。</p>
+  <p class="meta">2026-06-02 · 编码 · 8 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/cron-pitfalls.html">Cron 的三个坑：星期和日期是 OR、夏令时漏跑、任务重叠</a></h3>
+  <p class="excerpt">日和星期同时写为什么是并集、只判首字符导致 */2 翻车、夏令时那两小时的漏跑与重跑。</p>
+  <p class="meta">2026-06-02 · 后端 · 9 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/html-entity-xss.html">HTML 实体编码不是万能解药：XSS 要按上下文转义</a></h3>
+  <p class="excerpt">HTML 正文、属性、JavaScript、URL、CSS 五种上下文各自的转义规则，以及 textContent 和 innerHTML 的差别。</p>
+  <p class="meta">2026-06-02 · 安全 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/mysql-utf8mb4.html">utf8 不是 UTF-8：MySQL 最坑的一次命名，和 emoji 变问号的真相</a></h3>
+  <p class="excerpt">MySQL 的 utf8 只是 3 字节的 utf8mb3，存不下 emoji。191 这个魔数从哪来，迁移时要改哪几处。</p>
+  <p class="meta">2026-06-02 · 后端 · 9 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/api-debug-guide.html">API 调试实战：从 curl 到上线的 8 个排障手段</a></h3>
+  <p class="excerpt">状态码、JSON 解析、JWT 验签、时间戳偏移、URL 编码，串成一条能重复用的排障顺序。</p>
+  <p class="meta">2026-05-26 · 后端 · 8 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/word-count-guide.html">中英文混排到底怎么算字数？</a></h3>
+  <p class="excerpt">平台规则不一样，阅读时间也不是字数除以一个常数。这里把几种算法并排放开。</p>
+  <p class="meta">2026-05-22 · 写作 · 5 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/css-box-shadow-guide.html">CSS Box Shadow 完整指南：从基础到性能优化</a></h3>
+  <p class="excerpt">语法、常见阴影、和 drop-shadow 的差别，以及移动端上阴影为什么会卡。</p>
+  <p class="meta">2026-05-22 · 前端 · 7 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/regex-common-patterns.html">10 个最常用的正则表达式</a></h3>
+  <p class="excerpt">邮箱、手机号、URL、身份证、IP。每条都写了它漏掉的边界。</p>
+  <p class="meta">2026-05-21 · 速查 · 4 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/frontend-dev-tools.html">前端日常 10 个在线工具（2026 版）</a></h3>
+  <p class="excerpt">格式化、编解码、正则、时间戳。每天打开的那几个页面，收成一份清单。</p>
+  <p class="meta">2026-05-21 · 工具 · 6 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/dev-efficiency-tools.html">让开发效率翻倍的几个在线工具（2026 版）</a></h3>
+  <p class="excerpt">一组不用安装的小工具，覆盖格式化、编解码和正则。适合临时机器。</p>
+  <p class="meta">2026-05-21 · 工具 · 5 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/choose-password-generator.html">怎么挑一个真正安全的在线密码生成器</a></h3>
+  <p class="excerpt">随机源、熵、生成发生在浏览器里还是别人的服务器上。</p>
+  <p class="meta">2026-05-21 · 安全 · 5 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/json-tips.html">JSON 的 10 个坑：文档不写，但上线后真会踩的那些</a></h3>
+  <p class="excerpt">大整数精度、循环引用、NaN、jq 和 Schema。写给已经在线上传过 JSON 的人。</p>
+  <p class="meta">2026-05-21 · 后端 · 9 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/hash-algorithm-guide.html">MD5、SHA-1、SHA-256：什么时候用哪个</a></h3>
+  <p class="excerpt">校验文件、存密码、做缓存键，三件事不该用同一个算法。</p>
+  <p class="meta">2026-05-21 · 安全 · 8 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/timestamp-guide.html">Unix 时间戳：秒级还是毫秒级，前后端各踩各的坑</a></h3>
+  <p class="excerpt">秒和毫秒差一千倍。各语言怎么取、前后端怎么对齐，用几个真实接口对一下。</p>
+  <p class="meta">2026-05-21 · 后端 · 6 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/url-encoding-guide.html">URL 编码：哪些字符需要编码，为什么</a></h3>
+  <p class="excerpt">保留字符和不安全字符、和 Base64 的差别，以及各语言 encode 一次还是两次。</p>
+  <p class="meta">2026-05-21 · 编码 · 5 分钟</p>
+</article>
 </main>
-
-<aside class="aff-promo" style="max-width:860px;margin:48px auto 0;padding:16px 20px;background:var(--color-bg-surface);border:1px solid var(--color-border);border-radius:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:0.875rem;color:var(--color-text-secondary);line-height:1.7">
-  <span style="flex-shrink:0;padding:2px 8px;border:1px solid var(--color-border-light);border-radius:9999px;font-size:0.75rem;color:var(--color-text-muted)">推广</span>
-  <span style="flex:1;min-width:240px">需要海外 VPS 跑项目？我们一直在用 <strong style="color:var(--color-text-primary)">CloudCone</strong>：洛杉矶机房，按小时计费，PayPal 付款，经常放出 $20 以内的年付闪购。通过这个链接注册，本站能拿到一点佣金，这些工具就能一直免费开下去。</span>
-  <a href="https://app.cloudcone.com/?ref=14322" target="_blank" rel="nofollow sponsored noopener" style="flex-shrink:0;padding:8px 16px;background:var(--color-accent);color:#fff;border-radius:8px;text-decoration:none;font-weight:600">去看看 →</a>
-</aside>
 <div id="siteFooter"></div>
-
 <script type="module">
 import { initLayout } from "/js/layout.js";
 initLayout();
-const filters = document.getElementById("journalFilters");
-const entries = document.querySelectorAll("#journalList .j-entry");
-const counts = { all: entries.length };
-entries.forEach(e => { const c = e.dataset.category; counts[c] = (counts[c]||0)+1; });
-filters.querySelectorAll(".f").forEach(btn => {
-  const f = btn.dataset.filter;
-  let span = btn.querySelector(".count");
-  if (!span) { span = document.createElement("span"); span.className = "count"; btn.appendChild(span); }
-  span.textContent = counts[f] || 0;
-});
-filters.addEventListener("click", e => {
-  const btn = e.target.closest(".f");
-  if (!btn) return;
-  filters.querySelectorAll(".f").forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
-  const f = btn.dataset.filter;
-  entries.forEach(en => { en.style.display = (f === "all" || en.dataset.category === f) ? "" : "none"; });
-});
 </script>
 </body>
 </html>

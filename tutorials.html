@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f4f0e8">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>教程 — DevUtils 小报</title>
+<meta name="description" content="一个具体的坑，写到能照着改完。JSON、时间、编码、数据库、鉴权。">
+<link rel="canonical" href="https://devtool.blueblueliu.com/tutorials.html">
+<meta property="og:title" content="教程 — DevUtils 小报">
+<meta property="og:description" content="一个具体的坑，写到能照着改完。JSON、时间、编码、数据库、鉴权。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://devtool.blueblueliu.com/tutorials.html">
+<meta property="og:site_name" content="DevUtils 小报">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="教程 — DevUtils 小报">
+<meta name="twitter:description" content="一个具体的坑，写到能照着改完。JSON、时间、编码、数据库、鉴权。">
+<meta name="twitter:image" content="https://devtool.blueblueliu.com/og-image.svg">
+<meta name="google-site-verification" content="1hdAlnY_EX_FiRYppycKDYJklnmKGdFYAZYAnOK3FAk">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"CollectionPage","name":"教程","url":"https://devtool.blueblueliu.com/tutorials.html"}
+</script>
+<link rel="stylesheet" href="/css/variables.css">
+<link rel="stylesheet" href="/css/reset.css">
+<link rel="stylesheet" href="/css/layout.css">
+<link rel="stylesheet" href="/css/components.css">
+<link rel="stylesheet" href="/css/blog.css">
+<link rel="stylesheet" href="/css/publication.css">
+
+</head>
+<body>
+<div id="siteHeader"></div>
+<main class="paper">
+  <header class="listing-head">
+    <p class="kicker">Tutorials</p>
+    <h1>教程</h1>
+    <p class="dek">一个具体的坑，写到能照着改完。JSON、时间、编码、数据库、鉴权。</p>
+  </header>
+  <article class="story">
+  <h3><a href="/blog/uuid-primary-key.html">别拿 UUID v4 当数据库主键：写到崩的教训，和 v7 怎么救场</a></h3>
+  <p class="excerpt">随机 UUID 主键为什么会把聚簇索引写散，RFC 9562 的 v7 怎样用时间前缀把写入拉回来。</p>
+  <p class="meta">2026-06-02 · 后端 · 9 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/unicode-string-length.html">为什么 &quot;👨‍👩‍👧‍👦&quot;.length 是 11：码点、代理对与字素簇</a></h3>
+  <p class="excerpt">字节、码元、码点、字素簇四层长度的区别，以及 Intl.Segmenter 该在什么时候用。</p>
+  <p class="meta">2026-06-02 · 前端 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/jwt-not-session.html">为什么我把 JWT 从生产环境删了：无状态鉴权的真实代价</a></h3>
+  <p class="excerpt">撤销、改密、令牌体积和密钥轮换。再加上 alg:none 和 RS256/HS256 混淆这两个老漏洞。</p>
+  <p class="meta">2026-06-02 · 安全 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/regex-redos.html">一个正则打满线上 CPU：ReDoS 是怎么发生的，怎么排查</a></h3>
+  <p class="excerpt">从灾难性回溯看一个正则怎么吃满 CPU，以及怎么在上线前把这种写法认出来。</p>
+  <p class="meta">2026-06-02 · 安全 · 8 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/timezone-leap-second.html">只存 UTC 还不够：夏令时、闰秒和那次放倒半个互联网的跳秒</a></h3>
+  <p class="excerpt">未来的会议为什么不能只存 UTC、夏令时那一小时怎么凭空消失、2012 闰秒如何把 CPU 打满。</p>
+  <p class="meta">2026-06-02 · 后端 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/base64-real-cost.html">Base64 不是压缩也不是加密：33% 膨胀和 data URL 的真实代价</a></h3>
+  <p class="excerpt">4/3 膨胀从哪来、base64url 为什么去掉填充、HTTP/2 之后内联图片为什么常常更亏。</p>
+  <p class="meta">2026-06-02 · 编码 · 8 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/cron-pitfalls.html">Cron 的三个坑：星期和日期是 OR、夏令时漏跑、任务重叠</a></h3>
+  <p class="excerpt">日和星期同时写为什么是并集、只判首字符导致 */2 翻车、夏令时那两小时的漏跑与重跑。</p>
+  <p class="meta">2026-06-02 · 后端 · 9 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/html-entity-xss.html">HTML 实体编码不是万能解药：XSS 要按上下文转义</a></h3>
+  <p class="excerpt">HTML 正文、属性、JavaScript、URL、CSS 五种上下文各自的转义规则，以及 textContent 和 innerHTML 的差别。</p>
+  <p class="meta">2026-06-02 · 安全 · 10 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/mysql-utf8mb4.html">utf8 不是 UTF-8：MySQL 最坑的一次命名，和 emoji 变问号的真相</a></h3>
+  <p class="excerpt">MySQL 的 utf8 只是 3 字节的 utf8mb3，存不下 emoji。191 这个魔数从哪来，迁移时要改哪几处。</p>
+  <p class="meta">2026-06-02 · 后端 · 9 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/api-debug-guide.html">API 调试实战：从 curl 到上线的 8 个排障手段</a></h3>
+  <p class="excerpt">状态码、JSON 解析、JWT 验签、时间戳偏移、URL 编码，串成一条能重复用的排障顺序。</p>
+  <p class="meta">2026-05-26 · 后端 · 8 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/word-count-guide.html">中英文混排到底怎么算字数？</a></h3>
+  <p class="excerpt">平台规则不一样，阅读时间也不是字数除以一个常数。这里把几种算法并排放开。</p>
+  <p class="meta">2026-05-22 · 写作 · 5 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/css-box-shadow-guide.html">CSS Box Shadow 完整指南：从基础到性能优化</a></h3>
+  <p class="excerpt">语法、常见阴影、和 drop-shadow 的差别，以及移动端上阴影为什么会卡。</p>
+  <p class="meta">2026-05-22 · 前端 · 7 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/regex-common-patterns.html">10 个最常用的正则表达式</a></h3>
+  <p class="excerpt">邮箱、手机号、URL、身份证、IP。每条都写了它漏掉的边界。</p>
+  <p class="meta">2026-05-21 · 速查 · 4 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/frontend-dev-tools.html">前端日常 10 个在线工具（2026 版）</a></h3>
+  <p class="excerpt">格式化、编解码、正则、时间戳。每天打开的那几个页面，收成一份清单。</p>
+  <p class="meta">2026-05-21 · 工具 · 6 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/dev-efficiency-tools.html">让开发效率翻倍的几个在线工具（2026 版）</a></h3>
+  <p class="excerpt">一组不用安装的小工具，覆盖格式化、编解码和正则。适合临时机器。</p>
+  <p class="meta">2026-05-21 · 工具 · 5 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/choose-password-generator.html">怎么挑一个真正安全的在线密码生成器</a></h3>
+  <p class="excerpt">随机源、熵、生成发生在浏览器里还是别人的服务器上。</p>
+  <p class="meta">2026-05-21 · 安全 · 5 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/json-tips.html">JSON 的 10 个坑：文档不写，但上线后真会踩的那些</a></h3>
+  <p class="excerpt">大整数精度、循环引用、NaN、jq 和 Schema。写给已经在线上传过 JSON 的人。</p>
+  <p class="meta">2026-05-21 · 后端 · 9 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/hash-algorithm-guide.html">MD5、SHA-1、SHA-256：什么时候用哪个</a></h3>
+  <p class="excerpt">校验文件、存密码、做缓存键，三件事不该用同一个算法。</p>
+  <p class="meta">2026-05-21 · 安全 · 8 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/timestamp-guide.html">Unix 时间戳：秒级还是毫秒级，前后端各踩各的坑</a></h3>
+  <p class="excerpt">秒和毫秒差一千倍。各语言怎么取、前后端怎么对齐，用几个真实接口对一下。</p>
+  <p class="meta">2026-05-21 · 后端 · 6 分钟</p>
+</article>
+<article class="story">
+  <h3><a href="/blog/url-encoding-guide.html">URL 编码：哪些字符需要编码，为什么</a></h3>
+  <p class="excerpt">保留字符和不安全字符、和 Base64 的差别，以及各语言 encode 一次还是两次。</p>
+  <p class="meta">2026-05-21 · 编码 · 5 分钟</p>
+</article>
+</main>
+<div id="siteFooter"></div>
+<script type="module">
+import { initLayout } from "/js/layout.js";
+initLayout();
+</script>
+</body>
+</html>
